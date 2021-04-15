@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=sway-settings
+Exec=sway-settings
+Icon=org.erikreider.swaysettings
+Terminal=false
+Type=Application
+Categories=GTK;
+StartupNotify=true

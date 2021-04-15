@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/org/erikreider/swaysettings">
+      <file>Window/Window.ui</file>
+      <file>Page/Page.ui</file>
+      <file>Item/Item.ui</file>
+  </gresource>
+</gresources>
