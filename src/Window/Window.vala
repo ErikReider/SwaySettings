@@ -31,8 +31,8 @@ namespace SwaySettings {
 
             SettingsItem[] items = {
                 new SettingsItem ("", new Appearance_Page ("Appearance", deck)),
-                new SettingsItem ("", new Appearance_Page ("Displays", deck)),
-                new SettingsItem ("", new Appearance_Page ("General", deck)),
+                // new SettingsItem ("", new Appearance_Page ("Displays", deck)),
+                // new SettingsItem ("", new Appearance_Page ("General", deck)),
             };
 
             foreach (var item in items) {

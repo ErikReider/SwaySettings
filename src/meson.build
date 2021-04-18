@@ -1,9 +1,12 @@
 sway_settings_sources = [
   'main.vala',
+  'Functions/Functions.vala',
   'Window/Window.vala',
   'Page/Page.vala',
   'Item/Item.vala',
   'Pages/Appearance/Appearance.vala',
+  'Pages/Appearance/BackgroundWidget.vala',
+  'Pages/Appearance/ThemesWidget.vala',
 ]
 
 sway_settings_deps = [

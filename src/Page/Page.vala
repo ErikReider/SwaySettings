@@ -36,21 +36,19 @@ namespace SwaySettings {
             back_button.clicked.connect (() => deck.navigate (Hdy.NavigationDirection.BACK));
         }
 
-        public Gtk.Widget get_scroll_widget (Gtk.Widget widget, int clamp_max = 600, int clamp_tight = 400) {
+        public Gtk.Widget get_scroll_widget (Gtk.Widget widget, int margin, int clamp_max = 600, int clamp_tight = 400) {
             var scrolled_window = new Gtk.ScrolledWindow (null, null);
             scrolled_window.expand = true;
             var clamp = new Hdy.Clamp ();
             clamp.maximum_size = clamp_max;
             clamp.tightening_threshold = clamp_tight;
             clamp.orientation = Gtk.Orientation.HORIZONTAL;
-            clamp.set_margin_top (8);
-            clamp.set_margin_start (8);
-            clamp.set_margin_bottom (8);
-            clamp.set_margin_end (8);
-            var viewport = new Gtk.Viewport (null, null);
+            clamp.set_margin_top (margin);
+            clamp.set_margin_start (margin);
+            clamp.set_margin_bottom (margin);
+            clamp.set_margin_end (margin);
 
-            viewport.add (widget);
-            clamp.add (viewport);
+            clamp.add (widget);
             scrolled_window.add (clamp);
             scrolled_window.show_all ();
             return scrolled_window;
@@ -61,7 +59,7 @@ namespace SwaySettings {
 
         protected Page_Scroll (string label, Hdy.Deck deck) {
             base (label, deck);
-            box.add (get_scroll_widget (set_child ()));
+            box.add (get_scroll_widget (set_child (), 0));
         }
 
         public abstract Gtk.Widget set_child ();
