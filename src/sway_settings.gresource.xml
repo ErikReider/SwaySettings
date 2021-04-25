@@ -4,5 +4,6 @@
       <file>Window/Window.ui</file>
       <file>Page/Page.ui</file>
       <file>Item/Item.ui</file>
+      <file>List_Item/List_Item.ui</file>
   </gresource>
 </gresources>

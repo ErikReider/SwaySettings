@@ -16,21 +16,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using Gee;
-
 namespace SwaySettings {
-    public class Appearance_Page : Page_Tabbed {
+    [GtkTemplate (ui = "/org/erikreider/swaysettings/List_Item/List_Item.ui")]
+    public class List_Item : Gtk.ListBoxRow {
 
-        public Appearance_Page (string label, Hdy.Deck deck) {
-            base (label, deck);
-        }
+        [GtkChild]
+        public unowned Gtk.Label label;
+        [GtkChild]
+        unowned Gtk.Box box;
 
-        public override Page_Tab[] tabs () {
-            Page_Tab[] tabs = {
-                       new Background_Widget ("Background", (widget) => get_scroll_widget (widget, 0, int.MAX, int.MAX)),
-                       new Themes_Widget ("Themes", (widget) => get_scroll_widget (widget, 0)),
-            };
-            return tabs;
+        public List_Item (string title, Gtk.Widget widget) {
+            Object ();
+            label.label = title;
+            box.add(widget);
+            widget.halign = Gtk.Align.FILL;
+            widget.hexpand = true;
         }
     }
 }

@@ -1,4 +1,4 @@
-/* window.vala
+/* main.vala
  *
  * Copyright 2021 Erik Reider
  *
@@ -16,21 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-using Gee;
-
 namespace SwaySettings {
-    public class Appearance_Page : Page_Tabbed {
-
-        public Appearance_Page (string label, Hdy.Deck deck) {
-            base (label, deck);
-        }
-
-        public override Page_Tab[] tabs () {
-            Page_Tab[] tabs = {
-                       new Background_Widget ("Background", (widget) => get_scroll_widget (widget, 0, int.MAX, int.MAX)),
-                       new Themes_Widget ("Themes", (widget) => get_scroll_widget (widget, 0)),
-            };
-            return tabs;
-        }
+    public class Strings {
+        public static unowned string settings_folder_input_pointer = "input_pointer.conf";
+        public static unowned string settings_folder_input_touchpad = "input_touchpad.conf";
+        public static unowned string settings_folder_input_keyboard = "input_keyboard.conf";
     }
 }

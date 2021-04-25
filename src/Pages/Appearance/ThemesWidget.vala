@@ -19,23 +19,27 @@
 using Gee;
 
 namespace SwaySettings {
-    public class Themes_Widget : Gtk.Box {
+    public class Themes_Widget : Page_Tab {
 
         private Gtk.ListBox list_box;
 
         public delegate Gtk.Widget DelegateWidget (Gtk.Widget widget);
 
-        public Themes_Widget (DelegateWidget widget) {
-            Object ();
+        public Themes_Widget (string tab_name, DelegateWidget widget) {
+            base (tab_name, widget);
+        }
 
+        public override Gtk.Widget init () {
+            var widget = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
             list_box = new Gtk.ListBox ();
             list_box.get_style_context ().add_class ("content");
 
-            gtk_theme("GTK Application Theme", "gtk-theme", "themes");
-            gtk_theme("GTK Icon Theme", "icon-theme", "icons");
+            gtk_theme ("GTK Application Theme", "gtk-theme", "themes");
+            gtk_theme ("GTK Icon Theme", "icon-theme", "icons");
 
-            this.add (widget (list_box));
-            this.show_all ();
+            widget.add (list_box);
+            widget.show_all ();
+            return widget;
         }
 
         public void gtk_theme (string title, string setting_name, string folder_name) {

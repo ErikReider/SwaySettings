@@ -12,3 +12,4 @@ src/Item/Item.vala
 src/Pages/Appearance/Appearance.vala
 src/Pages/Appearance/BackgroundWidget.vala
 src/Pages/Appearance/ThemesWidget.vala
+src/Pages/Mouse/Mouse.vala

@@ -31,7 +31,8 @@ namespace SwaySettings {
 
             SettingsItem[] items = {
                 new SettingsItem ("", new Appearance_Page ("Appearance", deck)),
-                // new SettingsItem ("", new Appearance_Page ("Displays", deck)),
+                new SettingsItem ("input-mouse-symbolic", new Mouse_Page ("Mouse", deck)),
+                // new SettingsItem ("", new Mouse_Page ("Displays", deck)),
                 // new SettingsItem ("", new Appearance_Page ("General", deck)),
             };
 
@@ -43,7 +44,7 @@ namespace SwaySettings {
         }
 
         void create_setting (SettingsItem settingsItem) {
-            var item = new Item (settingsItem.page.label);
+            var item = new Item (settingsItem.page.label, settingsItem.image);
             flow_box.add (item);
 
             item.enter_notify_event.connect (() => true);

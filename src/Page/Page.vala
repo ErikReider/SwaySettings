@@ -21,7 +21,7 @@ namespace SwaySettings {
     public abstract class Page : Gtk.Bin {
 
         [GtkChild]
-        public unowned Gtk.Box box;
+        public unowned Gtk.Box root_box;
         [GtkChild]
         public unowned Hdy.HeaderBar header_bar;
         [GtkChild]
@@ -36,7 +36,8 @@ namespace SwaySettings {
             back_button.clicked.connect (() => deck.navigate (Hdy.NavigationDirection.BACK));
         }
 
-        public Gtk.Widget get_scroll_widget (Gtk.Widget widget, int margin, int clamp_max = 600, int clamp_tight = 400) {
+        public Gtk.Widget get_scroll_widget (Gtk.Widget widget, int margin,
+                                             int clamp_max = 600, int clamp_tight = 400) {
             var scrolled_window = new Gtk.ScrolledWindow (null, null);
             scrolled_window.expand = true;
             var clamp = new Hdy.Clamp ();
@@ -59,7 +60,7 @@ namespace SwaySettings {
 
         protected Page_Scroll (string label, Hdy.Deck deck) {
             base (label, deck);
-            box.add (get_scroll_widget (set_child (), 0));
+            root_box.add (get_scroll_widget (set_child (), 8));
         }
 
         public abstract Gtk.Widget set_child ();
@@ -67,17 +68,7 @@ namespace SwaySettings {
 
     public abstract class Page_Tabbed : Page {
 
-        public class TabItem {
-            public string name;
-            public Gtk.Widget widget;
-
-            public TabItem (string name, Gtk.Widget widget) {
-                this.name = name;
-                this.widget = widget;
-            }
-        }
-
-        protected Page_Tabbed (string label, Hdy.Deck deck) {
+        protected Page_Tabbed (string label, Hdy.Deck deck, string no_tabs_text = "Nothing here...") {
             base (label, deck);
 
             var stack = new Gtk.Stack ();
@@ -90,15 +81,40 @@ namespace SwaySettings {
             stackSwitcher.set_margin_bottom (8);
             stackSwitcher.set_margin_end (8);
 
-            box.add (stackSwitcher);
-            box.add (stack);
-            box.show_all ();
+            root_box.add (stackSwitcher);
+            root_box.add (stack);
+            root_box.show_all ();
 
-            foreach (var tab in tabs ()) {
-                stack.add_titled (tab.widget, tab.name, tab.name);
+            var all_tabs = tabs ();
+            if (all_tabs.length < 1) {
+                stack.add(new Gtk.Label(no_tabs_text));
+                stack.show_all();
+            } else {
+                foreach (var tab in all_tabs) {
+                    stack.add_titled (tab, tab.tab_name, tab.tab_name);
+                }
             }
         }
 
-        public abstract TabItem[] tabs ();
+        public abstract Page_Tab[] tabs ();
+    }
+
+    public abstract class Page_Tab : Gtk.Box {
+        public string tab_name;
+        public delegate Gtk.Widget DelegateWidget (Gtk.Widget widget);
+
+        protected Page_Tab (string tab_name, DelegateWidget widget) {
+            Object ();
+
+            this.orientation = Gtk.Orientation.VERTICAL;
+            this.spacing = 0;
+            this.expand = true;
+
+            this.tab_name = tab_name;
+            this.add (widget (init ()));
+            this.show_all ();
+        }
+
+        public abstract Gtk.Widget init ();
     }
 }

@@ -19,6 +19,7 @@
 using Gee;
 
 namespace SwaySettings {
+
     public class Functions {
 
         public static void scale_image_widget (ref Gtk.Image img, string file_path, int wanted_width, int wanted_height) {
@@ -103,7 +104,7 @@ namespace SwaySettings {
                                 var theme_file = File.new_for_path (@"$(folder_path)/index.theme");
                                 var theme_cache = File.new_for_path (@"$(folder_path)/icon-theme.cache");
                                 var file_type = theme_file.query_file_type (FileQueryInfoFlags.NOFOLLOW_SYMLINKS);
-                                var exists = theme_file.query_exists () && theme_cache.query_exists();
+                                var exists = theme_file.query_exists () && theme_cache.query_exists ();
                                 if (exists && GLib.FileType.REGULAR == file_type) {
                                     themes.add (name);
                                 }
@@ -154,6 +155,84 @@ namespace SwaySettings {
             if (path == null) return;
             Posix.system (@"cp $(path) $(Environment.get_home_dir())/.cache/wallpaper");
             Posix.system (@"swaymsg \"output * bg $(Environment.get_home_dir())/.cache/wallpaper fill\"");
+        }
+
+        public enum Sway_IPC {
+            get_bar_config,
+            get_marks,
+            get_workspaces,
+            get_binding_modes,
+            get_outputs,
+            send_tick,
+            get_binding_state,
+            get_seats,
+            subscribe,
+            get_config,
+            get_tree,
+            get_inputs,
+            get_version;
+
+            public static string parse (Sway_IPC val) {
+                EnumClass enumc = (EnumClass) typeof (Sway_IPC).class_ref ();
+                return enumc.get_value_by_name (val.to_string ()).value_nick.replace ("-", "_");
+            }
+        }
+
+        public static Json.Node run_sway_ipc (Sway_IPC val) {
+            string stdout;
+            string stderr;
+            int status;
+            string cmd = @"swaymsg -r -t $(Sway_IPC.parse (val))";
+            try {
+                Process.spawn_command_line_sync (cmd, out stdout, out stderr, out status);
+                var parser = new Json.Parser ();
+                parser.load_from_data (stdout);
+                return parser.get_root ();
+            } catch (Error e) {
+                print ("Error: %s\n", e.message);
+                Process.exit (1);
+            }
+        }
+
+        public static File check_settings_folder_exists (string file_name) {
+            string basePath = GLib.Environment.get_user_config_dir () + "/sway/.generated_settings";
+            // Checks if directory exists. Creates one if none
+            if (!GLib.FileUtils.test (basePath, GLib.FileTest.IS_DIR)) {
+                try {
+                    var file = File.new_for_path (basePath);
+                    file.make_directory ();
+                } catch (Error e) {
+                    print ("Error: %s\n", e.message);
+                }
+            }
+            // Checks if file exists. Creates one if none
+            var file = File.new_for_path (basePath + @"/$(file_name)");
+            if (!file.query_exists ()) {
+                try {
+                    file.create (FileCreateFlags.NONE);
+                } catch (Error e) {
+                    print ("Error: %s\n", e.message);
+                    Process.exit (1);
+                }
+            }
+            return file;
+        }
+
+        public static void write_settings (string file_name, Array<string> lines) {
+            try {
+                var file = check_settings_folder_exists (file_name);
+                var dos = new DataOutputStream (file.replace (null, false, FileCreateFlags.REPLACE_DESTINATION, null));
+                foreach (string line in lines.data) {
+                    dos.put_string (line);
+                }
+            } catch (Error e) {
+                print ("Error: %s\n", e.message);
+                Process.exit (1);
+            }
+        }
+
+        public static void set_sway_ipc_value (string command) {
+            Posix.system (@"swaymsg \"$(command)\"");
         }
     }
 }

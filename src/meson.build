@@ -1,5 +1,7 @@
 sway_settings_sources = [
   'main.vala',
+  'Strings.vala',
+  'List_Item/List_Item.vala',
   'Functions/Functions.vala',
   'Window/Window.vala',
   'Page/Page.vala',
@@ -7,6 +9,10 @@ sway_settings_sources = [
   'Pages/Appearance/Appearance.vala',
   'Pages/Appearance/BackgroundWidget.vala',
   'Pages/Appearance/ThemesWidget.vala',
+  'Pages/Mouse/Mouse.vala',
+  'Pages/Mouse/General_Page.vala',
+  'Pages/Mouse/Mouse_Page.vala',
+  'Pages/Mouse/Trackad_Page.vala',
 ]
 
 sway_settings_deps = [

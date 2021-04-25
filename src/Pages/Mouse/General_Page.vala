@@ -19,18 +19,20 @@
 using Gee;
 
 namespace SwaySettings {
-    public class Appearance_Page : Page_Tabbed {
+    public class General_Input_Widget : Page_Tab {
 
-        public Appearance_Page (string label, Hdy.Deck deck) {
-            base (label, deck);
+        public delegate Gtk.Widget DelegateWidget (Gtk.Widget widget);
+
+        public General_Input_Widget (string tab_name, DelegateWidget widget) {
+            base (tab_name, widget);
         }
 
-        public override Page_Tab[] tabs () {
-            Page_Tab[] tabs = {
-                       new Background_Widget ("Background", (widget) => get_scroll_widget (widget, 0, int.MAX, int.MAX)),
-                       new Themes_Widget ("Themes", (widget) => get_scroll_widget (widget, 0)),
-            };
-            return tabs;
+        public override Gtk.Widget init () {
+            var widget = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
+            widget.add (new Gtk.Label ("General"));
+            widget.show_all ();
+
+            return widget;
         }
     }
 }

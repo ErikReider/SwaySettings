@@ -19,7 +19,7 @@
 using Gee;
 
 namespace SwaySettings {
-    public class Background_Widget : Gtk.Box {
+    public class Background_Widget : Page_Tab {
 
         private Gtk.Image preview_image = new Gtk.Image ();
         private int preview_image_height = 150;
@@ -31,12 +31,12 @@ namespace SwaySettings {
 
         public delegate Gtk.Widget DelegateWidget (Gtk.Widget widget);
 
-        public Background_Widget (DelegateWidget widget) {
-            Object ();
-            this.orientation = Gtk.Orientation.VERTICAL;
-            this.spacing = 0;
-            this.expand = true;
+        public Background_Widget (string tab_name, DelegateWidget widget) {
+            base (tab_name, widget);
+        }
 
+        public override Gtk.Widget init () {
+            var widget = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
             // preview_image
             set_preivew_image ();
             preview_image.halign = Gtk.Align.CENTER;
@@ -52,8 +52,9 @@ namespace SwaySettings {
             add_standard_wallpapers ();
 
             this.add (preview_image);
-            this.add (widget (wallpaper_box));
-            this.show_all ();
+            widget.add (wallpaper_box);
+            widget.show_all ();
+            return widget;
         }
 
         void set_preivew_image () {

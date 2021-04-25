@@ -26,10 +26,14 @@ namespace SwaySettings {
         public unowned Gtk.Label btn_label;
 
 
-        public Item (string text) {
+        public Item (string text, string icon_name) {
             Object ();
 
             btn_label.set_text(text);
+
+            if(icon_name != ""){
+                btn_image.set_from_icon_name(icon_name, Gtk.IconSize.DIALOG);
+            }
 
             show_all();
         }
