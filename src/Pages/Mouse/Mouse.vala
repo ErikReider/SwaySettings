@@ -68,7 +68,7 @@ namespace SwaySettings {
             var send_events_string = lib.get_string_member_with_default ("send_events", "enabled");
             device.settings.send_events = Inp_Dev_Settings.Input_events.parse (send_events_string);
             // pointer_accel
-            device.settings.pointer_accel = lib.get_int_member_with_default ("accel_speed", 0);
+            device.settings.pointer_accel = (float) lib.get_double_member_with_default ("accel_speed", 0);
             // accel_profile
             var accel_profile_string = lib.get_string_member_with_default ("accel_profile", "adaptive");
             device.settings.accel_profile = Inp_Dev_Settings.accel_profiles.parse (accel_profile_string);
@@ -84,7 +84,6 @@ namespace SwaySettings {
             // middle_emulation
             var middle_emulation_string = lib.get_string_member_with_default ("middle_emulation", "disabled");
             device.settings.middle_emulation = Inp_Dev_Settings.parse (middle_emulation_string);
-
 
             if (type == Input_Types.pointer) {
                 mouse = device;
