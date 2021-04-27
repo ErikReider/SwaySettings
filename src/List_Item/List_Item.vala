@@ -28,9 +28,47 @@ namespace SwaySettings {
         public List_Item (string title, Gtk.Widget widget) {
             Object ();
             label.label = title;
-            box.add(widget);
+            box.add (widget);
             widget.halign = Gtk.Align.FILL;
             widget.hexpand = true;
+        }
+    }
+
+    public class List_Slider : List_Item {
+        Gtk.Scale slider_widget;
+
+        public delegate bool on_release_delegate (Gdk.EventButton event_button, Gtk.Scale slider);
+
+        public List_Slider (string title, double min, double max, double step, on_release_delegate on_release) {
+            var slider_widget = new Gtk.Scale.with_range (Gtk.Orientation.HORIZONTAL, min, max, step);
+            slider_widget.button_release_event.connect ((event) => on_release (event, slider_widget));
+            base (title, slider_widget);
+
+            this.slider_widget = slider_widget;
+        }
+
+        public void set_value (float value) {
+            slider_widget.set_value (value);
+        }
+    }
+
+    public class List_Switch : List_Item {
+        Gtk.Switch switch_widget;
+
+        public delegate bool on_state_set (bool state);
+
+        public List_Switch (string title, on_state_set on_release) {
+            var switch_widget = new Gtk.Switch();
+            switch_widget.state_set.connect ((value) => on_release (value));
+            base (title, switch_widget);
+            switch_widget.halign = Gtk.Align.END;
+            switch_widget.valign = Gtk.Align.CENTER;
+
+            this.switch_widget = switch_widget;
+        }
+
+        public void set_active (bool value) {
+            switch_widget.set_active (value);
         }
     }
 }

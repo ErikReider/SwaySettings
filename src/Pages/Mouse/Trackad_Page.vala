@@ -24,11 +24,11 @@ namespace SwaySettings {
         private Input_Device touchpad;
 
         // pointer_accel
-        Gtk.Scale accel_scale = new Gtk.Scale.with_range (Gtk.Orientation.HORIZONTAL, -1.0, 1.0, 0.1);
+        List_Slider accel_slider;
         // scroll_factor
-        Gtk.Scale scroll_factor_scale = new Gtk.Scale.with_range (Gtk.Orientation.HORIZONTAL, 0, 10, 0.1);
+        List_Slider scroll_factor_slider;
         // natural_scroll
-        Gtk.Switch natural_scroll_switch = new Gtk.Switch ();
+        List_Switch natural_scroll_switch;
 
         public delegate Gtk.Widget DelegateWidget (Gtk.Widget widget);
 
@@ -53,43 +53,38 @@ namespace SwaySettings {
             list_box.get_style_context ().add_class ("content");
 
             // pointer_accel
-            accel_scale.button_release_event.connect ((event) => {
-                var value = (float) accel_scale.get_value ();
+            accel_slider = new List_Slider ("Mouse Sensitivity", -1.0, 1.0, 0.1, (event, slider) => {
+                var value = (float) slider.get_value ();
                 touchpad.settings.pointer_accel = value;
                 write_new_settings (@"input type:touchpad pointer_accel $(value)");
                 return false;
             });
-            var accel_scale_item = new List_Item("Mouse sensitivity", accel_scale);
-            list_box.add (accel_scale_item);
+            list_box.add (accel_slider);
 
             // scroll_factor
-            scroll_factor_scale.button_release_event.connect ((event) => {
-                var value = (float) scroll_factor_scale.get_value ();
+            scroll_factor_slider = new List_Slider ("Scroll Factor", 0.0, 10, 0.1, (event, slider) => {
+                var value = (float) slider.get_value ();
                 touchpad.settings.scroll_factor = value;
                 write_new_settings (@"input type:touchpad scroll_factor $(value)");
                 return false;
             });
-            var scroll_factor_item = new List_Item("Scroll Factor", scroll_factor_scale);
-            list_box.add (scroll_factor_item);
+            list_box.add (scroll_factor_slider);
 
             // natural_scroll
-            natural_scroll_switch.state_set.connect ((value) => {
+            natural_scroll_switch = new List_Switch ("Natural Scrolling", (value) => {
                 touchpad.settings.natural_scroll = value;
                 write_new_settings (@"input type:touchpad natural_scroll $(value)");
                 return false;
             });
-            var natural_scroll_action = new List_Item("Natural Scrolling", natural_scroll_switch);
-            natural_scroll_switch.halign = Gtk.Align.END;
-            natural_scroll_switch.valign = Gtk.Align.CENTER;
-            list_box.add (natural_scroll_action);
+            list_box.add (natural_scroll_switch);
 
             box.add (list_box);
             return box;
         }
 
         void apply_settings_to_widget () {
-            accel_scale.set_value (touchpad.settings.pointer_accel);
-            scroll_factor_scale.set_value (touchpad.settings.scroll_factor);
+            accel_slider.set_value (touchpad.settings.pointer_accel);
+            scroll_factor_slider.set_value (touchpad.settings.scroll_factor);
             natural_scroll_switch.set_active (touchpad.settings.natural_scroll);
         }
 
