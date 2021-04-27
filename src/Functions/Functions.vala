@@ -234,5 +234,22 @@ namespace SwaySettings {
         public static void set_sway_ipc_value (string command) {
             Posix.system (@"swaymsg \"$(command)\"");
         }
+
+        public static string get_default_app (default_app_data app_data) {
+            string stdout;
+            string stderr;
+            int status;
+            string cmd = @"xdg-mime query default ";
+            try {
+                Process.spawn_command_line_sync (cmd + app_data.mime_type, out stdout, out stderr, out status);
+                if (stdout == "") {
+                    Process.spawn_command_line_sync (cmd + app_data.default_mime_type, out stdout, out stderr, out status);
+                }
+                return stdout.replace("\n", "");
+            } catch (Error e) {
+                print ("Error: %s\n", e.message);
+                Process.exit (1);
+            }
+        }
     }
 }
