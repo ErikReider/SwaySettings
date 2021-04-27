@@ -235,21 +235,35 @@ namespace SwaySettings {
             Posix.system (@"swaymsg \"$(command)\"");
         }
 
-        public static string get_default_app (default_app_data app_data) {
+        public static void get_default_app (ref default_app_data app) {
             string stdout;
             string stderr;
             int status;
             string cmd = @"xdg-mime query default ";
+            if (app == null) return;
             try {
-                Process.spawn_command_line_sync (cmd + app_data.mime_type, out stdout, out stderr, out status);
+                Process.spawn_command_line_sync (cmd + app.mime_type, out stdout, out stderr, out status);
+                app.used_mime_type = app.mime_type;
                 if (stdout == "") {
-                    Process.spawn_command_line_sync (cmd + app_data.default_mime_type, out stdout, out stderr, out status);
+                    Process.spawn_command_line_sync (cmd + app.default_mime_type, out stdout, out stderr, out status);
+                    app.used_mime_type = app.default_mime_type;
                 }
-                return stdout.replace("\n", "");
+                app.application_name = stdout.replace ("\n", "");
             } catch (Error e) {
                 print ("Error: %s\n", e.message);
                 Process.exit (1);
             }
+        }
+
+        public static ArrayList<app_data> get_apps_from_mime (default_app_data def_data) {
+            ArrayList<app_data> data_list = new ArrayList<app_data> ();
+            foreach (var app in GLib.AppInfo.get_all_for_type (def_data.mime_type)) {
+                var data = new app_data();
+                data.image_url = app.get_icon();
+                data.application_name = app.get_name();
+                data_list.add(data);
+            }
+            return data_list;
         }
     }
 }

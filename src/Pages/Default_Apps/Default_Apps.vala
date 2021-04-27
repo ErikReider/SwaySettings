@@ -39,36 +39,40 @@ namespace SwaySettings {
             list_box.selection_mode = Gtk.SelectionMode.NONE;
             list_box.get_style_context ().add_class ("content");
             for (int i = 0; i < mime_types.size; i++) {
-                mime_types[i].application_name = Functions.get_default_app (mime_types[i]);
-                var row = get_item (mime_types[i]);
+                var mime = mime_types[i];
+                Functions.get_default_app (ref mime);
+
+                var row = get_item (mime, Functions.get_apps_from_mime (mime));
                 list_box.add (row);
+
+                mime_types[i] = mime;
             }
             list_box.show_all ();
             return list_box;
         }
 
-        Hdy.ComboRow get_item (default_app_data apps) {
+        Hdy.ComboRow get_item (default_app_data def_app, ArrayList<app_data> apps) {
             var row = new Hdy.ComboRow ();
-            row.set_title (apps.category_name);
+            row.set_title (def_app.category_name);
             ListStore liststore = new ListStore (typeof (Hdy.ValueObject));
-            liststore.append (new Hdy.ValueObject (apps.application_name));
-            // if (apps.data.length > 0) {
-            // int selected_index = 0;
-            // for (var i = 0; i < apps.data.length; i++) {
-            // print (@"$(apps.data[i].application_name)\n");
-            // var mode = monitor_specs.all_modes.data[i];
-            // if (mode.to_string () == monitor_specs.mode.to_string ()) selected_index = i;
-            // liststore.append (new Hdy.ValueObject (mode.to_string ()));
-            // }
-            // row.set_selected_index (selected_index);
-            // }
-            row.bind_name_model ((ListModel) liststore, (item) => ((Hdy.ValueObject)item).get_string ());
+
+            if (apps.size > 0) {
+                int selected_index = 0;
+                for (int i = 0; i < apps.size; i++) {
+                    if (def_app.application_name != null && def_app.application_name != "") {
+                        if (def_app.application_name == apps[i].application_name) selected_index = i;
+                    }
+                    liststore.append (new Hdy.ValueObject (apps[i].application_name));
+                }
+                row.bind_name_model ((ListModel) liststore, (item) => ((Hdy.ValueObject)item).get_string ());
+                row.set_selected_index (selected_index);
+            }
             return row;
         }
     }
 
     public class app_data {
-        public string image_url;
+        public GLib.Icon image_url;
         public string application_name;
     }
 
@@ -76,6 +80,7 @@ namespace SwaySettings {
         public string category_name;
         public string mime_type;
         public string default_mime_type = "text/plain";
+        public string used_mime_type;
 
         public default_app_data (string category_name, string mime_type) {
             this.mime_type = mime_type;
