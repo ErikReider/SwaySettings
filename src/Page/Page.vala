@@ -68,32 +68,50 @@ namespace SwaySettings {
 
     public abstract class Page_Tabbed : Page {
 
-        protected Page_Tabbed (string label, Hdy.Deck deck, string no_tabs_text = "Nothing here...") {
+        protected Page_Tabbed (string label,
+                               Hdy.Deck deck,
+                               string no_tabs_text = "Nothing here...",
+                               bool auto_hide_stack_bar = true,
+                               int margin = 8) {
             base (label, deck);
 
             var stack = new Gtk.Stack ();
             stack.transition_type = Gtk.StackTransitionType.CROSSFADE;
-            var stackSwitcher = new Gtk.StackSwitcher ();
-            stackSwitcher.stack = stack;
-            stackSwitcher.set_halign (Gtk.Align.CENTER);
-            stackSwitcher.set_margin_top (8);
-            stackSwitcher.set_margin_start (8);
-            stackSwitcher.set_margin_bottom (8);
-            stackSwitcher.set_margin_end (8);
+            var stack_switcher = new Gtk.StackSwitcher ();
+            stack_switcher.button_release_event.connect ((widget) => {
+                header_bar.set_subtitle (stack.visible_child_name);
+                return false;
+            });
+            stack_switcher.stack = stack;
+            stack_switcher.set_halign (Gtk.Align.CENTER);
+            stack_switcher.set_margin_top (8);
+            stack_switcher.set_margin_start (8);
+            stack_switcher.set_margin_bottom (8);
+            stack_switcher.set_margin_end (8);
 
-            root_box.add (stackSwitcher);
+            stack.set_margin_top (margin);
+            stack.set_margin_start (margin);
+            stack.set_margin_bottom (margin);
+            stack.set_margin_end (margin);
+
+            root_box.add (stack_switcher);
             root_box.add (stack);
             root_box.show_all ();
 
             var all_tabs = tabs ();
             if (all_tabs.length < 1) {
-                stack.add(new Gtk.Label(no_tabs_text));
-                stack.show_all();
+                stack.add (new Gtk.Label (no_tabs_text));
+                stack.show_all ();
             } else {
+                if (all_tabs.length == 1) {
+                    stack_switcher.visible = false;
+                }
                 foreach (var tab in all_tabs) {
                     stack.add_titled (tab, tab.tab_name, tab.tab_name);
                 }
             }
+
+            header_bar.set_subtitle (stack.visible_child_name);
         }
 
         public abstract Page_Tab[] tabs ();

@@ -38,6 +38,10 @@ namespace SwaySettings {
             gtk_theme ("GTK Icon Theme", "icon-theme", "icons");
 
             widget.add (list_box);
+            widget.set_margin_top (8);
+            widget.set_margin_start (8);
+            widget.set_margin_bottom (8);
+            widget.set_margin_end (8);
             widget.show_all ();
             return widget;
         }

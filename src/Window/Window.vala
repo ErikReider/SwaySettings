@@ -30,8 +30,8 @@ namespace SwaySettings {
             Object (application: app);
 
             SettingsItem[] items = {
-                new SettingsItem ("", new Appearance_Page ("Appearance", deck)),
-                new SettingsItem ("input-mouse-symbolic", new Mouse_Page ("Mouse", deck)),
+                new SettingsItem ("preferences-desktop-theme", new Appearance_Page ("Appearance", deck)),
+                new SettingsItem ("input-mouse", new Mouse_Page ("Inputs", deck)),
                 // new SettingsItem ("", new Mouse_Page ("Displays", deck)),
                 // new SettingsItem ("", new Appearance_Page ("General", deck)),
             };

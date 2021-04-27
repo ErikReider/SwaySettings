@@ -22,7 +22,7 @@ namespace SwaySettings {
     public class Appearance_Page : Page_Tabbed {
 
         public Appearance_Page (string label, Hdy.Deck deck) {
-            base (label, deck);
+            base (label, deck, "", false, 0);
         }
 
         public override Page_Tab[] tabs () {

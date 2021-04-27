@@ -20,7 +20,7 @@
             <property name="can-focus">False</property>
             <property name="xpad">8</property>
             <property name="ypad">4</property>
-            <property name="icon-name">video-display</property>
+            <property name="icon-name">image-missing</property>
             <property name="icon_size">6</property>
           </object>
           <packing>
