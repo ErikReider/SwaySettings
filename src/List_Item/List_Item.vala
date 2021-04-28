@@ -20,6 +20,8 @@ namespace SwaySettings {
     [GtkTemplate (ui = "/org/erikreider/swaysettings/List_Item/List_Item.ui")]
     public class List_Item : Gtk.ListBoxRow {
 
+        public static unowned int height_req = 70;
+
         [GtkChild]
         public unowned Gtk.Label label;
         [GtkChild]
@@ -31,6 +33,7 @@ namespace SwaySettings {
             box.add (widget);
             widget.halign = Gtk.Align.FILL;
             widget.hexpand = true;
+            this.height_request = 70;
         }
     }
 
@@ -58,7 +61,7 @@ namespace SwaySettings {
         public delegate bool on_state_set (bool state);
 
         public List_Switch (string title, on_state_set on_release) {
-            var switch_widget = new Gtk.Switch();
+            var switch_widget = new Gtk.Switch ();
             switch_widget.state_set.connect ((value) => on_release (value));
             base (title, switch_widget);
             switch_widget.halign = Gtk.Align.END;
@@ -69,6 +72,33 @@ namespace SwaySettings {
 
         public void set_active (bool value) {
             switch_widget.set_active (value);
+        }
+    }
+
+    public class List_Combo_Enum : Hdy.ComboRow {
+
+        public delegate void selected_index ();
+
+        public List_Combo_Enum (string title, GLib.Type enum_type, selected_index callback) {
+            Object ();
+
+            this.set_title (title);
+            this.height_request = List_Item.height_req;
+            this.selectable = false;
+
+            this.set_for_enum (enum_type, (val) => {
+                var nick = val.get_nick ();
+                return nick.up (1) + nick.slice (1, nick.length);
+            });
+            this.notify["selected-index"].connect ((e) => callback ());
+        }
+
+        public void set_selected_from_enum (int val) {
+            int selected_index = 0;
+            for (int i = 0; i < this.get_model ().get_n_items (); i++) {
+                if (val == i) selected_index = i;
+            }
+            this.set_selected_index (selected_index);
         }
     }
 }

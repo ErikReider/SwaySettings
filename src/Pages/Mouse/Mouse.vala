@@ -197,6 +197,11 @@ namespace SwaySettings {
                 return adaptive;
             }
 
+            public static string parse_enum (accel_profiles profile ) {
+                if(profile == flat) return "flat";
+                return "adaptive";
+            }
+
             public static string get_line (accel_profiles val) {
                 string value = val == accel_profiles.flat ? "flat" : "adaptive";
                 return @"accel_profile $(value)";

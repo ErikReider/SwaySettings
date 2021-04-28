@@ -28,6 +28,8 @@ namespace SwaySettings {
         List_Slider scroll_factor_slider;
         // natural_scroll
         List_Switch natural_scroll_switch;
+        // accel_profile
+        List_Combo_Enum accel_profile_row;
 
         public delegate Gtk.Widget DelegateWidget (Gtk.Widget widget);
 
@@ -77,14 +79,28 @@ namespace SwaySettings {
             });
             list_box.add (natural_scroll_switch);
 
+            // accel_profile
+            accel_profile_row = new List_Combo_Enum ("Acceleration Profile", typeof (Inp_Dev_Settings.accel_profiles), () => {
+                if (mouse.settings == null) return;
+                var profile = (Inp_Dev_Settings.accel_profiles)accel_profile_row.get_selected_index ();
+                mouse.settings.accel_profile = profile;
+                write_new_settings (@"input type:pointer accel_profile $(Inp_Dev_Settings.accel_profiles.parse_enum(profile))");
+            });
+            list_box.add (accel_profile_row);
+
             box.add (list_box);
             return box;
         }
 
         void apply_settings_to_widget () {
+            // pointer_accel
             accel_slider.set_value (mouse.settings.pointer_accel);
+            // scroll_factor
             scroll_factor_slider.set_value (mouse.settings.scroll_factor);
+            // natural_scroll
             natural_scroll_switch.set_active (mouse.settings.natural_scroll);
+            // accel_profile
+            accel_profile_row.set_selected_from_enum (mouse.settings.accel_profile);
         }
 
         void write_new_settings (string str) {

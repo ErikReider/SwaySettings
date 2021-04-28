@@ -29,6 +29,8 @@ namespace SwaySettings {
         List_Slider scroll_factor_slider;
         // natural_scroll
         List_Switch natural_scroll_switch;
+        // accel_profile
+        List_Combo_Enum accel_profile_row;
 
         public delegate Gtk.Widget DelegateWidget (Gtk.Widget widget);
 
@@ -78,14 +80,29 @@ namespace SwaySettings {
             });
             list_box.add (natural_scroll_switch);
 
+            // accel_profile
+            accel_profile_row = new List_Combo_Enum ("Acceleration Profile", typeof (Inp_Dev_Settings.accel_profiles), () => {
+                if (touchpad.settings == null) return;
+                var profile = (Inp_Dev_Settings.accel_profiles)accel_profile_row.get_selected_index ();
+                touchpad.settings.accel_profile = profile;
+                write_new_settings (@"input type:touchpad accel_profile $(Inp_Dev_Settings.accel_profiles.parse_enum(profile))");
+            });
+            list_box.add (accel_profile_row);
+
+
             box.add (list_box);
             return box;
         }
 
         void apply_settings_to_widget () {
+            // accel_slider
             accel_slider.set_value (touchpad.settings.pointer_accel);
+            // scroll_factor
             scroll_factor_slider.set_value (touchpad.settings.scroll_factor);
+            // natural_scroll
             natural_scroll_switch.set_active (touchpad.settings.natural_scroll);
+            // accel_profile
+            accel_profile_row.set_selected_from_enum (touchpad.settings.accel_profile);
         }
 
         void write_new_settings (string str) {
