@@ -36,7 +36,7 @@ namespace SwaySettings {
         }
 
         public override Gtk.Widget init () {
-            var widget = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
+            var widget = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
             // preview_image
             set_preivew_image ();
             preview_image.halign = Gtk.Align.CENTER;
@@ -69,49 +69,62 @@ namespace SwaySettings {
             wallpaper_flow_box.min_children_per_line = 1;
             wallpaper_flow_box.homogeneous = true;
             wallpaper_flow_box.child_activated.connect ((widget) => {
-                Gtk.Image img = ((Gtk.Image)(widget.get_child ()));
-                if (img.name != null) {
-                    Functions.set_wallpaper (img.name);
-                    set_preivew_image ();
-                }
+                List_Lazy_Image img = (List_Lazy_Image) (widget.get_child ());
+                print (img.image_path + "\n");
+                // if (img.image_path != null) {
+                // Functions.set_wallpaper (img.image_path);
+                // set_preivew_image ();
+                // }
             });
             ArrayList<string> wallpaper_paths = Functions.get_wallpapers ();
-            async_image_load (wallpaper_paths, ref wallpaper_flow_box);
+            GLib.MainLoop loop = new GLib.MainLoop ();
+            do_stuff.begin (wallpaper_paths, wallpaper_flow_box, (obj, async_res) => {
+                loop.quit ();
+            });
+            loop.run ();
+            print ("DONE");
 
             wallpaper_box.add (wallpaper_header);
             wallpaper_box.add (wallpaper_flow_box);
         }
 
-        void async_image_load (ArrayList<string> paths, ref Gtk.FlowBox flow_box) {
-            Array<Gtk.Image ? > images = new Array<Gtk.Image>();
-            images.set_size (paths.size);
+        async void do_stuff (ArrayList<string> paths, Gtk.FlowBox flow_box) {
+            yield async_image_load (paths, flow_box);
+        }
 
-            if (!Thread.supported ()) {
-                stderr.printf ("Cannot run without thread support.\n");
-                for (int i = 0; i < paths.size; i++) {
-                    var img = new Gtk.Image ();
-                    Functions.scale_image_widget (ref img, paths[i], list_image_width, list_image_height);
-                    images.insert_val (i, img);
-                }
-            } else {
-                try {
-                    var thread_pool = new ThreadPool<Image_Load_Thread>.with_owned_data ((load_thread) => {
-                        load_thread.thread_func ();
-                    }, paths.size, false);
-
-                    for (int i = 0; i < paths.size; i++) {
-                        thread_pool.add (new Image_Load_Thread (paths[i], ref images, i, list_image_width, list_image_height));
-                    }
-                } catch (Error e) {
-                    print ("ThreadError: %s\n", e.message);
-                }
+        async void async_image_load (ArrayList<string> paths, Gtk.FlowBox flow_box) {
+            foreach (var path in paths) {
+                flow_box.add (new List_Lazy_Image (path, list_image_height, list_image_width));
             }
+            // Array<Gtk.Image ? > images = new Array<Gtk.Image>();
+            // images.set_size (paths.size);
 
-            foreach (Gtk.Image image in images.data) {
-                if (image is Gtk.Image && image.get_parent () == null) {
-                    flow_box.add (image);
-                }
-            }
+            // if (!Thread.supported ()) {
+            // stderr.printf ("Cannot run without thread support.\n");
+            // for (int i = 0; i < paths.size; i++) {
+            // var img = new Gtk.Image ();
+            // Functions.scale_image_widget (ref img, paths[i], list_image_width, list_image_height);
+            // images.insert_val (i, img);
+            // }
+            // } else {
+            // try {
+            // var thread_pool = new ThreadPool<Image_Load_Thread>.with_owned_data ((load_thread) => {
+            // load_thread.thread_func ();
+            // }, paths.size, false);
+
+            // for (int i = 0; i < paths.size; i++) {
+            // thread_pool.add (new Image_Load_Thread (paths[i], ref images, i, list_image_width, list_image_height));
+            // }
+            // } catch (Error e) {
+            // print ("ThreadError: %s\n", e.message);
+            // }
+            // }
+
+            // foreach (Gtk.Image image in images.data) {
+            // if (image is Gtk.Image && image.get_parent () == null) {
+            // flow_box.add (image);
+            // }
+            // }
         }
     }
 
