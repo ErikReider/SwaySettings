@@ -22,6 +22,7 @@ sway_settings_deps = [
   dependency('libhandy-1', version: '>= 1.0.0'),
   dependency('json-glib-1.0'),
   dependency('gee-0.8'),
+  dependency('granite'),
   meson.get_compiler('vala').find_library('posix'),
 ]
 

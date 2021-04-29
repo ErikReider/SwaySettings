@@ -18,7 +18,9 @@
 
 namespace SwaySettings {
     [GtkTemplate (ui = "/org/erikreider/swaysettings/Item/Item.ui")]
-    public class Item : Gtk.Button {
+    public class Item : Gtk.FlowBoxChild {
+
+        public SettingsItem settings_item;
 
         [GtkChild]
         public unowned Gtk.Image btn_image;
@@ -26,16 +28,14 @@ namespace SwaySettings {
         public unowned Gtk.Label btn_label;
 
 
-        public Item (string text, string icon_name) {
+        public Item (string text, string icon_name, SettingsItem settings_item) {
             Object ();
+            this.settings_item = settings_item;
 
-            btn_label.set_text(text);
+            btn_label.set_text (text);
+            if (icon_name != "") btn_image.set_from_icon_name (icon_name, Gtk.IconSize.DIALOG);
 
-            if(icon_name != ""){
-                btn_image.set_from_icon_name(icon_name, Gtk.IconSize.DIALOG);
-            }
-
-            show_all();
+            show_all ();
         }
     }
 }

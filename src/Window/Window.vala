@@ -30,10 +30,17 @@ namespace SwaySettings {
             Object (application: app);
 
             SettingsItem[] items = {
-                new SettingsItem ("preferences-desktop-wallpaper", new Appearance_Page ("Appearance", deck)),
-                new SettingsItem ("input-mouse", new Mouse_Page ("Inputs", deck)),
-                new SettingsItem ("input-mouse", new Default_Apps ("Default Apps", deck)),
+                SettingsItem ("preferences-desktop-wallpaper", new Appearance_Page ("Appearance", deck)),
+                SettingsItem ("input-mouse", new Mouse_Page ("Inputs", deck)),
+                SettingsItem ("input-mouse", new Default_Apps ("Default Apps", deck)),
             };
+
+            flow_box.child_activated.connect ((child) => {
+                var item = (Item) child;
+                page_box.remove (page_box.get_children ().nth_data (0));
+                page_box.add (item.settings_item.page);
+                deck.navigate (Hdy.NavigationDirection.FORWARD);
+            });
 
             foreach (var item in items) {
                 create_setting (item);
@@ -42,24 +49,17 @@ namespace SwaySettings {
             flow_box.show_all ();
         }
 
-        void create_setting (SettingsItem settingsItem) {
-            var item = new Item (settingsItem.page.label, settingsItem.image);
+        void create_setting (SettingsItem settings_item) {
+            var item = new Item (settings_item.page.label, settings_item.image, settings_item);
             flow_box.add (item);
-
-            item.enter_notify_event.connect (() => true);
-            item.clicked.connect ((event) => {
-                page_box.remove (page_box.get_children ().nth_data (0));
-                page_box.add (settingsItem.page);
-                deck.navigate (Hdy.NavigationDirection.FORWARD);
-            });
         }
     }
 
-    public class SettingsItem {
-        public string image;
-        public Page page;
+    public struct SettingsItem {
+        string image;
+        Page page;
 
-        public SettingsItem (string image, Page page) {
+        SettingsItem (string image, Page page) {
             this.image = image;
             this.page = page;
         }

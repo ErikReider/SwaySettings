@@ -2,11 +2,9 @@
 <!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
-  <template class="SwaySettingsItem" parent="GtkButton">
+  <template class="SwaySettingsItem" parent="GtkFlowBoxChild">
     <property name="visible">True</property>
     <property name="can-focus">True</property>
-    <property name="receives-default">True</property>
-    <property name="relief">none</property>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>

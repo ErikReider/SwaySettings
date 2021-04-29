@@ -111,42 +111,32 @@ namespace SwaySettings {
         public List_Lazy_Image (string image_path, int requested_height, int requested_width) {
             Object ();
             this.image_path = image_path;
-            image = new Gtk.Image();
-            // image.set_from_pixbuf (new Gdk.Pixbuf (Gdk.Colorspace.RGB, false, 8, requested_width, requested_height));
-            this.add(image);
-            this.show_all();
-            // this.set_from_pixbuf (get_pixBuf (path, requested_height, requested_width));
-            new Thread<void>(@"load_img:$(image_path)", new Image_Load_Thread(image_path, ref image, requested_width, requested_height).thread_func);
-            print("yeet");
+
+            this.valign = Gtk.Align.CENTER;
+            this.halign = Gtk.Align.CENTER;
+            this.set_margin_start (8);
+            this.set_margin_top (8);
+            this.set_margin_end (8);
+            this.set_margin_bottom (8);
+
+            image = new Gtk.Image ();
+            image.height_request = requested_height;
+            image.width_request = requested_width;
+            this.add (image);
+            this.show_all ();
+
+            set_pixBuf.begin (image_path, requested_height, requested_width);
         }
 
-        Gdk.Pixbuf get_pixBuf (string path, int height, int width) {
+        async void set_pixBuf (string path, int height, int width) {
             var file = File.new_for_path (path);
             try {
-                FileInputStream file_stream = file.read (null);
-                return new Gdk.Pixbuf.from_stream_at_scale (file_stream, width, height, false, null);
+                FileInputStream file_stream = yield file.read_async ();
+
+                var pixBuf = yield new Gdk.Pixbuf.from_stream_at_scale_async (file_stream, width, height, false, null);
+                image.set_from_pixbuf (pixBuf);
             } catch (Error e) {
                 print ("Error: %s\n", e.message);
-                Process.exit (1);
-            }
-        }
-
-        class Image_Load_Thread {
-
-            private string path;
-            private int img_w;
-            private int img_h;
-            private Gtk.Image image;
-
-            public Image_Load_Thread (string path, ref Gtk.Image image, int img_w, int img_h) {
-                this.path = path;
-                this.image = image;
-                this.img_w = img_w;
-                this.img_h = img_h;
-            }
-
-            public void thread_func () {
-                Functions.scale_image_widget (ref image, path, img_w, img_h);
             }
         }
     }

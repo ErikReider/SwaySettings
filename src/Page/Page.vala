@@ -37,16 +37,17 @@ namespace SwaySettings {
                 deck.navigate (Hdy.NavigationDirection.BACK);
             });
             deck.child_switched.connect ((deck_child_index) => {
-                on_back (deck, deck_child_index);
+                if(deck_child_index == 0) on_back (deck);
             });
         }
 
-        public virtual void on_back (Hdy.Deck deck, uint deck_child_index){
+        public virtual void on_back (Hdy.Deck deck){
         }
 
         public Gtk.Widget get_scroll_widget (Gtk.Widget widget, int margin,
                                              int clamp_max = 600, int clamp_tight = 400) {
             var scrolled_window = new Gtk.ScrolledWindow (null, null);
+            scrolled_window.shadow_type = Gtk.ShadowType.IN;
             scrolled_window.expand = true;
             var clamp = new Hdy.Clamp ();
             clamp.maximum_size = clamp_max;
@@ -124,7 +125,7 @@ namespace SwaySettings {
             header_bar.set_subtitle (stack.visible_child_name);
         }
 
-        public override void on_back (Hdy.Deck deck, uint deck_child_index) {
+        public override void on_back (Hdy.Deck deck) {
             stack.set_visible_child (stack.get_children ().nth_data (0));
         }
 
