@@ -22,6 +22,8 @@ namespace SwaySettings {
 
     public class Functions {
 
+        static unowned string settings_gnome_desktop = "org.gnome.desktop.interface";
+
         public static void scale_image_widget (ref Gtk.Image img, string file_path, int wanted_width, int wanted_height) {
             try {
                 Gdk.Pixbuf pix_buf = new Gdk.Pixbuf.from_file_at_size (file_path, wanted_width, wanted_height);
@@ -49,19 +51,11 @@ namespace SwaySettings {
         }
 
         public static void set_gtk_theme (string type, string theme_name) {
-            Posix.system ("gsettings set org.gnome.desktop.interface " + type + " '" + theme_name + "'");
+            new Settings (settings_gnome_desktop).set_string (type, theme_name);
         }
 
         public static string get_current_gtk_theme (string type) {
-            string ls_stdout, ls_stderr;
-            int ls_status;
-            string cmd = "gsettings get org.gnome.desktop.interface " + type;
-            try {
-                Process.spawn_command_line_sync (cmd, out ls_stdout, out ls_stderr, out ls_status);
-            } catch (Error e) {
-                print ("Error: %s\n", e.message);
-            }
-            return ls_stdout.split ("'")[1];
+            return new Settings (settings_gnome_desktop).get_string (type) ?? "";
         }
 
         public static ArrayList<string> get_gtk_themes (string type) {
@@ -236,34 +230,36 @@ namespace SwaySettings {
         }
 
         public static void get_default_app (ref default_app_data app) {
-            string stdout;
-            string stderr;
-            int status;
-            string cmd = @"xdg-mime query default ";
-            if (app == null) return;
-            try {
-                Process.spawn_command_line_sync (cmd + app.mime_type, out stdout, out stderr, out status);
-                app.used_mime_type = app.mime_type;
-                if (stdout == "") {
-                    Process.spawn_command_line_sync (cmd + app.default_mime_type, out stdout, out stderr, out status);
-                    app.used_mime_type = app.default_mime_type;
-                }
-                app.application_name = stdout.replace ("\n", "");
-            } catch (Error e) {
-                print ("Error: %s\n", e.message);
-                Process.exit (1);
+            app.app_info = GLib.AppInfo.get_default_for_type (app.mime_type, false);
+        }
+
+        public static void get_apps_from_mime (ref default_app_data def_data) {
+            foreach (var app in GLib.AppInfo.get_all_for_type (def_data.mime_type)) {
+                def_data.all_apps.add (app);
             }
         }
 
-        public static ArrayList<app_data> get_apps_from_mime (default_app_data def_data) {
-            ArrayList<app_data> data_list = new ArrayList<app_data> ();
-            foreach (var app in GLib.AppInfo.get_all_for_type (def_data.mime_type)) {
-                var data = new app_data();
-                data.image_url = app.get_icon();
-                data.application_name = app.get_name();
-                data_list.add(data);
+        public static void set_default_for_mimes (default_app_data def_data, AppInfo selected_app, bool web = false) {
+            string app_id = selected_app.get_id ();
+            Set_Default_App_Thread thread;
+            if (web) {
+                thread = new Set_Default_App_Thread (@"xdg-settings set default-web-browser $(app_id)");
+            } else {
+                thread = new Set_Default_App_Thread (@"xdg-mime default $(app_id) $(def_data.mime_type)");
             }
-            return data_list;
+            new Thread<void>("set_default_app", thread.run);
+        }
+
+        class Set_Default_App_Thread {
+            private string cmd;
+
+            public Set_Default_App_Thread (string cmd) {
+                this.cmd = cmd;
+            }
+
+            public void run () {
+                Posix.system (cmd);
+            }
         }
     }
 }

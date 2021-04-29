@@ -33,7 +33,15 @@ namespace SwaySettings {
             Object ();
             this.label = label;
             header_bar.set_title (this.label);
-            back_button.clicked.connect (() => deck.navigate (Hdy.NavigationDirection.BACK));
+            back_button.clicked.connect (() => {
+                deck.navigate (Hdy.NavigationDirection.BACK);
+            });
+            deck.child_switched.connect ((deck_child_index) => {
+                on_back (deck, deck_child_index);
+            });
+        }
+
+        public virtual void on_back (Hdy.Deck deck, uint deck_child_index){
         }
 
         public Gtk.Widget get_scroll_widget (Gtk.Widget widget, int margin,
@@ -68,6 +76,8 @@ namespace SwaySettings {
 
     public abstract class Page_Tabbed : Page {
 
+        public Gtk.Stack stack;
+
         protected Page_Tabbed (string label,
                                Hdy.Deck deck,
                                string no_tabs_text = "Nothing here...",
@@ -75,7 +85,7 @@ namespace SwaySettings {
                                int margin = 8) {
             base (label, deck);
 
-            var stack = new Gtk.Stack ();
+            stack = new Gtk.Stack ();
             stack.transition_type = Gtk.StackTransitionType.CROSSFADE;
             var stack_switcher = new Gtk.StackSwitcher ();
             stack_switcher.button_release_event.connect ((widget) => {
@@ -112,6 +122,10 @@ namespace SwaySettings {
             }
 
             header_bar.set_subtitle (stack.visible_child_name);
+        }
+
+        public override void on_back (Hdy.Deck deck, uint deck_child_index) {
+            stack.set_visible_child (stack.get_children ().nth_data (0));
         }
 
         public abstract Page_Tab[] tabs ();

@@ -42,7 +42,8 @@ namespace SwaySettings {
                 var mime = mime_types[i];
                 Functions.get_default_app (ref mime);
 
-                var row = get_item (mime, Functions.get_apps_from_mime (mime));
+                Functions.get_apps_from_mime (ref mime);
+                var row = get_item (mime);
                 list_box.add (row);
 
                 mime_types[i] = mime;
@@ -51,29 +52,37 @@ namespace SwaySettings {
             return list_box;
         }
 
-        Hdy.ComboRow get_item (default_app_data def_app, ArrayList<app_data> apps) {
+        Hdy.ComboRow get_item (default_app_data def_app) {
             var row = new Hdy.ComboRow ();
             row.set_title (def_app.category_name);
             ListStore liststore = new ListStore (typeof (Hdy.ValueObject));
 
-            if (apps.size > 0) {
+            if (def_app.all_apps.size > 0) {
                 int selected_index = 0;
-                for (int i = 0; i < apps.size; i++) {
-                    if (def_app.application_name != null && def_app.application_name != "") {
-                        if (def_app.application_name == apps[i].application_name) selected_index = i;
+                for (int i = 0; i < def_app.all_apps.size; i++) {
+                    if (def_app.app_info.get_name() != null && def_app.app_info.get_name() != "") {
+                        if (def_app.app_info.get_name() == def_app.all_apps[i].get_name()) selected_index = i;
                     }
-                    liststore.append (new Hdy.ValueObject (apps[i].application_name));
+                    liststore.append (new Hdy.ValueObject (def_app.all_apps[i].get_name()));
                 }
                 row.bind_name_model ((ListModel) liststore, (item) => ((Hdy.ValueObject)item).get_string ());
                 row.set_selected_index (selected_index);
+                row.notify["selected-index"].connect((e) => {
+                    int index = row.get_selected_index();
+                    var selected_app = def_app.all_apps[index];
+                    Functions.set_default_for_mimes(def_app, selected_app, def_app.category_name == "Web");
+                });
             }
             return row;
         }
     }
 
     public class app_data {
-        public GLib.Icon image_url;
-        public string application_name;
+        public AppInfo app_info;
+
+        public app_data.with_info(AppInfo app_info) {
+            this.app_info = app_info;
+        }
     }
 
     public class default_app_data : app_data {
@@ -81,6 +90,8 @@ namespace SwaySettings {
         public string mime_type;
         public string default_mime_type = "text/plain";
         public string used_mime_type;
+        public AppInfo default_app;
+        public ArrayList<AppInfo> all_apps = new ArrayList<AppInfo>();
 
         public default_app_data (string category_name, string mime_type) {
             this.mime_type = mime_type;
