@@ -125,18 +125,34 @@ namespace SwaySettings {
             this.add (image);
             this.show_all ();
 
-            set_pixBuf.begin (image_path, requested_height, requested_width);
+            var thread_func = new Image_Load_Thread (image_path, ref image, requested_width, requested_height);
+            new Thread<void>(image_path, thread_func.run);
         }
 
-        async void set_pixBuf (string path, int height, int width) {
-            var file = File.new_for_path (path);
-            try {
-                FileInputStream file_stream = yield file.read_async ();
+        class Image_Load_Thread {
 
-                var pixBuf = yield new Gdk.Pixbuf.from_stream_at_scale_async (file_stream, width, height, false, null);
-                image.set_from_pixbuf (pixBuf);
-            } catch (Error e) {
-                print ("Error: %s\n", e.message);
+            private string path;
+            private int img_w;
+            private int img_h;
+            private Gtk.Image image;
+
+            public Image_Load_Thread (string path, ref Gtk.Image image, int img_w, int img_h) {
+                this.path = path;
+                this.image = image;
+                this.img_w = img_w;
+                this.img_h = img_h;
+            }
+
+            public void run () {
+                var file = File.new_for_path (path);
+                try {
+                    FileInputStream file_stream = file.read ();
+
+                    var pixBuf = new Gdk.Pixbuf.from_stream_at_scale (file_stream, img_w, img_h, true, null);
+                    image.set_from_pixbuf (pixBuf);
+                } catch (Error e) {
+                    print ("Error: %s\n", e.message);
+                }
             }
         }
     }

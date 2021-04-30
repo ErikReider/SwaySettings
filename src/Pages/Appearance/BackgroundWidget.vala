@@ -81,9 +81,7 @@ namespace SwaySettings {
                 }
             });
 
-            ArrayList<string> wallpaper_paths = Functions.get_wallpapers ();
-            add_images.begin (wallpaper_paths, wallpaper_flow_box);
-
+            add_images.begin (Functions.get_wallpapers (), wallpaper_flow_box);
 
             wallpaper_box.add (wallpaper_header);
             wallpaper_box.add (wallpaper_flow_box);

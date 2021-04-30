@@ -37,17 +37,17 @@ namespace SwaySettings {
                 deck.navigate (Hdy.NavigationDirection.BACK);
             });
             deck.child_switched.connect ((deck_child_index) => {
-                if(deck_child_index == 0) on_back (deck);
+                if (deck_child_index == 0) on_back (deck);
             });
         }
 
-        public virtual void on_back (Hdy.Deck deck){
+        public virtual void on_back (Hdy.Deck deck) {
         }
 
-        public Gtk.Widget get_scroll_widget (Gtk.Widget widget, int margin,
+        public Gtk.Widget get_scroll_widget (Gtk.Widget widget, int margin, bool shadow = false,
                                              int clamp_max = 600, int clamp_tight = 400) {
             var scrolled_window = new Gtk.ScrolledWindow (null, null);
-            scrolled_window.shadow_type = Gtk.ShadowType.IN;
+            if (shadow) scrolled_window.shadow_type = Gtk.ShadowType.IN;
             scrolled_window.expand = true;
             var clamp = new Hdy.Clamp ();
             clamp.maximum_size = clamp_max;

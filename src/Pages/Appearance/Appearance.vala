@@ -27,8 +27,8 @@ namespace SwaySettings {
 
         public override Page_Tab[] tabs () {
             Page_Tab[] tabs = {
-                       new Background_Widget ("Background", (widget) => get_scroll_widget (widget, 0, int.MAX, int.MAX)),
-                       new Themes_Widget ("Themes", (widget) => get_scroll_widget (widget, 0)),
+                new Background_Widget ("Background", (widget) => get_scroll_widget (widget, 0, true, int.MAX, int.MAX)),
+                new Themes_Widget ("Themes", (widget) => get_scroll_widget (widget, 0)),
             };
             return tabs;
         }
