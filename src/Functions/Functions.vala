@@ -27,7 +27,7 @@ namespace SwaySettings {
         public static void scale_image_widget (ref Gtk.Image img, string file_path, int wanted_width, int wanted_height) {
             try {
                 Gdk.Pixbuf pix_buf = new Gdk.Pixbuf.from_file (file_path);
-                pix_buf = pix_buf.scale_simple(wanted_width, wanted_height, Gdk.InterpType.BILINEAR);
+                pix_buf = pix_buf.scale_simple (wanted_width, wanted_height, Gdk.InterpType.BILINEAR);
                 img.set_from_pixbuf (pix_buf);
             } catch (Error e) {
                 print ("Error: %s\n", e.message);
@@ -101,7 +101,27 @@ namespace SwaySettings {
                                 var file_type = theme_file.query_file_type (FileQueryInfoFlags.NOFOLLOW_SYMLINKS);
                                 var exists = theme_file.query_exists () && theme_cache.query_exists ();
                                 if (exists && GLib.FileType.REGULAR == file_type) {
-                                    themes.add (name);
+                                    var dir = File.new_for_path (folder_path);
+                                    var enu = dir.enumerate_children (FileAttribute.STANDARD_NAME, 0);
+                                    FileInfo prop;
+                                    bool is_icon = false;
+                                    while ((prop = enu.next_file ()) != null) {
+                                        if (prop.get_file_type () == GLib.FileType.DIRECTORY) {
+                                            string f_name = prop.get_name ().down ();
+                                            // validate ex: 384x384 or 16x16
+                                            bool valid_res = false;
+                                            var name_split = f_name.split ("x");
+                                            if (name_split.length == 2) {
+                                                valid_res = int.parse (name_split[0]) != 0 && int.parse (name_split[0]) != 0;
+                                            }
+
+                                            if (f_name.contains ("scalable") || f_name.contains ("symbolic") || valid_res) {
+                                                is_icon = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if (is_icon) themes.add (name);
                                 }
                                 break;
                         }

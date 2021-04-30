@@ -4,6 +4,8 @@
   <requires lib="gtk+" version="3.24"/>
   <requires lib="libhandy" version="1.0"/>
   <template class="SwaySettingsWindow" parent="HdyApplicationWindow">
+    <property name="width-request">420</property>
+    <property name="height-request">510</property>
     <property name="can-focus">False</property>
     <property name="title" translatable="yes">Sway Settings</property>
     <property name="default-width">800</property>
