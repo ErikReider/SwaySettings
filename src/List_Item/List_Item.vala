@@ -120,8 +120,7 @@ namespace SwaySettings {
             this.set_margin_bottom (8);
 
             image = new Gtk.Image ();
-            image.height_request = requested_height;
-            image.width_request = requested_width;
+            image.set_size_request (requested_width, requested_height);
             this.add (image);
             this.show_all ();
 
@@ -144,15 +143,7 @@ namespace SwaySettings {
             }
 
             public void run () {
-                var file = File.new_for_path (path);
-                try {
-                    FileInputStream file_stream = file.read ();
-
-                    var pixBuf = new Gdk.Pixbuf.from_stream_at_scale (file_stream, img_w, img_h, true, null);
-                    image.set_from_pixbuf (pixBuf);
-                } catch (Error e) {
-                    print ("Error: %s\n", e.message);
-                }
+                Functions.scale_image_widget (ref image, path, img_w, img_h);
             }
         }
     }

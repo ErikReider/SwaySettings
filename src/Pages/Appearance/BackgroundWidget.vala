@@ -23,11 +23,11 @@ namespace SwaySettings {
 
         private Gtk.Image preview_image = new Gtk.Image ();
         private int preview_image_height = 150;
-        private int preview_image_width = 200;
+        private int preview_image_width = 275;
         // Parent for all wallpaper categories
         private Gtk.Box wallpaper_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
-        private int list_image_height = 100;
-        private int list_image_width = 150;
+        private int list_image_height = 115;
+        private int list_image_width = 154;
 
         public delegate Gtk.Widget DelegateWidget (Gtk.Widget widget);
 
@@ -42,9 +42,11 @@ namespace SwaySettings {
             preview_image.halign = Gtk.Align.CENTER;
             preview_image.valign = Gtk.Align.START;
             preview_image.get_style_context ().add_class ("frame");
-            preview_image.set_margin_start (8);
-            preview_image.set_margin_bottom (8);
-            preview_image.set_margin_end (8);
+            int margin = 24;
+            preview_image.set_margin_top (margin - 8);
+            preview_image.set_margin_start (margin);
+            preview_image.set_margin_bottom (margin);
+            preview_image.set_margin_end (margin);
 
             wallpaper_box.expand = true;
             wallpaper_box.get_style_context ().add_class ("view");
