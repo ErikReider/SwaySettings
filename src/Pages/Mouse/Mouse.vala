@@ -32,8 +32,8 @@ namespace SwaySettings {
         public override Page_Tab[] tabs () {
             init_input_devices ();
             Page_Tab[] tabs = {};
-            if (has_pointer) tabs += new Mouse_Widget ("Mouse", (widget) => get_scroll_widget (widget, 0), mouse);
-            if (has_touchpad) tabs += new Trackpad_Widget ("Touchpad", (widget) => get_scroll_widget (widget, 0), touchpad);
+            if (has_pointer) tabs += new Mouse_Widget ("Mouse", mouse);
+            if (has_touchpad) tabs += new Trackpad_Widget ("Touchpad", touchpad);
             return tabs;
         }
 
@@ -94,6 +94,89 @@ namespace SwaySettings {
 
                 touchpad = device;
             }
+        }
+    }
+
+    public abstract class Input_Tab : Page_Tab {
+        private Input_Device input_dev;
+
+        protected Input_Tab (string tab_name, Input_Device input_dev) {
+            base (tab_name);
+            this.input_dev = input_dev;
+
+            this.add (Page.get_scroll_widget (create_mouse_settings (), 0));
+        }
+
+        Gtk.Widget create_mouse_settings () {
+            var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
+
+            var list_box = new Gtk.ListBox ();
+            list_box.get_style_context ().add_class ("content");
+
+            var options = get_options ();
+            foreach (var option in options) {
+                if (option != null) list_box.add (option);
+            }
+
+
+            box.add (list_box);
+            return box;
+        }
+
+        public abstract ArrayList<Gtk.Widget> get_options ();
+
+        void write_new_settings (string str) {
+            Functions.set_sway_ipc_value (str);
+            Functions.write_settings (Strings.settings_folder_input_pointer, input_dev.get_settings ());
+        }
+
+        // pointer_accel
+        public Gtk.Widget get_pointer_accel () {
+            var accel_slider = new List_Slider ("Mouse Sensitivity", -1.0, 1.0, 0.1, (slider) => {
+                var value = (float) slider.get_value ();
+                input_dev.settings.pointer_accel = value;
+                write_new_settings (@"input type:touchpad pointer_accel $(value)");
+                return false;
+            });
+            accel_slider.set_value (input_dev.settings.pointer_accel);
+            accel_slider.add_mark (0.0, Gtk.PositionType.TOP);
+            return accel_slider;
+        }
+
+        // scroll_factor
+        public Gtk.Widget get_scroll_factor () {
+            var scroll_factor_slider = new List_Slider ("Scroll Factor", 0.0, 10, 1, (slider) => {
+                var value = (float) slider.get_value ();
+                input_dev.settings.scroll_factor = value;
+                write_new_settings (@"input type:touchpad scroll_factor $(value)");
+                return false;
+            });
+            scroll_factor_slider.set_value (input_dev.settings.scroll_factor);
+            scroll_factor_slider.add_mark (1.0, Gtk.PositionType.TOP);
+            return scroll_factor_slider;
+        }
+
+        // natural_scroll
+        public Gtk.Widget get_natural_scroll () {
+            var natural_scroll_switch = new List_Switch ("Natural Scrolling", (value) => {
+                input_dev.settings.natural_scroll = value;
+                write_new_settings (@"input type:touchpad natural_scroll $(value)");
+                return false;
+            });
+            natural_scroll_switch.set_active (input_dev.settings.natural_scroll);
+            return natural_scroll_switch;
+        }
+
+        // accel_profile
+        public Gtk.Widget get_accel_profile () {
+            var accel_profile_row = new List_Combo_Enum ("Acceleration Profile", typeof (Inp_Dev_Settings.accel_profiles), (i) => {
+                if (input_dev.settings == null) return;
+                var profile = (Inp_Dev_Settings.accel_profiles)i;
+                input_dev.settings.accel_profile = profile;
+                write_new_settings (@"input type:touchpad accel_profile $(Inp_Dev_Settings.accel_profiles.parse_enum(profile))");
+            });
+            accel_profile_row.set_selected_from_enum (input_dev.settings.accel_profile);
+            return accel_profile_row;
         }
     }
 
@@ -197,8 +280,8 @@ namespace SwaySettings {
                 return adaptive;
             }
 
-            public static string parse_enum (accel_profiles profile ) {
-                if(profile == flat) return "flat";
+            public static string parse_enum (accel_profiles profile) {
+                if (profile == flat) return "flat";
                 return "adaptive";
             }
 

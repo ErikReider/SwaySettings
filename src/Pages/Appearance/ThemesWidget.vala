@@ -23,27 +23,23 @@ namespace SwaySettings {
 
         private Gtk.ListBox list_box;
 
-        public delegate Gtk.Widget DelegateWidget (Gtk.Widget widget);
+        public Themes_Widget (string tab_name) {
+            base (tab_name);
 
-        public Themes_Widget (string tab_name, DelegateWidget widget) {
-            base (tab_name, widget);
-        }
-
-        public override Gtk.Widget init () {
-            var widget = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
+            var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
             list_box = new Gtk.ListBox ();
             list_box.get_style_context ().add_class ("content");
 
             gtk_theme ("GTK Application Theme", "gtk-theme", "themes");
             gtk_theme ("GTK Icon Theme", "icon-theme", "icons");
 
-            widget.add (list_box);
-            widget.set_margin_top (8);
-            widget.set_margin_start (8);
-            widget.set_margin_bottom (8);
-            widget.set_margin_end (8);
-            widget.show_all ();
-            return widget;
+            box.add (list_box);
+            box.set_margin_top (8);
+            box.set_margin_start (8);
+            box.set_margin_bottom (8);
+            box.set_margin_end (8);
+            box.show_all ();
+            this.add (Page.get_scroll_widget (box, 0));
         }
 
         public void gtk_theme (string title, string setting_name, string folder_name) {

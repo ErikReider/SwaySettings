@@ -29,14 +29,10 @@ namespace SwaySettings {
         private int list_image_height = 115;
         private int list_image_width = 154;
 
-        public delegate Gtk.Widget DelegateWidget (Gtk.Widget widget);
+        public Background_Widget (string tab_name) {
+            base (tab_name);
 
-        public Background_Widget (string tab_name, DelegateWidget widget) {
-            base (tab_name, widget);
-        }
-
-        public override Gtk.Widget init () {
-            var widget = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
+            var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
             // preview_image
             set_preivew_image ();
             preview_image.halign = Gtk.Align.CENTER;
@@ -54,9 +50,10 @@ namespace SwaySettings {
             add_standard_wallpapers ();
 
             this.add (preview_image);
-            widget.add (wallpaper_box);
-            widget.show_all ();
-            return widget;
+            box.add (wallpaper_box);
+            box.show_all ();
+            this.add(Page.get_scroll_widget (box, 0, true, int.MAX, int.MAX));
+            this.show_all();
         }
 
         void set_preivew_image () {

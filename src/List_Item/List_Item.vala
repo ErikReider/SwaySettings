@@ -81,7 +81,7 @@ namespace SwaySettings {
 
     public class List_Combo_Enum : Hdy.ComboRow {
 
-        public delegate void selected_index ();
+        public delegate void selected_index (int index);
 
         public List_Combo_Enum (string title, GLib.Type enum_type, selected_index callback) {
             Object ();
@@ -94,7 +94,7 @@ namespace SwaySettings {
                 var nick = val.get_nick ();
                 return nick.up (1) + nick.slice (1, nick.length);
             });
-            this.notify["selected-index"].connect ((e) => callback ());
+            this.notify["selected-index"].connect ((e) => callback (get_selected_index()));
         }
 
         public void set_selected_from_enum (int val) {

@@ -10,7 +10,6 @@ sway_settings_sources = [
   'Pages/Appearance/BackgroundWidget.vala',
   'Pages/Appearance/ThemesWidget.vala',
   'Pages/Mouse/Mouse.vala',
-  'Pages/Mouse/General_Page.vala',
   'Pages/Mouse/Mouse_Page.vala',
   'Pages/Mouse/Trackad_Page.vala',
   'Pages/Default_Apps/Default_Apps.vala',

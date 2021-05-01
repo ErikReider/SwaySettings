@@ -44,8 +44,8 @@ namespace SwaySettings {
         public virtual void on_back (Hdy.Deck deck) {
         }
 
-        public Gtk.Widget get_scroll_widget (Gtk.Widget widget, int margin, bool shadow = false,
-                                             int clamp_max = 600, int clamp_tight = 400) {
+        public static Gtk.Container get_scroll_widget (Gtk.Widget widget, int margin, bool shadow = false,
+                                                       int clamp_max = 600, int clamp_tight = 400) {
             var scrolled_window = new Gtk.ScrolledWindow (null, null);
             if (shadow) scrolled_window.shadow_type = Gtk.ShadowType.IN;
             scrolled_window.expand = true;
@@ -134,9 +134,8 @@ namespace SwaySettings {
 
     public abstract class Page_Tab : Gtk.Box {
         public string tab_name;
-        public delegate Gtk.Widget DelegateWidget (Gtk.Widget widget);
 
-        protected Page_Tab (string tab_name, DelegateWidget widget) {
+        protected Page_Tab (string tab_name) {
             Object ();
 
             this.orientation = Gtk.Orientation.VERTICAL;
@@ -144,10 +143,7 @@ namespace SwaySettings {
             this.expand = true;
 
             this.tab_name = tab_name;
-            this.add (widget (init ()));
             this.show_all ();
         }
-
-        public abstract Gtk.Widget init ();
     }
 }
