@@ -22,12 +22,14 @@ namespace SwaySettings {
     public class Default_Apps : Page_Scroll {
 
         public static ArrayList<default_app_data> mime_types = new ArrayList<default_app_data>.wrap ({
-            new default_app_data ("Web", "x-scheme-handler/http"),
-            new default_app_data ("Mail", "x-scheme-handler/mailto"),
+            new default_app_data ("Web Browser", "x-scheme-handler/http"),
+            new default_app_data ("Mail Client", "x-scheme-handler/mailto"),
             new default_app_data ("Calendar", "text/calendar"),
             new default_app_data ("Music", "audio/x-vorbis+ogg"),
             new default_app_data ("Video", "video/x-ogm+ogg"),
             new default_app_data ("Photos", "image/jpeg"),
+            new default_app_data ("Text Editor", "text/plain"),
+            new default_app_data ("File Browser", "inode/directory"),
         });
 
         public Default_Apps (string label, Hdy.Deck deck) {
@@ -52,35 +54,23 @@ namespace SwaySettings {
             return list_box;
         }
 
-        Hdy.ComboRow get_item (default_app_data def_app) {
-            var row = new Hdy.ComboRow ();
-            row.set_title (def_app.category_name);
-            ListStore liststore = new ListStore (typeof (Hdy.ValueObject));
-
-            if (def_app.all_apps.size > 0) {
-                int selected_index = 0;
-                for (int i = 0; i < def_app.all_apps.size; i++) {
-                    if (def_app.app_info.get_name() != null && def_app.app_info.get_name() != "") {
-                        if (def_app.app_info.get_name() == def_app.all_apps[i].get_name()) selected_index = i;
-                    }
-                    liststore.append (new Hdy.ValueObject (def_app.all_apps[i].get_name()));
-                }
-                row.bind_name_model ((ListModel) liststore, (item) => ((Hdy.ValueObject)item).get_string ());
-                row.set_selected_index (selected_index);
-                row.notify["selected-index"].connect((e) => {
-                    int index = row.get_selected_index();
-                    var selected_app = def_app.all_apps[index];
-                    Functions.set_default_for_mimes(def_app, selected_app, def_app.category_name == "Web");
-                });
-            }
-            return row;
+        Gtk.Widget get_item (default_app_data def_app) {
+            var chooser = new Gtk.AppChooserButton (def_app.mime_type);
+            chooser.show_dialog_item = true;
+            chooser.show_default_item = true;
+            chooser.changed.connect ((combo_box) => {
+                var selected_app = chooser.get_app_info();
+                if(selected_app == null) return;
+                Functions.set_default_for_mimes (def_app, selected_app, def_app.category_name == "Web");
+            });
+            return new List_Item(def_app.category_name, chooser, 56);
         }
     }
 
     public class app_data {
         public AppInfo app_info;
 
-        public app_data.with_info(AppInfo app_info) {
+        public app_data.with_info (AppInfo app_info) {
             this.app_info = app_info;
         }
     }

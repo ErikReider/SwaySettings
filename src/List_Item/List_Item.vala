@@ -27,13 +27,13 @@ namespace SwaySettings {
         [GtkChild]
         unowned Gtk.Box box;
 
-        public List_Item (string title, Gtk.Widget widget) {
+        public List_Item (string title, Gtk.Widget widget, int height = height_req) {
             Object ();
             label.label = title;
             box.add (widget);
             widget.halign = Gtk.Align.FILL;
             widget.hexpand = true;
-            this.height_request = 70;
+            this.height_request = height;
         }
     }
 
@@ -44,10 +44,10 @@ namespace SwaySettings {
 
         public List_Slider (string title, double min, double max, double step, on_release_delegate on_release) {
             var slider_widget = new Gtk.Scale.with_range (Gtk.Orientation.HORIZONTAL, min, max, step);
-            slider_widget.button_release_event.connect ((event) => on_release (event, slider_widget));
             base (title, slider_widget);
 
             this.slider_widget = slider_widget;
+            slider_widget.button_release_event.connect ((event) => on_release (event, this.slider_widget));
         }
 
         public void set_value (float value) {
