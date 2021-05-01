@@ -250,16 +250,6 @@ namespace SwaySettings {
             Posix.system (@"swaymsg \"$(command)\"");
         }
 
-        public static void get_default_app (ref default_app_data app) {
-            app.app_info = GLib.AppInfo.get_default_for_type (app.mime_type, false);
-        }
-
-        public static void get_apps_from_mime (ref default_app_data def_data) {
-            foreach (var app in GLib.AppInfo.get_all_for_type (def_data.mime_type)) {
-                def_data.all_apps.add (app);
-            }
-        }
-
         public static void set_default_for_mimes (default_app_data def_data, AppInfo selected_app, bool web = false) {
             string app_id = selected_app.get_id ();
             Set_Default_App_Thread thread;
