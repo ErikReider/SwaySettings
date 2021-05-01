@@ -40,14 +40,18 @@ namespace SwaySettings {
     public class List_Slider : List_Item {
         Gtk.Scale slider_widget;
 
-        public delegate bool on_release_delegate (Gdk.EventButton event_button, Gtk.Scale slider);
+        public delegate bool on_release_delegate (Gtk.Range range);
 
         public List_Slider (string title, double min, double max, double step, on_release_delegate on_release) {
             var slider_widget = new Gtk.Scale.with_range (Gtk.Orientation.HORIZONTAL, min, max, step);
             base (title, slider_widget);
 
             this.slider_widget = slider_widget;
-            slider_widget.button_release_event.connect ((event) => on_release (event, this.slider_widget));
+            slider_widget.value_changed.connect ((event) => on_release (event));
+        }
+
+        public void add_mark(double value, Gtk.PositionType position) {
+            slider_widget.add_mark(value, position, null);
         }
 
         public void set_value (float value) {

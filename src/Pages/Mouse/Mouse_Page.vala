@@ -20,6 +20,7 @@ using Gee;
 
 namespace SwaySettings {
     public class Mouse_Widget : Page_Tab {
+
         private Input_Device mouse;
 
         // pointer_accel
@@ -54,21 +55,23 @@ namespace SwaySettings {
             list_box.get_style_context ().add_class ("content");
 
             // pointer_accel
-            accel_slider = new List_Slider ("Mouse Sensitivity", -1.0, 1.0, 0.1, (event, slider) => {
+            accel_slider = new List_Slider ("Mouse Sensitivity", -1.0, 1.0, 0.1, (slider) => {
                 var value = (float) slider.get_value ();
                 mouse.settings.pointer_accel = value;
                 write_new_settings (@"input type:pointer pointer_accel $(value)");
                 return false;
             });
+            accel_slider.add_mark(0.0, Gtk.PositionType.TOP);
             list_box.add (accel_slider);
 
             // scroll_factor
-            scroll_factor_slider = new List_Slider ("Scroll Factor", 0.0, 10, 0.1, (event, slider) => {
+            scroll_factor_slider = new List_Slider ("Scroll Factor", 0.0, 10, 1, (slider) => {
                 var value = (float) slider.get_value ();
                 mouse.settings.scroll_factor = value;
                 write_new_settings (@"input type:pointer scroll_factor $(value)");
                 return false;
             });
+            scroll_factor_slider.add_mark(1.0, Gtk.PositionType.TOP);
             list_box.add (scroll_factor_slider);
 
             // natural_scroll
