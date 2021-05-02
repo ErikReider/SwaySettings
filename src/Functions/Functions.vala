@@ -168,8 +168,9 @@ namespace SwaySettings {
 
         public static void set_wallpaper (string path) {
             if (path == null) return;
-            Posix.system (@"cp $(path) $(Environment.get_home_dir())/.cache/wallpaper");
-            Posix.system (@"swaymsg \"output * bg $(Environment.get_home_dir())/.cache/wallpaper fill\"");
+            string wall_dir = @"$(Environment.get_home_dir())/$(Environment.get_user_cache_dir())/wallpaper";
+            Posix.system (@"cp $(path) $(wall_dir)");
+            Posix.system (@"swaymsg \"output * bg $(wall_dir) fill\"");
         }
 
         public enum Sway_IPC {
@@ -252,25 +253,28 @@ namespace SwaySettings {
 
         public static void set_default_for_mimes (default_app_data def_data, AppInfo selected_app, bool web = false) {
             string app_id = selected_app.get_id ();
-            Set_Default_App_Thread thread;
+            string cmd;
             if (web) {
-                thread = new Set_Default_App_Thread (@"xdg-settings set default-web-browser $(app_id)");
+                cmd = @"xdg-settings set default-web-browser $(app_id)";
             } else {
-                thread = new Set_Default_App_Thread (@"xdg-mime default $(app_id) $(def_data.mime_type)");
+                cmd = @"xdg-mime default $(app_id) $(def_data.mime_type)";
             }
-            new Thread<void>("set_default_app", thread.run);
+
+            new Thread<void>("set_default_app", () => {
+                Posix.system (cmd);
+            });
         }
 
-        class Set_Default_App_Thread {
-            private string cmd;
-
-            public Set_Default_App_Thread (string cmd) {
-                this.cmd = cmd;
-            }
-
-            public void run () {
-                Posix.system (cmd);
-            }
+        public static ArrayList<DesktopAppInfo> get_startup_apps () {
+            ArrayList<DesktopAppInfo> apps = new ArrayList<DesktopAppInfo>();
+            string auto_start_path = @"$(Environment.get_user_config_dir())/autostart";
+            walk_through_dir (auto_start_path, (file_info) => {
+                    // Implement "X-GNOME-Autostart-enabled" check???
+                    var app = new DesktopAppInfo.from_filename(@"$(auto_start_path)/$(file_info.get_name())");
+                    if(app == null || app.get_is_hidden()) return;
+                    apps.add(app);
+            });
+            return apps;
         }
     }
 }

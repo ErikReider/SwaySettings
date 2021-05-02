@@ -22,15 +22,14 @@ namespace SwaySettings {
     public class Appearance_Page : Page_Tabbed {
 
         public Appearance_Page (string label, Hdy.Deck deck) {
-            base (label, deck, "", false, 0);
+            base (label, deck);
         }
 
         public override Page_Tab[] tabs () {
-            Page_Tab[] tabs = {
-                new Background_Widget ("Background"),
-                new Themes_Widget ("Themes"),
+            return {
+                       new Background_Widget ("Background"),
+                       new Themes_Widget ("Themes"),
             };
-            return tabs;
         }
     }
 }

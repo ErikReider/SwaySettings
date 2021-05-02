@@ -12,7 +12,9 @@ sway_settings_sources = [
   'Pages/Mouse/Mouse.vala',
   'Pages/Mouse/Mouse_Page.vala',
   'Pages/Mouse/Trackad_Page.vala',
-  'Pages/Default_Apps/Default_Apps.vala',
+  'Pages/Apps/Apps.vala',
+  'Pages/Apps/Default_Apps.vala',
+  'Pages/Apps/Startup_Apps.vala',
 ]
 
 sway_settings_deps = [

@@ -19,7 +19,7 @@
 using Gee;
 
 namespace SwaySettings {
-    public class Default_Apps : Page_Scroll {
+    public class Default_Apps : Page_Tab {
 
         public static ArrayList<default_app_data ? > mime_types = new ArrayList<default_app_data ? >.wrap ({
             default_app_data ("Web Browser", "x-scheme-handler/http"),
@@ -32,11 +32,9 @@ namespace SwaySettings {
             default_app_data ("File Browser", "inode/directory"),
         });
 
-        public Default_Apps (string label, Hdy.Deck deck) {
-            base (label, deck);
-        }
+        public Default_Apps (string tab_label) {
+            base (tab_label);
 
-        public override Gtk.Widget set_child () {
             var list_box = new Gtk.ListBox ();
             list_box.selection_mode = Gtk.SelectionMode.NONE;
             list_box.get_style_context ().add_class ("content");
@@ -44,7 +42,7 @@ namespace SwaySettings {
                 list_box.add (get_item (mime_types[i]));
             }
             list_box.show_all ();
-            return list_box;
+            this.add(Page.get_scroll_widget(list_box));
         }
 
         Gtk.Widget get_item (default_app_data def_app) {

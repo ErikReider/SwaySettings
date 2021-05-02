@@ -52,7 +52,7 @@ namespace SwaySettings {
             this.add (preview_image);
             box.add (wallpaper_box);
             box.show_all ();
-            this.add(Page.get_scroll_widget (box, 0, true, int.MAX, int.MAX));
+            this.add(Page.get_scroll_widget (box, false, true, int.MAX, int.MAX));
             this.show_all();
         }
 

@@ -1,0 +1,6 @@
+.main-flex-item {
+  margin: 8px;
+}
+.main-flex-item:selected {
+  border-radius: 10px;
+}

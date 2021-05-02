@@ -44,7 +44,7 @@ namespace SwaySettings {
         public virtual void on_back (Hdy.Deck deck) {
         }
 
-        public static Gtk.Container get_scroll_widget (Gtk.Widget widget, int margin, bool shadow = false,
+        public static Gtk.Container get_scroll_widget (Gtk.Widget widget, bool have_margin = true, bool shadow = false,
                                                        int clamp_max = 600, int clamp_tight = 400) {
             var scrolled_window = new Gtk.ScrolledWindow (null, null);
             if (shadow) scrolled_window.shadow_type = Gtk.ShadowType.IN;
@@ -53,10 +53,13 @@ namespace SwaySettings {
             clamp.maximum_size = clamp_max;
             clamp.tightening_threshold = clamp_tight;
             clamp.orientation = Gtk.Orientation.HORIZONTAL;
-            clamp.set_margin_top (margin);
-            clamp.set_margin_start (margin);
-            clamp.set_margin_bottom (margin);
-            clamp.set_margin_end (margin);
+            if (have_margin) {
+                int margin = 8;
+                clamp.set_margin_top (margin);
+                clamp.set_margin_start (margin);
+                clamp.set_margin_bottom (margin);
+                clamp.set_margin_end (margin);
+            }
 
             clamp.add (widget);
             scrolled_window.add (clamp);
@@ -69,7 +72,7 @@ namespace SwaySettings {
 
         protected Page_Scroll (string label, Hdy.Deck deck) {
             base (label, deck);
-            root_box.add (get_scroll_widget (set_child (), 8));
+            root_box.add (get_scroll_widget (set_child ()));
         }
 
         public abstract Gtk.Widget set_child ();
@@ -81,9 +84,7 @@ namespace SwaySettings {
 
         protected Page_Tabbed (string label,
                                Hdy.Deck deck,
-                               string no_tabs_text = "Nothing here...",
-                               bool auto_hide_stack_bar = true,
-                               int margin = 8) {
+                               string no_tabs_text = "Nothing here...") {
             base (label, deck);
 
             stack = new Gtk.Stack ();
@@ -100,10 +101,10 @@ namespace SwaySettings {
             stack_switcher.set_margin_bottom (8);
             stack_switcher.set_margin_end (8);
 
-            stack.set_margin_top (margin);
-            stack.set_margin_start (margin);
-            stack.set_margin_bottom (margin);
-            stack.set_margin_end (margin);
+            // stack.set_margin_top (margin);
+            // stack.set_margin_start (margin);
+            // stack.set_margin_bottom (margin);
+            // stack.set_margin_end (margin);
 
             root_box.add (stack_switcher);
             root_box.add (stack);

@@ -39,7 +39,7 @@ namespace SwaySettings {
             box.set_margin_bottom (8);
             box.set_margin_end (8);
             box.show_all ();
-            this.add (Page.get_scroll_widget (box, 0));
+            this.add (Page.get_scroll_widget (box, false));
         }
 
         public void gtk_theme (string title, string setting_name, string folder_name) {
