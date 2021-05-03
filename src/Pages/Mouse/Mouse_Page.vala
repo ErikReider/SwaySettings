@@ -22,7 +22,7 @@ namespace SwaySettings {
     public class Mouse_Widget : Input_Tab {
 
         public Mouse_Widget (string tab_name, Input_Device mouse) {
-            base (tab_name, mouse);
+            base (tab_name, Input_Types.pointer, mouse);
         }
 
         public override ArrayList<Gtk.Widget> get_options () {

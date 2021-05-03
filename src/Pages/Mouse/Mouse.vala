@@ -100,8 +100,11 @@ namespace SwaySettings {
     public abstract class Input_Tab : Page_Tab {
         private Input_Device input_dev;
 
-        protected Input_Tab (string tab_name, Input_Device input_dev) {
+        string input_type;
+
+        protected Input_Tab (string tab_name, Input_Types input_type, Input_Device input_dev) {
             base (tab_name);
+            this.input_type = Input_Types.parse_enum (input_type);
             this.input_dev = input_dev;
 
             this.add (Page.get_scroll_widget (create_mouse_settings ()));
@@ -132,51 +135,50 @@ namespace SwaySettings {
 
         // pointer_accel
         public Gtk.Widget get_pointer_accel () {
-            var row = new List_Slider ("Mouse Sensitivity", -1.0, 1.0, 0.1, (slider) => {
+            var row = new List_Slider ("Mouse Sensitivity", input_dev.settings.pointer_accel,
+                                       -1.0, 1.0, 0.1, (slider) => {
                 var value = (float) slider.get_value ();
                 input_dev.settings.pointer_accel = value;
-                write_new_settings (@"input type:touchpad pointer_accel $(value)");
+                write_new_settings (@"input type:$(input_type) pointer_accel $(value)");
                 return false;
             });
-            row.set_value (input_dev.settings.pointer_accel);
             row.add_mark (0.0, Gtk.PositionType.TOP);
             return row;
         }
 
         // scroll_factor
         public Gtk.Widget get_scroll_factor () {
-            var row = new List_Slider ("Scroll Factor", 0.0, 10, 1, (slider) => {
+            var row = new List_Slider ("Scroll Factor", input_dev.settings.scroll_factor,
+                                       0.0, 10, 1, (slider) => {
                 var value = (float) slider.get_value ();
                 input_dev.settings.scroll_factor = value;
-                write_new_settings (@"input type:touchpad scroll_factor $(value)");
+                write_new_settings (@"input type:$(input_type) scroll_factor $(value)");
                 return false;
             });
-            row.set_value (input_dev.settings.scroll_factor);
             row.add_mark (1.0, Gtk.PositionType.TOP);
             return row;
         }
 
         // natural_scroll
         public Gtk.Widget get_natural_scroll () {
-            var row = new List_Switch ("Natural Scrolling", (value) => {
+            var row = new List_Switch ("Natural Scrolling", input_dev.settings.natural_scroll, (value) => {
                 input_dev.settings.natural_scroll = value;
-                write_new_settings (@"input type:touchpad natural_scroll $(value)");
+                write_new_settings (@"input type:$(input_type) natural_scroll $(value)");
                 return false;
             });
-            row.set_active (input_dev.settings.natural_scroll);
             return row;
         }
 
         // accel_profile
         public Gtk.Widget get_accel_profile () {
             var row = new List_Combo_Enum ("Acceleration Profile",
+                                           input_dev.settings.accel_profile,
                                            typeof (Inp_Dev_Settings.accel_profiles),
                                            (index) => {
                 var profile = (Inp_Dev_Settings.accel_profiles)index;
                 input_dev.settings.accel_profile = profile;
-                write_new_settings (@"input type:touchpad accel_profile $(Inp_Dev_Settings.accel_profiles.parse_enum(profile))");
+                write_new_settings (@"input type:$(input_type) accel_profile $(Inp_Dev_Settings.accel_profiles.parse_enum(profile))");
             });
-            row.set_selected_from_enum (input_dev.settings.accel_profile);
             return row;
         }
     }

@@ -248,6 +248,7 @@ namespace SwaySettings {
         }
 
         public static void set_sway_ipc_value (string command) {
+            print(@"swaymsg \"$(command)\"\n");
             Posix.system (@"swaymsg \"$(command)\"");
         }
 
