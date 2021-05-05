@@ -168,7 +168,7 @@ namespace SwaySettings {
 
         public static void set_wallpaper (string path) {
             if (path == null) return;
-            string wall_dir = @"$(Environment.get_home_dir())/$(Environment.get_user_cache_dir())/wallpaper";
+            string wall_dir = @"$(Environment.get_user_cache_dir())/wallpaper";
             Posix.system (@"cp $(path) $(wall_dir)");
             Posix.system (@"swaymsg \"output * bg $(wall_dir) fill\"");
         }
@@ -237,7 +237,11 @@ namespace SwaySettings {
         public static void write_settings (string file_name, Array<string> lines) {
             try {
                 var file = check_settings_folder_exists (file_name);
-                var dos = new DataOutputStream (file.replace (null, false, FileCreateFlags.REPLACE_DESTINATION, null));
+                var fos = file.replace (null,
+                                        false,
+                                        FileCreateFlags.REPLACE_DESTINATION,
+                                        null);
+                var dos = new DataOutputStream (fos);
                 foreach (string line in lines.data) {
                     dos.put_string (line);
                 }
@@ -248,11 +252,12 @@ namespace SwaySettings {
         }
 
         public static void set_sway_ipc_value (string command) {
-            print(@"swaymsg \"$(command)\"\n");
             Posix.system (@"swaymsg \"$(command)\"");
         }
 
-        public static void set_default_for_mimes (default_app_data def_data, AppInfo selected_app, bool web = false) {
+        public static void set_default_for_mimes (default_app_data def_data,
+                                                  AppInfo selected_app,
+                                                  bool web = false) {
             string app_id = selected_app.get_id ();
             string cmd;
             if (web) {
@@ -270,12 +275,22 @@ namespace SwaySettings {
             ArrayList<DesktopAppInfo> apps = new ArrayList<DesktopAppInfo>();
             string auto_start_path = @"$(Environment.get_user_config_dir())/autostart";
             walk_through_dir (auto_start_path, (file_info) => {
-                    // Implement "X-GNOME-Autostart-enabled" check???
-                    var app = new DesktopAppInfo.from_filename(@"$(auto_start_path)/$(file_info.get_name())");
-                    if(app == null || app.get_is_hidden()) return;
-                    apps.add(app);
+                // Implement "X-GNOME-Autostart-enabled" check???
+                var app_path = @"$(auto_start_path)/$(file_info.get_name())";
+                var app = new DesktopAppInfo.from_filename (app_path);
+                if (app == null || app.get_is_hidden ()) return;
+                apps.add (app);
             });
             return apps;
+        }
+
+        public static async void add_app_to_startup (string filename) {
+            string cmd = @"cp $filename $(Environment.get_user_config_dir())/autostart/";
+            Posix.system (cmd);
+        }
+
+        public static async void remove_app_from_startup (string filename) {
+            Posix.system (@"rm $filename");
         }
     }
 }
