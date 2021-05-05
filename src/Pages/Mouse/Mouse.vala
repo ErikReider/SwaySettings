@@ -79,7 +79,7 @@ namespace SwaySettings {
             var left_handed_string = lib.get_string_member_with_default ("left_handed", "disabled");
             device.settings.left_handed = Inp_Dev_Settings.parse (left_handed_string);
             // scroll_factor
-            var scroll_factor_double = lib.get_double_member_with_default ("scroll_factor", (double) defs.scroll_factor);
+            var scroll_factor_double = obj.get_double_member_with_default ("scroll_factor", (double) defs.scroll_factor);
             device.settings.scroll_factor = (float) scroll_factor_double;
             // middle_emulation
             var middle_emulation_string = lib.get_string_member_with_default ("middle_emulation", "disabled");
