@@ -4,3 +4,12 @@
 .main-flex-item:selected {
   border-radius: 10px;
 }
+
+.category-title {
+  font-weight: bold;
+  margin: 6px;
+}
+
+.shadow {
+  box-shadow: 0 2px 13px 0 rgba(0, 0, 0, 0.15);
+}

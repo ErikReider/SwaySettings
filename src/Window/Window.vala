@@ -56,14 +56,16 @@ namespace SwaySettings {
                 var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
                 if (index % 2 == 0) box.get_style_context ().add_class ("view");
 
-                var title = new Gtk.Label (null);
+                var title = new Gtk.Label (category.title);
+                title.get_style_context ().add_class ("category-title");
+
                 title.xalign = 0.0f;
                 int margin = 8;
                 title.set_margin_top (margin);
                 title.set_margin_start (margin);
                 title.set_margin_bottom (2);
                 title.set_margin_end (margin);
-                title.set_markup (@"<span><b>$(category.title)</b></span>");
+                // title.set_markup (@"<span><b>$(category.title)</b></span>");
 
                 var flow_box = new Gtk.FlowBox ();
                 flow_box.vexpand = false;

@@ -125,6 +125,7 @@ namespace SwaySettings {
 
         public List_Lazy_Image (string image_path, int requested_height, int requested_width) {
             Object ();
+            this.get_style_context().add_class("shadow");
             this.image_path = image_path;
 
             this.valign = Gtk.Align.CENTER;

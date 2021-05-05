@@ -121,7 +121,6 @@ namespace SwaySettings {
                 if (option != null) list_box.add (option);
             }
 
-
             box.add (list_box);
             return box;
         }

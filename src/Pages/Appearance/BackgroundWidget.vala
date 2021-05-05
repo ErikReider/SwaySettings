@@ -35,6 +35,7 @@ namespace SwaySettings {
             var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
             // preview_image
             set_preivew_image ();
+            preview_image.get_style_context().add_class("shadow");
             preview_image.halign = Gtk.Align.CENTER;
             preview_image.valign = Gtk.Align.START;
             preview_image.get_style_context ().add_class ("frame");
@@ -47,7 +48,7 @@ namespace SwaySettings {
             wallpaper_box.expand = true;
             wallpaper_box.get_style_context ().add_class ("view");
 
-            add_standard_wallpapers ();
+            add_system_wallpapers ();
 
             this.add (preview_image);
             box.add (wallpaper_box);
@@ -61,8 +62,10 @@ namespace SwaySettings {
             Functions.scale_image_widget (ref preview_image, path, preview_image_width, preview_image_height);
         }
 
-        void add_standard_wallpapers () {
-            var wallpaper_header = new Gtk.Label ("Standard Wallpapers");
+        void add_system_wallpapers () {
+            var wallpaper_header = new Gtk.Label ("System Wallpapers");
+            wallpaper_header.xalign = 0.0f;
+            wallpaper_header.get_style_context().add_class("category-title");
             var wallpaper_flow_box = new Gtk.FlowBox ();
             wallpaper_flow_box.max_children_per_line = 8;
             wallpaper_flow_box.min_children_per_line = 1;
