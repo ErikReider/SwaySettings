@@ -212,7 +212,7 @@ namespace SwaySettings {
             lines.append_val (@"input type:$(Input_Types.parse_enum(type)) {\n");
             var settings_lines = get_type_settings ();
             foreach (string line in settings_lines.data) {
-                lines.append_val (line);
+                lines.append_val (line.replace(",", "."));
             }
             lines.append_val ("}\n");
             return lines;
