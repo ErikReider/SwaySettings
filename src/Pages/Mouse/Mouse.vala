@@ -138,7 +138,8 @@ namespace SwaySettings {
                                        -1.0, 1.0, 0.1, (slider) => {
                 var value = (float) slider.get_value ();
                 input_dev.settings.pointer_accel = value;
-                write_new_settings (@"input type:$(input_type) pointer_accel $(value)");
+                var str_value = value.to_string().replace(",", ".");
+                write_new_settings (@"input type:$(input_type) pointer_accel $(str_value)");
                 return false;
             });
             row.add_mark (0.0, Gtk.PositionType.TOP);
@@ -151,7 +152,8 @@ namespace SwaySettings {
                                        0.0, 10, 1, (slider) => {
                 var value = (float) slider.get_value ();
                 input_dev.settings.scroll_factor = value;
-                write_new_settings (@"input type:$(input_type) scroll_factor $(value)");
+                var str_value = value.to_string().replace(",", ".");
+                write_new_settings (@"input type:$(input_type) scroll_factor $(str_value)");
                 return false;
             });
             row.add_mark (1.0, Gtk.PositionType.TOP);
