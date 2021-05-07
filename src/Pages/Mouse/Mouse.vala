@@ -71,7 +71,7 @@ namespace SwaySettings {
             device.settings.pointer_accel = (float) lib.get_double_member_with_default ("accel_speed", 0);
             // accel_profile
             var accel_profile_string = lib.get_string_member_with_default ("accel_profile", "adaptive");
-            device.settings.accel_profile = Inp_Dev_Settings.accel_profiles.parse (accel_profile_string);
+            device.settings.accel_profile = Inp_Dev_Settings.accel_profiles.parse_string (accel_profile_string);
             // natural_scroll
             var natural_scroll_string = lib.get_string_member_with_default ("natural_scroll", "disabled");
             device.settings.natural_scroll = Inp_Dev_Settings.parse (natural_scroll_string);
@@ -102,9 +102,11 @@ namespace SwaySettings {
 
         string input_type;
 
-        protected Input_Tab (string tab_name, Input_Types input_type, Input_Device input_dev) {
+        protected Input_Tab (string tab_name,
+                             Input_Types input_type,
+                             Input_Device input_dev) {
             base (tab_name);
-            this.input_type = Input_Types.parse_enum (input_type);
+            this.input_type = input_type.parse();
             this.input_dev = input_dev;
 
             this.add (Page.get_scroll_widget (create_mouse_settings ()));
@@ -129,27 +131,16 @@ namespace SwaySettings {
 
         void write_new_settings (string str) {
             Functions.set_sway_ipc_value (str);
-            Functions.write_settings (Strings.settings_folder_input_pointer, input_dev.get_settings ());
-        }
-
-        // pointer_accel
-        public Gtk.Widget get_pointer_accel () {
-            var row = new List_Slider ("Mouse Sensitivity", input_dev.settings.pointer_accel,
-                                       -1.0, 1.0, 0.1, (slider) => {
-                var value = (float) slider.get_value ();
-                input_dev.settings.pointer_accel = value;
-                var str_value = value.to_string().replace(",", ".");
-                write_new_settings (@"input type:$(input_type) pointer_accel $(str_value)");
-                return false;
-            });
-            row.add_mark (0.0, Gtk.PositionType.TOP);
-            return row;
+            Functions.write_settings (Strings.settings_folder_input_pointer,
+                                      input_dev.get_settings ());
         }
 
         // scroll_factor
         public Gtk.Widget get_scroll_factor () {
-            var row = new List_Slider ("Scroll Factor", input_dev.settings.scroll_factor,
-                                       0.0, 10, 1, (slider) => {
+            var row = new List_Slider ("Scroll Factor",
+                                       input_dev.settings.scroll_factor,
+                                       0.0, 10, 1,
+                                       (slider) => {
                 var value = (float) slider.get_value ();
                 input_dev.settings.scroll_factor = value;
                 var str_value = value.to_string().replace(",", ".");
@@ -162,24 +153,40 @@ namespace SwaySettings {
 
         // natural_scroll
         public Gtk.Widget get_natural_scroll () {
-            var row = new List_Switch ("Natural Scrolling", input_dev.settings.natural_scroll, (value) => {
+            return new List_Switch ("Natural Scrolling",
+                                    input_dev.settings.natural_scroll,
+                                    (value) => {
                 input_dev.settings.natural_scroll = value;
                 write_new_settings (@"input type:$(input_type) natural_scroll $(value)");
                 return false;
             });
-            return row;
         }
 
         // accel_profile
         public Gtk.Widget get_accel_profile () {
-            var row = new List_Combo_Enum ("Acceleration Profile",
-                                           input_dev.settings.accel_profile,
-                                           typeof (Inp_Dev_Settings.accel_profiles),
-                                           (index) => {
+            return new List_Combo_Enum ("Acceleration Profile",
+                                        input_dev.settings.accel_profile,
+                                        typeof (Inp_Dev_Settings.accel_profiles),
+                                        (index) => {
                 var profile = (Inp_Dev_Settings.accel_profiles)index;
                 input_dev.settings.accel_profile = profile;
-                write_new_settings (@"input type:$(input_type) accel_profile $(Inp_Dev_Settings.accel_profiles.parse_enum(profile))");
+                write_new_settings (@"input type:$(input_type) accel_profile $(profile.parse())");
             });
+        }
+
+        // pointer_accel
+        public Gtk.Widget get_pointer_accel () {
+            var row = new List_Slider ("Pointer Acceleration",
+                                       input_dev.settings.pointer_accel,
+                                       -1.0, 1.0, 0.1,
+                                       (slider) => {
+                var value = (float) slider.get_value ();
+                input_dev.settings.pointer_accel = value;
+                var str_value = value.to_string().replace(",", ".");
+                write_new_settings (@"input type:$(input_type) pointer_accel $(str_value)");
+                return false;
+            });
+            row.add_mark (0.0, Gtk.PositionType.TOP);
             return row;
         }
     }
@@ -189,9 +196,9 @@ namespace SwaySettings {
         touchpad,
         NEITHER;
 
-        public static string parse_enum (Input_Types val) {
+        public string parse () {
             EnumClass enumc = (EnumClass) typeof (Input_Types).class_ref ();
-            return enumc.get_value_by_name (val.to_string ()).value_nick;
+            return enumc.get_value_by_name (this.to_string ()).value_nick;
         }
 
         public static Input_Types parse_string (string val) {
@@ -209,7 +216,7 @@ namespace SwaySettings {
 
         public Array<string> get_settings () {
             Array<string> lines = new Array<string>();
-            lines.append_val (@"input type:$(Input_Types.parse_enum(type)) {\n");
+            lines.append_val (@"input type:$(type.parse()) {\n");
             var settings_lines = get_type_settings ();
             foreach (string line in settings_lines.data) {
                 lines.append_val (line.replace(",", "."));
@@ -224,31 +231,54 @@ namespace SwaySettings {
 
         private Array<string> get_type_settings () {
             Array<string> settings_list = new Array<string>();
+
             // events
-            settings_list.append_val (get_string_line (Inp_Dev_Settings.Input_events.get_line (settings.send_events)));
+            settings_list.append_val (get_string_line (
+                    settings.send_events.get_line()));
+
             // pointer_accel
-            settings_list.append_val (get_string_line (@"pointer_accel $(settings.pointer_accel)"));
+            settings_list.append_val (get_string_line (
+                    @"pointer_accel $(settings.pointer_accel)"));
+
             // accel_profile
-            settings_list.append_val (get_string_line (Inp_Dev_Settings.accel_profiles.get_line (settings.accel_profile)));
+            settings_list.append_val (get_string_line (
+                    settings.accel_profile.get_line()));
+
             // natural_scroll
-            settings_list.append_val (get_string_line (@"natural_scroll $(Inp_Dev_Settings.parse_bool(settings.natural_scroll))"));
+            settings_list.append_val (get_string_line (
+                    @"natural_scroll $(Inp_Dev_Settings.parse_bool(settings.natural_scroll))"));
+
             // left_handed
-            settings_list.append_val (get_string_line (@"left_handed $(Inp_Dev_Settings.parse_bool(settings.left_handed))"));
+            settings_list.append_val (get_string_line (
+                    @"left_handed $(Inp_Dev_Settings.parse_bool(settings.left_handed))"));
+
             // scroll_factor
-            settings_list.append_val (get_string_line (@"scroll_factor $(settings.scroll_factor)"));
+            settings_list.append_val (get_string_line (
+                    @"scroll_factor $(settings.scroll_factor)"));
+
             // middle_emulation
-            settings_list.append_val (get_string_line (@"middle_emulation $(Inp_Dev_Settings.parse_bool(settings.middle_emulation))"));
+            settings_list.append_val (get_string_line (
+                    @"middle_emulation $(Inp_Dev_Settings.parse_bool(settings.middle_emulation))"));
             if (Input_Types.touchpad == type) {
                 // scroll_method
-                settings_list.append_val (get_string_line (Inp_Dev_Settings.scroll_methods.get_line (settings.scroll_method)));
+                settings_list.append_val (get_string_line (
+                        settings.scroll_method.get_line()));
+
                 // dwt
-                settings_list.append_val (get_string_line (@"dwt $(Inp_Dev_Settings.parse_bool(settings.dwt))"));
+                settings_list.append_val (get_string_line (
+                    @"dwt $(Inp_Dev_Settings.parse_bool(settings.dwt))"));
+
                 // tap
-                settings_list.append_val (get_string_line (@"tap $(Inp_Dev_Settings.parse_bool(settings.tap))"));
+                settings_list.append_val (get_string_line (
+                        @"tap $(Inp_Dev_Settings.parse_bool(settings.tap))"));
+
                 // tap_button_map
-                settings_list.append_val (get_string_line (Inp_Dev_Settings.tap_button_maps.get_line (settings.tap_button_map)));
+                settings_list.append_val (get_string_line (
+                        settings.tap_button_map.get_line()));
+
                 // click_method
-                settings_list.append_val (get_string_line (Inp_Dev_Settings.click_methods.get_line (settings.click_method)));
+                settings_list.append_val (get_string_line (
+                        settings.click_method.get_line()));
             }
             return settings_list;
         }
@@ -279,18 +309,18 @@ namespace SwaySettings {
         public enum accel_profiles {
             adaptive, flat;
 
-            public static accel_profiles parse (string value) {
+            public static accel_profiles parse_string (string value) {
                 if (value == "flat") return flat;
                 return adaptive;
             }
 
-            public static string parse_enum (accel_profiles profile) {
-                if (profile == flat) return "flat";
+            public string parse () {
+                if (this == flat) return "flat";
                 return "adaptive";
             }
 
-            public static string get_line (accel_profiles val) {
-                string value = val == accel_profiles.flat ? "flat" : "adaptive";
+            public string get_line () {
+                string value = (this == flat) ? "flat" : "adaptive";
                 return @"accel_profile $(value)";
             }
         }
@@ -303,10 +333,10 @@ namespace SwaySettings {
                 return enabled;
             }
 
-            public static string get_line (Input_events val) {
+            public string get_line () {
                 string value = "enabled";
-                if (val == Input_events.disabled) value = "disabled";
-                else if (val == Input_events.disabled_on_external_mouse) value = "disabled_on_external_mouse";
+                if (this == Input_events.disabled) value = "disabled";
+                else if (this == Input_events.disabled_on_external_mouse) value = "disabled_on_external_mouse";
                 return @"events $(value)";
             }
         }
@@ -320,11 +350,11 @@ namespace SwaySettings {
                 return none;
             }
 
-            public static string get_line (scroll_methods val) {
+            public string get_line () {
                 string value = "two_finger";
-                if (val == scroll_methods.none) value = "none";
-                else if (val == scroll_methods.on_button_down) value = "on_button_down";
-                else if (val == scroll_methods.edge) value = "edge";
+                if (this == scroll_methods.none) value = "none";
+                else if (this == scroll_methods.on_button_down) value = "on_button_down";
+                else if (this == scroll_methods.edge) value = "edge";
                 return @"scroll_method $(value)";
             }
         }
@@ -337,10 +367,10 @@ namespace SwaySettings {
                 return none;
             }
 
-            public static string get_line (click_methods val) {
+            public string get_line () {
                 string value = "clickfinger";
-                if (val == click_methods.none) value = "none";
-                else if (val == click_methods.button_areas) value = "button_areas";
+                if (this == click_methods.none) value = "none";
+                else if (this == click_methods.button_areas) value = "button_areas";
                 return @"click_method $(value)";
             }
         }
@@ -352,8 +382,8 @@ namespace SwaySettings {
                 return lmr;
             }
 
-            public static string get_line (tap_button_maps val) {
-                string value = val == tap_button_maps.lrm ? "lrm" : "lmr";
+            public string get_line () {
+                string value = (this == lrm) ? "lrm" : "lmr";
                 return @"tap_button_map $(value)";
             }
         }
