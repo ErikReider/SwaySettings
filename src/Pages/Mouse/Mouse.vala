@@ -66,7 +66,7 @@ namespace SwaySettings {
 
             // send_events
             var send_events_string = lib.get_string_member_with_default ("send_events", "enabled");
-            device.settings.send_events = Inp_Dev_Settings.Input_events.parse (send_events_string);
+            device.settings.doem = Inp_Dev_Settings.Doem.parse (send_events_string);
             // pointer_accel
             device.settings.pointer_accel = (float) lib.get_double_member_with_default ("accel_speed", 0);
             // accel_profile
@@ -106,7 +106,7 @@ namespace SwaySettings {
                              Input_Types input_type,
                              Input_Device input_dev) {
             base (tab_name);
-            this.input_type = input_type.parse();
+            this.input_type = input_type.parse ();
             this.input_dev = input_dev;
 
             this.add (Page.get_scroll_widget (create_mouse_settings ()));
@@ -131,8 +131,11 @@ namespace SwaySettings {
 
         void write_new_settings (string str) {
             Functions.set_sway_ipc_value (str);
-            Functions.write_settings (Strings.settings_folder_input_pointer,
-                                      input_dev.get_settings ());
+            string file_name = Strings.settings_folder_input_pointer;
+            if (input_dev.type == Input_Types.touchpad) {
+                file_name = Strings.settings_folder_input_touchpad;
+            }
+            Functions.write_settings (file_name, input_dev.get_settings ());
         }
 
         // scroll_factor
@@ -143,7 +146,7 @@ namespace SwaySettings {
                                        (slider) => {
                 var value = (float) slider.get_value ();
                 input_dev.settings.scroll_factor = value;
-                var str_value = value.to_string().replace(",", ".");
+                var str_value = value.to_string ().replace (",", ".");
                 write_new_settings (@"input type:$(input_type) scroll_factor $(str_value)");
                 return false;
             });
@@ -182,12 +185,35 @@ namespace SwaySettings {
                                        (slider) => {
                 var value = (float) slider.get_value ();
                 input_dev.settings.pointer_accel = value;
-                var str_value = value.to_string().replace(",", ".");
+                var str_value = value.to_string ().replace (",", ".");
                 write_new_settings (@"input type:$(input_type) pointer_accel $(str_value)");
                 return false;
             });
             row.add_mark (0.0, Gtk.PositionType.TOP);
             return row;
+        }
+
+        // Disable while typing
+        public Gtk.Widget get_dwt () {
+            return new List_Switch ("Disable While Typing",
+                                    input_dev.settings.dwt,
+                                    (value) => {
+                input_dev.settings.dwt = value;
+                write_new_settings (@"input type:$(input_type) dwt $(value)");
+                return false;
+            });
+        }
+
+        // Disable on external mouse
+        public Gtk.Widget get_doem () {
+            return new List_Switch ("Disable On External Mouse",
+                                    input_dev.settings.doem.value,
+                                    (value) => {
+                var val = new Inp_Dev_Settings.Doem (value);
+                input_dev.settings.doem = val;
+                write_new_settings (@"input type:$(input_type) events $(val.get_value())");
+                return false;
+            });
         }
     }
 
@@ -219,7 +245,7 @@ namespace SwaySettings {
             lines.append_val (@"input type:$(type.parse()) {\n");
             var settings_lines = get_type_settings ();
             foreach (string line in settings_lines.data) {
-                lines.append_val (line.replace(",", "."));
+                lines.append_val (line.replace (",", "."));
             }
             lines.append_val ("}\n");
             return lines;
@@ -234,51 +260,51 @@ namespace SwaySettings {
 
             // events
             settings_list.append_val (get_string_line (
-                    settings.send_events.get_line()));
+                                          settings.doem.get_line ()));
 
             // pointer_accel
             settings_list.append_val (get_string_line (
-                    @"pointer_accel $(settings.pointer_accel)"));
+                                          @"pointer_accel $(settings.pointer_accel)"));
 
             // accel_profile
             settings_list.append_val (get_string_line (
-                    settings.accel_profile.get_line()));
+                                          settings.accel_profile.get_line ()));
 
             // natural_scroll
             settings_list.append_val (get_string_line (
-                    @"natural_scroll $(Inp_Dev_Settings.parse_bool(settings.natural_scroll))"));
+                                          @"natural_scroll $(Inp_Dev_Settings.parse_bool(settings.natural_scroll))"));
 
             // left_handed
             settings_list.append_val (get_string_line (
-                    @"left_handed $(Inp_Dev_Settings.parse_bool(settings.left_handed))"));
+                                          @"left_handed $(Inp_Dev_Settings.parse_bool(settings.left_handed))"));
 
             // scroll_factor
             settings_list.append_val (get_string_line (
-                    @"scroll_factor $(settings.scroll_factor)"));
+                                          @"scroll_factor $(settings.scroll_factor)"));
 
             // middle_emulation
             settings_list.append_val (get_string_line (
-                    @"middle_emulation $(Inp_Dev_Settings.parse_bool(settings.middle_emulation))"));
+                                          @"middle_emulation $(Inp_Dev_Settings.parse_bool(settings.middle_emulation))"));
             if (Input_Types.touchpad == type) {
                 // scroll_method
                 settings_list.append_val (get_string_line (
-                        settings.scroll_method.get_line()));
+                                              settings.scroll_method.get_line ()));
 
                 // dwt
                 settings_list.append_val (get_string_line (
-                    @"dwt $(Inp_Dev_Settings.parse_bool(settings.dwt))"));
+                                              @"dwt $(Inp_Dev_Settings.parse_bool(settings.dwt))"));
 
                 // tap
                 settings_list.append_val (get_string_line (
-                        @"tap $(Inp_Dev_Settings.parse_bool(settings.tap))"));
+                                              @"tap $(Inp_Dev_Settings.parse_bool(settings.tap))"));
 
                 // tap_button_map
                 settings_list.append_val (get_string_line (
-                        settings.tap_button_map.get_line()));
+                                              settings.tap_button_map.get_line ()));
 
                 // click_method
                 settings_list.append_val (get_string_line (
-                        settings.click_method.get_line()));
+                                              settings.click_method.get_line ()));
             }
             return settings_list;
         }
@@ -287,7 +313,7 @@ namespace SwaySettings {
     public class Inp_Dev_Settings {
         public accel_profiles accel_profile = accel_profiles.adaptive;
         public bool dwt = false;
-        public Input_events send_events = Input_events.enabled;
+        public Doem doem = new Doem (false);
         public bool left_handed = false;
         public bool natural_scroll = false;
         public float pointer_accel = 0;
@@ -324,20 +350,27 @@ namespace SwaySettings {
                 return @"accel_profile $(value)";
             }
         }
-        public enum Input_events {
-            enabled, disabled, disabled_on_external_mouse, toggle;
+        // Disable on external mouse
+        public class Doem {
+            public bool value = false;
 
-            public static Input_events parse (string value) {
-                if (value == "disabled") return disabled;
-                else if (value == "disabled_on_external_mouse") return disabled_on_external_mouse;
-                return enabled;
+            public Doem (bool value) {
+                this.value = value;
+            }
+
+            public static Doem parse (string value) {
+                if (value == "disabled_on_external_mouse") {
+                    return new Doem (true);
+                }
+                return new Doem (false);
+            }
+
+            public string get_value () {
+                return value ? "disabled_on_external_mouse" : "enabled";
             }
 
             public string get_line () {
-                string value = "enabled";
-                if (this == Input_events.disabled) value = "disabled";
-                else if (this == Input_events.disabled_on_external_mouse) value = "disabled_on_external_mouse";
-                return @"events $(value)";
+                return @"events $(get_value())";
             }
         }
         public enum scroll_methods {
