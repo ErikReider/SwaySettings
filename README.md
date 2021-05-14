@@ -1,0 +1,1 @@
+# Sway-Settings
