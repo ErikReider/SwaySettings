@@ -53,6 +53,52 @@ namespace SwaySettings {
 
         public static void set_gtk_theme (string type, string theme_name) {
             new Settings (settings_gnome_desktop).set_string (type, theme_name);
+            // Also set the .config/gtk-3.0/settings.ini (Firefox ignores the gsettings variable)
+            string settings_path = @"$(Environment.get_user_config_dir())/gtk-3.0/settings.ini";
+            var file = File.new_for_path (settings_path);
+            // TODO: Implement alt action instead of skipping
+            if (!file.query_exists ()) return;
+            try {
+                ArrayList<string> theme_data = new ArrayList<string>();
+
+                // Read data
+                var dis = new DataInputStream (file.read ());
+                string read_line;
+                while ((read_line = dis.read_line (null)) != null) {
+                    var split = read_line.split ("=");
+                    if (split.length > 1) {
+                        string ? looking_for = "";
+                        switch (type) {
+                            case "gtk-theme":
+                                looking_for = "gtk-theme-name";
+                                break;
+                            case "icon-theme":
+                                looking_for = "gtk-icon-theme-name";
+                                break;
+                        }
+                        if (split[0] == looking_for) {
+                            read_line = @"$(split[0])=$(theme_name)";
+                        }
+                    }
+                    theme_data.add (@"$(read_line)\n");
+                }
+                dis.close ();
+
+                // Write data
+                var fos = file.replace (
+                    null,
+                    false,
+                    FileCreateFlags.REPLACE_DESTINATION,
+                    null);
+                var dos = new DataOutputStream (fos);
+                foreach (string write_line in theme_data) {
+                    dos.put_string (write_line);
+                }
+                dos.close ();
+            } catch (Error e) {
+                print ("Error: %s\n", e.message);
+                Process.exit (1);
+            }
         }
 
         public static string get_current_gtk_theme (string type) {
