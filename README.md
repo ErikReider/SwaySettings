@@ -1,6 +1,6 @@
 # Sway-Settings
 
-A GUI for configuring your sway desktop.\
+A GUI for configuring your sway desktop
 
 - Auto start apps
 - Default apps
