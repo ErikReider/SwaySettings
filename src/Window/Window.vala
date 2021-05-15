@@ -51,8 +51,8 @@ namespace SwaySettings {
                 }),
             });
 
-            int index = 0;
-            foreach (var category in items) {
+            for (int index = 0; index < items.size; index++) {
+                var category = items[index];
                 var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
                 if (index % 2 == 0) box.get_style_context ().add_class ("view");
 
@@ -65,7 +65,6 @@ namespace SwaySettings {
                 title.set_margin_start (margin);
                 title.set_margin_bottom (2);
                 title.set_margin_end (margin);
-                // title.set_markup (@"<span><b>$(category.title)</b></span>");
 
                 var flow_box = new Gtk.FlowBox ();
                 flow_box.vexpand = false;
@@ -73,23 +72,32 @@ namespace SwaySettings {
                 flow_box.max_children_per_line = 7;
                 flow_box.selection_mode = Gtk.SelectionMode.NONE;
                 flow_box.child_activated.connect ((child) => {
-                    var item = (Item) child;
                     page_box.remove (page_box.get_children ().nth_data (0));
-                    page_box.add (item.settings_item.page);
+                    page_box.add (((Item) child).settings_item.page);
                     deck.navigate (Hdy.NavigationDirection.FORWARD);
                 });
                 foreach (var settings_item in category.items) {
-                    var item = new Item (settings_item.page.label, settings_item.image, settings_item);
+                    var item = new Item (settings_item.page.label,
+                                         settings_item.image,
+                                         settings_item);
                     flow_box.add (item);
                 }
 
                 box.add (title);
                 box.add (flow_box);
                 content_box.add (box);
-                index++;
             }
 
+            add_settings ();
             content_box.show_all ();
+        }
+
+        void add_settings () {
+            var list = new Array<string>();
+            // Wallpaper
+            list.append_val (
+                "exec_always swaymsg \"output * bg ~/.cache/wallpaper fill\"");
+            Functions.write_settings (Strings.settings_folder_wallpaper, list);
         }
     }
 

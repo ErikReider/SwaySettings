@@ -23,7 +23,4 @@ Add these lines to the end of your main sway config file
 ```ini
 # Applies all generated settings
 include ~/.config/sway/.generated_settings/*.conf
-
-# To apply the latest wallpaper
-exec_always swaymsg "output * bg ~/.cache/wallpaper fill"
 ```
