@@ -44,7 +44,6 @@ namespace SwaySettings {
                 });
             });
 
-
             box.add (list_box);
             box.add (add_button);
             this.add (Page.get_scroll_widget (box));

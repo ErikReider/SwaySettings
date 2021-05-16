@@ -324,7 +324,7 @@ namespace SwaySettings {
                 // Implement "X-GNOME-Autostart-enabled" check???
                 var app_path = @"$(auto_start_path)/$(file_info.get_name())";
                 var app = new DesktopAppInfo.from_filename (app_path);
-                if (app == null || app.get_is_hidden ()) return;
+                if (app == null) return;
                 apps.add (app);
             });
             return apps;
