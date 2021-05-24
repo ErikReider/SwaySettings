@@ -31,6 +31,8 @@ namespace SwaySettings {
         public Window (Gtk.Application app) {
             Object (application: app);
 
+            Functions.check_program_settings_folder_exists();
+
             try {
                 Gtk.CssProvider css_provider = new Gtk.CssProvider ();
                 css_provider.load_from_path ("src/style.css");
@@ -55,12 +57,16 @@ namespace SwaySettings {
                     SettingsItem ("input-mouse",
                                   new Mouse_Page ("Inputs", deck)),
                 }),
+                SettingsCategory ("General", {
+                    SettingsItem ("accessories-character-map",
+                                  new Keybindings_Page ("Keybindings", deck)),
+                }),
             });
 
             for (int index = 0; index < items.size; index++) {
                 var category = items[index];
                 var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
-                if (index % 2 == 0) box.get_style_context ().add_class ("view");
+                if (index % 2 != 0) box.get_style_context ().add_class ("view");
 
                 var title = new Gtk.Label (category.title);
                 title.get_style_context ().add_class ("category-title");

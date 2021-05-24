@@ -22,5 +22,7 @@ namespace SwaySettings {
         public static unowned string settings_folder_input_touchpad = "input_touchpad.conf";
         public static unowned string settings_folder_input_keyboard = "input_keyboard.conf";
         public static unowned string settings_folder_static_settings = "static_settings.conf";
+        public static unowned string program_settings_folder_name = "sway-settings";
+        public static unowned string program_settings_config_name = "config.json";
     }
 }

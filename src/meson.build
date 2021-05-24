@@ -16,6 +16,9 @@ sway_settings_sources = [
   'Pages/Apps/Apps.vala',
   'Pages/Apps/Default_Apps.vala',
   'Pages/Apps/Startup_Apps.vala',
+  'Pages/Keybindings/Keybindings_Page.vala',
+  'Pages/Keybindings/Keybind_Action.vala',
+  'Pages/Keybindings/Keybind_Variable.vala',
 ]
 
 sway_settings_deps = [
