@@ -13,7 +13,7 @@ A GUI for configuring your sway desktop
 Currently the program won't be installed system-wide.
 The application needs to be started manually like below.
 
-##### At the time of writing, the program assumes that the sway config is in `~/.config/sway`
+##### At the time of writing, the program assumes that the sway config is `~/.config/sway/config`
 
 ``` zsh
 meson build
