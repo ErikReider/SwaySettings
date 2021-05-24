@@ -10,6 +10,9 @@ A GUI for configuring your sway desktop
 
 ## Install
 
+Currently the program won't be installed system-wide.
+The application needs to be started manually like below.
+
 ##### At the time of writing, the program assumes that the sway config is in `~/.config/sway`
 
 ``` zsh
@@ -20,7 +23,10 @@ ninja -C build
 
 Add these lines to the end of your main sway config file
 
-```ini
+``` ini
 # Applies all generated settings
 include ~/.config/sway/.generated_settings/*.conf
+
+# To apply the selected wallpaper
+exec_always swaymsg "output * bg ~/.cache/wallpaper fill"
 ```
