@@ -25,20 +25,20 @@ namespace SwaySettings {
         bool has_pointer = false;
         bool has_touchpad = false;
 
-        public Mouse_Page (string label, Hdy.Deck deck) {
-            base (label, deck, "No input devices detected...");
+        public Mouse_Page (string label, Hdy.Deck deck, IPC ipc) {
+            base (label, deck, ipc, "No input devices detected...");
         }
 
         public override Page_Tab[] tabs () {
             init_input_devices ();
             Page_Tab[] tabs = {};
-            if (has_pointer) tabs += new Mouse_Widget ("Mouse", mouse);
-            if (has_touchpad) tabs += new Trackpad_Widget ("Touchpad", touchpad);
+            if (has_pointer) tabs += new Mouse_Widget ("Mouse", mouse, ipc);
+            if (has_touchpad) tabs += new Trackpad_Widget ("Touchpad", touchpad, ipc);
             return tabs;
         }
 
         void init_input_devices () {
-            var ipc_output = Functions.run_sway_ipc (Functions.Sway_IPC.get_inputs).get_array ();
+            var ipc_output = ipc.get_reply (Sway_commands.GET_IMPUTS).get_array ();
             foreach (var elem in ipc_output.get_elements ()) {
                 var obj = elem.get_object ();
                 Input_Types type = Input_Types.parse_string (obj.get_string_member ("type") ?? "");
@@ -104,8 +104,9 @@ namespace SwaySettings {
 
         protected Input_Tab (string tab_name,
                              Input_Types input_type,
-                             Input_Device input_dev) {
-            base (tab_name);
+                             Input_Device input_dev, IPC ipc) {
+            base (tab_name, ipc);
+
             this.input_type = input_type.parse ();
             this.input_dev = input_dev;
 
@@ -130,7 +131,7 @@ namespace SwaySettings {
         public abstract ArrayList<Gtk.Widget> get_options ();
 
         void write_new_settings (string str) {
-            Functions.set_sway_ipc_value (str);
+            ipc.run_command (str);
             string file_name = Strings.settings_folder_input_pointer;
             if (input_dev.type == Input_Types.touchpad) {
                 file_name = Strings.settings_folder_input_touchpad;
@@ -171,7 +172,7 @@ namespace SwaySettings {
                                         input_dev.settings.accel_profile,
                                         typeof (Inp_Dev_Settings.accel_profiles),
                                         (index) => {
-                var profile = (Inp_Dev_Settings.accel_profiles)index;
+                var profile = (Inp_Dev_Settings.accel_profiles) index;
                 input_dev.settings.accel_profile = profile;
                 write_new_settings (@"input type:$(input_type) accel_profile $(profile.parse())");
             });
@@ -233,7 +234,7 @@ namespace SwaySettings {
                                         input_dev.settings.click_method,
                                         typeof (Inp_Dev_Settings.click_methods),
                                         (index) => {
-                var profile = (Inp_Dev_Settings.click_methods)index;
+                var profile = (Inp_Dev_Settings.click_methods) index;
                 input_dev.settings.click_method = profile;
                 write_new_settings (@"input type:$(input_type) click_method $(profile.parse())");
             });

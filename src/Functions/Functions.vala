@@ -212,50 +212,6 @@ namespace SwaySettings {
             return wallpaper_paths;
         }
 
-        public static void set_wallpaper (string path) {
-            if (path == null) return;
-            string wall_dir = @"$(Environment.get_user_cache_dir())/wallpaper";
-            Posix.system (@"cp $(path) $(wall_dir)");
-            Posix.system (@"swaymsg \"output * bg $(wall_dir) fill\"");
-        }
-
-        public enum Sway_IPC {
-            get_bar_config,
-            get_marks,
-            get_workspaces,
-            get_binding_modes,
-            get_outputs,
-            send_tick,
-            get_binding_state,
-            get_seats,
-            subscribe,
-            get_config,
-            get_tree,
-            get_inputs,
-            get_version;
-
-            public static string parse (Sway_IPC val) {
-                EnumClass enumc = (EnumClass) typeof (Sway_IPC).class_ref ();
-                return enumc.get_value_by_name (val.to_string ()).value_nick.replace ("-", "_");
-            }
-        }
-
-        public static Json.Node run_sway_ipc (Sway_IPC val) {
-            string stdout;
-            string stderr;
-            int status;
-            string cmd = @"swaymsg -r -t $(Sway_IPC.parse (val))";
-            try {
-                Process.spawn_command_line_sync (cmd, out stdout, out stderr, out status);
-                var parser = new Json.Parser ();
-                parser.load_from_data (stdout);
-                return parser.get_root ();
-            } catch (Error e) {
-                print ("Error: %s\n", e.message);
-                Process.exit (1);
-            }
-        }
-
         public static File check_settings_folder_exists (string file_name) {
             string basePath = GLib.Environment.get_user_config_dir () + "/sway/.generated_settings";
             // Checks if directory exists. Creates one if none
@@ -296,10 +252,6 @@ namespace SwaySettings {
                 print ("Error: %s\n", e.message);
                 Process.exit (1);
             }
-        }
-
-        public static void set_sway_ipc_value (string command) {
-            Posix.system (@"swaymsg \"$(command)\"");
         }
 
         public static void set_default_for_mimes (default_app_data def_data,

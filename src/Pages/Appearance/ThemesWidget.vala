@@ -23,8 +23,8 @@ namespace SwaySettings {
 
         private Gtk.ListBox list_box;
 
-        public Themes_Widget (string tab_name) {
-            base (tab_name);
+        public Themes_Widget (string tab_name, IPC ipc) {
+            base (tab_name, ipc);
 
             var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
             list_box = new Gtk.ListBox ();

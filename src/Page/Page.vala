@@ -29,8 +29,11 @@ namespace SwaySettings {
 
         public string label;
 
-        protected Page (string label, Hdy.Deck deck) {
+        public IPC ipc;
+
+        protected Page (string label, Hdy.Deck deck, IPC ipc) {
             Object ();
+            this.ipc = ipc;
             this.label = label;
             header_bar.set_title (this.label);
             back_button.clicked.connect (() => {
@@ -70,8 +73,8 @@ namespace SwaySettings {
 
     public abstract class Page_Scroll : Page {
 
-        protected Page_Scroll (string label, Hdy.Deck deck) {
-            base (label, deck);
+        protected Page_Scroll (string label, Hdy.Deck deck, IPC ipc) {
+            base (label, deck, ipc);
             root_box.add (get_scroll_widget (set_child ()));
         }
 
@@ -84,8 +87,9 @@ namespace SwaySettings {
 
         protected Page_Tabbed (string label,
                                Hdy.Deck deck,
+                               IPC ipc,
                                string no_tabs_text = "Nothing here...") {
-            base (label, deck);
+            base (label, deck, ipc);
 
             stack = new Gtk.Stack ();
             stack.transition_type = Gtk.StackTransitionType.CROSSFADE;
@@ -136,8 +140,11 @@ namespace SwaySettings {
     public abstract class Page_Tab : Gtk.Box {
         public string tab_name;
 
-        protected Page_Tab (string tab_name) {
+        public IPC ipc;
+
+        protected Page_Tab (string tab_name, IPC ipc) {
             Object ();
+            this.ipc = ipc;
 
             this.orientation = Gtk.Orientation.VERTICAL;
             this.spacing = 0;

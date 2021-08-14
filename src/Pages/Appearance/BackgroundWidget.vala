@@ -29,13 +29,13 @@ namespace SwaySettings {
         private int list_image_height = 115;
         private int list_image_width = 154;
 
-        public Background_Widget (string tab_name) {
-            base (tab_name);
+        public Background_Widget (string tab_name, IPC ipc) {
+            base (tab_name, ipc);
 
             var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
             // preview_image
             set_preivew_image ();
-            preview_image.get_style_context().add_class("shadow");
+            preview_image.get_style_context ().add_class ("shadow");
             preview_image.halign = Gtk.Align.CENTER;
             preview_image.valign = Gtk.Align.START;
             preview_image.get_style_context ().add_class ("frame");
@@ -53,8 +53,15 @@ namespace SwaySettings {
             this.add (preview_image);
             box.add (wallpaper_box);
             box.show_all ();
-            this.add(Page.get_scroll_widget (box, false, true, int.MAX, int.MAX));
-            this.show_all();
+            this.add (Page.get_scroll_widget (box, false, true, int.MAX, int.MAX));
+            this.show_all ();
+        }
+
+        private void set_wallpaper (string path) {
+            if (path == null) return;
+            string wall_dir = @"$(Environment.get_user_cache_dir())/wallpaper";
+            Posix.system (@"cp $(path) $(wall_dir)");
+            ipc.run_command (@"output * bg $(wall_dir) fill");
         }
 
         void set_preivew_image () {
@@ -65,7 +72,7 @@ namespace SwaySettings {
         void add_system_wallpapers () {
             var wallpaper_header = new Gtk.Label ("System Wallpapers");
             wallpaper_header.xalign = 0.0f;
-            wallpaper_header.get_style_context().add_class("category-title");
+            wallpaper_header.get_style_context ().add_class ("category-title");
             var wallpaper_flow_box = new Gtk.FlowBox ();
             wallpaper_flow_box.max_children_per_line = 8;
             wallpaper_flow_box.min_children_per_line = 1;
@@ -78,7 +85,7 @@ namespace SwaySettings {
             wallpaper_flow_box.child_activated.connect ((widget) => {
                 List_Lazy_Image img = (List_Lazy_Image) widget.get_child ();
                 if (img.image_path != null) {
-                    Functions.set_wallpaper (img.image_path);
+                    set_wallpaper (img.image_path);
                     set_preivew_image ();
                 }
             });

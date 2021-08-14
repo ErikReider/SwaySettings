@@ -30,6 +30,7 @@ namespace SwaySettings {
 
         public Window (Gtk.Application app) {
             Object (application: app);
+            IPC ipc = new IPC();
 
             try {
                 Gtk.CssProvider css_provider = new Gtk.CssProvider ();
@@ -46,14 +47,14 @@ namespace SwaySettings {
                 new ArrayList<SettingsCategory ? >.wrap ({
                 SettingsCategory ("Desktop", {
                     SettingsItem ("preferences-desktop-wallpaper",
-                                  new Appearance_Page ("Appearance", deck)),
+                                  new Appearance_Page ("Appearance", deck, ipc)),
 
                     SettingsItem ("applications-other",
-                                  new Apps ("Applications", deck)),
+                                  new Apps ("Applications", deck, ipc)),
                 }),
                 SettingsCategory ("Hardware", {
                     SettingsItem ("input-mouse",
-                                  new Mouse_Page ("Inputs", deck)),
+                                  new Mouse_Page ("Inputs", deck, ipc)),
                 }),
             });
 
