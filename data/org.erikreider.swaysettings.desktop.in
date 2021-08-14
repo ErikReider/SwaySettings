@@ -1,5 +1,5 @@
 [Desktop Entry]
-Name=swaysettings
+Name=SwaySettings
 Exec=swaysettings
 Icon=org.erikreider.swaysettings
 Terminal=false
