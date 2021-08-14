@@ -2,23 +2,30 @@
 
 A GUI for configuring your sway desktop
 
-- Auto start apps
-- Default apps
-- GTK theme (GTK 3 and potentially GTK 2)
-- Pointer settings
-- Wallpaper (selected wallpaper will be located at .cache/wallpaper)
+## Features
+
+- Set and remove auto start apps
+- Change default apps
+- Change GTK theme (GTK 3 and potentially GTK 2)
+- Mouse and trackpad settings
+- Switch Wallpaper (selected wallpaper will be located at .cache/wallpaper)
 
 ## Install
 
-Currently the program won't be installed system-wide.
-The application needs to be started manually like below.
+### Arch
 
-### At the time of writing, the program assumes that the sway config is `~/.config/sway/config`
+Should soon be available on the AUR. An alternative to the AUR:
+
+``` zsh
+makepkg -si
+```
+
+### Other Distros
 
 ``` zsh
 meson build
 ninja -C build
-./build/src/swaysettings
+meson install -C build
 ```
 
 Add these lines to the end of your main sway config file
