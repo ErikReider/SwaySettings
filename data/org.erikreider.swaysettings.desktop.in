@@ -1,6 +1,6 @@
 [Desktop Entry]
-Name=sway-settings
-Exec=sway-settings
+Name=swaysettings
+Exec=swaysettings
 Icon=org.erikreider.swaysettings
 Terminal=false
 Type=Application

@@ -1,4 +1,4 @@
-sway_settings_sources = [
+swaysettings_sources = [
   'main.vala',
   'Strings.vala',
   'List_Item/List_Item.vala',
@@ -21,7 +21,7 @@ sway_settings_sources = [
   'Pages/Keybindings/Keybind_Variable.vala',
 ]
 
-sway_settings_deps = [
+swaysettings_deps = [
   dependency('gio-2.0', version: '>= 2.50'),
   dependency('gtk+-3.0', version: '>= 3.22'),
   dependency('libhandy-1', version: '>= 1.0.0'),
@@ -31,25 +31,17 @@ sway_settings_deps = [
   meson.get_compiler('vala').find_library('posix'),
 ]
 
-add_project_arguments (
-  '-DHANDY_USE_UNSTABLE_API',
-  language: 'c'
-)
-
-# FIXME Disable --disable-since-check after libhandy 1.0 is released
-add_project_arguments (
-  # '--disable-since-check',
-  language: 'vala'
-)
-
 gnome = import('gnome')
 
-sway_settings_sources += gnome.compile_resources('sway_settings-resources',
-  'sway_settings.gresource.xml',
+swaysettings_sources += gnome.compile_resources('swaysettings-resources',
+  'swaysettings.gresource.xml',
   c_name: 'sway_settings'
 )
 
-executable('sway-settings', sway_settings_sources,
-  vala_args: '--target-glib=2.50',  dependencies: sway_settings_deps,
+executable(
+  'swaysettings',
+  swaysettings_sources,
+  vala_args: '--target-glib=2.50',
+  dependencies: swaysettings_deps,
   install: true,
 )

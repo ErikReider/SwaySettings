@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schemalist gettext-domain="sway-settings">
+<schemalist gettext-domain="swaysettings">
 	<schema id="org.erikreider.swaysettings" path="/org/erikreider/swaysettings/">
 	</schema>
 </schemalist>
