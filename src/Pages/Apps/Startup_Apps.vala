@@ -25,8 +25,8 @@ namespace SwaySettings {
 
         ArrayList<DesktopAppInfo> startup_apps;
 
-        public Startup_Apps (string tab_label) {
-            base (tab_label);
+        public Startup_Apps (string tab_label, IPC ipc) {
+            base (tab_label, ipc);
 
             var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 8);
             list_box = new Gtk.ListBox ();

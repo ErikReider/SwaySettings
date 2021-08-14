@@ -104,8 +104,7 @@ namespace SwaySettings {
 
                 Bytes message = ByteArray.free_to_bytes (np);
 
-                var len = socket.send (message.get_data ());
-                print (len.to_string () + "\n");
+                socket.send (message.get_data ());
             } catch (Error e) {
                 stderr.printf (e.message + "\n");
                 return false;

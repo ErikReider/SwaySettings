@@ -21,8 +21,8 @@ using Gee;
 namespace SwaySettings {
     public class Trackpad_Widget : Input_Tab {
 
-        public Trackpad_Widget (string tab_name, Input_Device touchpad) {
-            base (tab_name, Input_Types.touchpad, touchpad);
+        public Trackpad_Widget (string tab_name, Input_Device touchpad, IPC ipc) {
+            base (tab_name, Input_Types.touchpad, touchpad, ipc);
         }
 
         public override ArrayList<Gtk.Widget> get_options () {

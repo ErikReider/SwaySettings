@@ -32,8 +32,8 @@ namespace SwaySettings {
             default_app_data ("File Browser", "inode/directory"),
         });
 
-        public Default_Apps (string tab_label) {
-            base (tab_label);
+        public Default_Apps (string tab_label, IPC ipc) {
+            base (tab_label, ipc);
 
             var list_box = new Gtk.ListBox ();
             list_box.selection_mode = Gtk.SelectionMode.NONE;
