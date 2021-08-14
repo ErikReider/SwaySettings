@@ -3,5 +3,5 @@ build
 *.ui#
 
 SwaySettings
-swaysettings*
+swaysettings-*
 

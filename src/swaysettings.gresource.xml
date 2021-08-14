@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/org/erikreider/swaysettings">
+      <file>Window/Window.ui</file>
+      <file>Page/Page.ui</file>
+      <file>Item/Item.ui</file>
+      <file>List_Item/List_Item.ui</file>
+      <file>Pages/Apps/Startup_Apps_Item.ui</file>
+      <file>Pages/Apps/Desktop_App_Chooser.ui</file>
+  </gresource>
+</gresources>
