@@ -61,6 +61,17 @@ namespace SwaySettings {
             }
         }
 
+        ~IPC () {
+            if (socket != null && !socket.is_closed ()) {
+                try {
+                    socket.close ();
+                } catch (Error e) {
+                    stderr.printf (e.message + "\n");
+                    Process.exit (1);
+                }
+            }
+        }
+
         private uint8[] int32_to_uint8_array (int32 input) {
             Variant val = new Variant.int32 (input);
             return val.get_data_as_bytes ().get_data ();
