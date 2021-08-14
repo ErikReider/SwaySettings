@@ -38,9 +38,6 @@ namespace SwaySettings {
     }
 
     public class IPC {
-
-        private string socket_path = GLib.Environment.get_variable ("SWAYSOCK");
-
         private uint8[] magic_number = "i3-ipc".data;
         private int bytes_to_payload = 14;
 
@@ -54,7 +51,7 @@ namespace SwaySettings {
                 socket = new Socket (GLib.SocketFamily.UNIX,
                                      GLib.SocketType.STREAM,
                                      GLib.SocketProtocol.DEFAULT);
-                socket.connect (new GLib.UnixSocketAddress (socket_path));
+                socket.connect (new GLib.UnixSocketAddress (get_sock_path ()));
                 socket.set_blocking (true);
             } catch (Error e) {
                 stderr.printf (e.message + "\n");
@@ -70,6 +67,25 @@ namespace SwaySettings {
                     Process.exit (1);
                 }
             }
+        }
+
+        private string get_sock_path () {
+            string[] paths = {
+                GLib.Environment.get_variable ("SWAYSOCK"),
+                GLib.Environment.get_variable ("I3SOCK"),
+            };
+            string path = null;
+            foreach (string p in paths) {
+                if (p != null) {
+                    path = p;
+                    break;
+                }
+            }
+            if (path == null) {
+                stderr.printf ("COULD NOT FIND SWAY SOCKET ENVIRONMENT VARIABLE!!!");
+                Process.exit (1);
+            }
+            return path;
         }
 
         private uint8[] int32_to_uint8_array (int32 input) {
