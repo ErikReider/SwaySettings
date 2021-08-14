@@ -1,4 +1,4 @@
-# Sway-Settings
+# SwaySettings
 
 A GUI for configuring your sway desktop
 
