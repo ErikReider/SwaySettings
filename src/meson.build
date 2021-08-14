@@ -1,5 +1,6 @@
 swaysettings_sources = [
   'main.vala',
+  'IPC/IPC.vala',
   'Strings.vala',
   'List_Item/List_Item.vala',
   'Functions/Functions.vala',
@@ -16,9 +17,6 @@ swaysettings_sources = [
   'Pages/Apps/Apps.vala',
   'Pages/Apps/Default_Apps.vala',
   'Pages/Apps/Startup_Apps.vala',
-  'Pages/Keybindings/Keybindings_Page.vala',
-  'Pages/Keybindings/Keybind_Action.vala',
-  'Pages/Keybindings/Keybind_Variable.vala',
 ]
 
 swaysettings_deps = [

@@ -31,8 +31,6 @@ namespace SwaySettings {
         public Window (Gtk.Application app) {
             Object (application: app);
 
-            Functions.check_program_settings_folder_exists();
-
             try {
                 Gtk.CssProvider css_provider = new Gtk.CssProvider ();
                 css_provider.load_from_path ("src/style.css");
@@ -56,10 +54,6 @@ namespace SwaySettings {
                 SettingsCategory ("Hardware", {
                     SettingsItem ("input-mouse",
                                   new Mouse_Page ("Inputs", deck)),
-                }),
-                SettingsCategory ("General", {
-                    SettingsItem ("accessories-character-map",
-                                  new Keybindings_Page ("Keybindings", deck)),
                 }),
             });
 
