@@ -14,7 +14,9 @@ A GUI for configuring your sway desktop
 
 ### Arch
 
-Should soon be available on the AUR. An alternative to the AUR:
+The package is available on the 
+[AUR](https://aur.archlinux.org/packages/swaysettings-git/) \
+Or:
 
 ``` zsh
 makepkg -si

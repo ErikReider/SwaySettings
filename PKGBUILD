@@ -20,6 +20,7 @@ pkgver() {
 prepare() {
   cd $_pkgfoldername
   git checkout main
+  git pull
 }
 
 build() {
