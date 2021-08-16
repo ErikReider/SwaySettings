@@ -183,7 +183,10 @@ namespace SwaySettings {
         }
 
         public static ArrayList<string> get_wallpapers () {
-            ArrayList<string> default_paths = new ArrayList<string>.wrap ({ "/usr/share/backgrounds" });
+            ArrayList<string> default_paths = new ArrayList<string>.wrap ({
+                "/usr/share/backgrounds",
+                "/usr/share/wallpapers"
+            });
 
             ArrayList<string> wallpaper_paths = new ArrayList<string>();
             var supported_formats = new ArrayList<string>.wrap ({ "jpg" });
