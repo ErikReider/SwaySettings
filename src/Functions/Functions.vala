@@ -291,5 +291,9 @@ namespace SwaySettings {
         public static async void remove_app_from_startup (string filename) {
             Posix.system (@"rm $filename");
         }
+
+        public static bool is_swaync_installed () {
+            return GLib.Environment.find_program_in_path ("swaync") != null;
+        }
     }
 }

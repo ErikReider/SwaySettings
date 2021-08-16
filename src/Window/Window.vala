@@ -30,7 +30,7 @@ namespace SwaySettings {
 
         public Window (Gtk.Application app) {
             Object (application: app);
-            IPC ipc = new IPC();
+            IPC ipc = new IPC ();
 
             try {
                 Gtk.CssProvider css_provider = new Gtk.CssProvider ();
@@ -51,6 +51,9 @@ namespace SwaySettings {
 
                     SettingsItem ("applications-other",
                                   new Apps ("Applications", deck, ipc)),
+                    SettingsItem ("mail-unread",
+                                  new Swaync ("Sway Notification Center", deck, ipc),
+                                  !Functions.is_swaync_installed ()),
                 }),
                 SettingsCategory ("Hardware", {
                     SettingsItem ("input-mouse",
@@ -84,11 +87,13 @@ namespace SwaySettings {
                     deck.navigate (Hdy.NavigationDirection.FORWARD);
                 });
                 foreach (var settings_item in category.items) {
+                    if (settings_item.hidden) continue;
                     var item = new Item (settings_item.page.label,
                                          settings_item.image,
                                          settings_item);
                     flow_box.add (item);
                 }
+                if (flow_box.get_children ().length () <= 0) continue;
 
                 box.add (title);
                 box.add (flow_box);
@@ -112,10 +117,12 @@ namespace SwaySettings {
     public struct SettingsItem {
         string image;
         Page page;
+        bool hidden;
 
-        SettingsItem (string image, Page page) {
+        SettingsItem (string image, Page page, bool hidden = false) {
             this.image = image;
             this.page = page;
+            this.hidden = hidden;
         }
     }
 }
