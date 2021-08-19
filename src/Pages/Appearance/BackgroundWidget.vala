@@ -60,7 +60,7 @@ namespace SwaySettings {
         private void set_wallpaper (string path) {
             if (path == null) return;
             string wall_dir = @"$(Environment.get_user_cache_dir())/wallpaper";
-            Posix.system (@"cp $(path) $(wall_dir)");
+            Posix.system (@"cp $(path.replace (" ", "\\ ")) $(wall_dir)");
             ipc.run_command (@"output * bg $(wall_dir) fill");
         }
 
