@@ -39,6 +39,7 @@ namespace SwaySettings {
         public static int walk_through_dir (string path, Delegate_walk_func func) {
             try {
                 var directory = File.new_for_path (path);
+                if (!directory.query_exists ()) return 1;
                 var enumerator = directory.enumerate_children (FileAttribute.STANDARD_NAME, 0);
                 FileInfo file_prop;
                 while ((file_prop = enumerator.next_file ()) != null) {
@@ -185,7 +186,9 @@ namespace SwaySettings {
         public static ArrayList<string> get_wallpapers () {
             ArrayList<string> default_paths = new ArrayList<string>.wrap ({
                 "/usr/share/backgrounds",
-                "/usr/share/wallpapers"
+                "/usr/share/wallpapers",
+                "/usr/local/share/wallpapers",
+                "/usr/local/share/backgrounds",
             });
 
             ArrayList<string> wallpaper_paths = new ArrayList<string>();
