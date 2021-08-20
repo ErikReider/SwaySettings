@@ -171,13 +171,8 @@ namespace SwaySettings {
         }
 
         private string get_config_path (out bool is_valid) {
-            string dir_path = Path.build_path (Path.DIR_SEPARATOR.to_string (),
-                                               GLib.Environment.get_user_config_dir (),
-                                               "swaync");
-            string config_path = Path.build_path (Path.DIR_SEPARATOR.to_string (),
-                                                  dir_path, "config.json");
             try {
-                var dir = File.new_for_path (dir_path);
+                var dir = File.new_for_path (Functions.get_swaync_config_path ());
                 if (!dir.query_exists ()) {
                     dir.make_directory ();
                 }

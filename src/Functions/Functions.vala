@@ -322,5 +322,29 @@ namespace SwaySettings {
             }
             return path;
         }
+
+        public static string get_swaync_config_path () {
+            string[] paths = {};
+            paths += Path.build_path (Path.DIR_SEPARATOR.to_string (),
+                                      GLib.Environment.get_user_config_dir (),
+                                      "swaync/config.json");
+            foreach (var path in GLib.Environment.get_system_config_dirs ()) {
+                paths += Path.build_path (Path.DIR_SEPARATOR.to_string (),
+                                          path, "swaync/config.json");
+            }
+
+            string path = "";
+            foreach (string try_path in paths) {
+                if (File.new_for_path (try_path).query_exists ()) {
+                    path = try_path;
+                    break;
+                }
+            }
+            if (path == "") {
+                stderr.printf ("COULD NOT FIND CONFIG FILE! REINSTALL THE PACKAGE!\n");
+                Process.exit (1);
+            }
+            return path;
+        }
     }
 }
