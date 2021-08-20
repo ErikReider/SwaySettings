@@ -30,6 +30,7 @@ swaysettings_deps = [
   meson.get_compiler('vala').find_library('posix'),
 ]
 
+sysconfdir = get_option('sysconfdir')
 gnome = import('gnome')
 
 swaysettings_sources += gnome.compile_resources('swaysettings-resources',
@@ -44,3 +45,4 @@ executable(
   dependencies: swaysettings_deps,
   install: true,
 )
+install_data('style.css', install_dir : join_paths(sysconfdir, 'xdg/swaysettings'))

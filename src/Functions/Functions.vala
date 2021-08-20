@@ -301,5 +301,26 @@ namespace SwaySettings {
         public static bool is_swaync_installed () {
             return GLib.Environment.find_program_in_path ("swaync") != null;
         }
+
+        public static string get_style_path () {
+            string[] paths = {};
+            foreach (var path in GLib.Environment.get_system_config_dirs ()) {
+                paths += Path.build_path (Path.DIR_SEPARATOR.to_string (),
+                                          path, "swaysettings/style.css");
+            }
+
+            string path = "";
+            foreach (string try_path in paths) {
+                if (File.new_for_path (try_path).query_exists ()) {
+                    path = try_path;
+                    break;
+                }
+            }
+            if (path == "") {
+                stderr.printf ("COULD NOT FIND CSS FILE! REINSTALL THE PACKAGE!\n");
+                Process.exit (1);
+            }
+            return path;
+        }
     }
 }

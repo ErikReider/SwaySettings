@@ -34,7 +34,7 @@ namespace SwaySettings {
 
             try {
                 Gtk.CssProvider css_provider = new Gtk.CssProvider ();
-                css_provider.load_from_path ("src/style.css");
+                css_provider.load_from_path (Functions.get_style_path());
                 Gtk.StyleContext.
                  add_provider_for_screen (Gdk.Screen.get_default (),
                                           css_provider,
