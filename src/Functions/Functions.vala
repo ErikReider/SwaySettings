@@ -6,10 +6,9 @@ namespace SwaySettings {
 
         static unowned string settings_gnome_desktop = "org.gnome.desktop.interface";
 
-        public static void scale_image_widget (ref Gtk.Image img, string file_path, int wanted_width, int wanted_height) {
+        public static void scale_image_widget (ref Gtk.Image img, string path, int width, int height) {
             try {
-                Gdk.Pixbuf pix_buf = new Gdk.Pixbuf.from_file (file_path);
-                pix_buf = pix_buf.scale_simple (wanted_width, wanted_height, Gdk.InterpType.BILINEAR);
+                Gdk.Pixbuf pix_buf = new Gdk.Pixbuf.from_file_at_scale (path, width, height, true);
                 img.set_from_pixbuf (pix_buf);
             } catch (Error e) {
                 print ("Error: %s\n", e.message);
