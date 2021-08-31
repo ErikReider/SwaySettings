@@ -11,12 +11,22 @@ namespace SwaySettings {
         private int list_image_height = 144;
         private int list_image_width = 256;
 
+        private Gtk.FlowBox system_wallpaper_flow_box = new Gtk.FlowBox ();
+
+        private ArrayList<string> system_wallpapers = new ArrayList<string>();
+
         public Background_Widget (string tab_name, IPC ipc) {
             base (tab_name, ipc);
 
-            var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
-            // preview_image
-            set_preivew_image ();
+            realize.connect (()=> {
+                set_preivew_image ();
+                add_wallpapers (Functions.get_system_wallpapers (),
+                                ref system_wallpapers,
+                                ref system_wallpaper_flow_box);
+                this.show_all ();
+            });
+
+            preview_image.set_size_request (preview_image_width, preview_image_height);
             preview_image.get_style_context ().add_class ("shadow");
             preview_image.halign = Gtk.Align.CENTER;
             preview_image.valign = Gtk.Align.START;
@@ -26,16 +36,13 @@ namespace SwaySettings {
             preview_image.set_margin_start (margin);
             preview_image.set_margin_bottom (margin);
             preview_image.set_margin_end (margin);
+            this.add (preview_image);
 
             wallpaper_box.expand = true;
             wallpaper_box.get_style_context ().add_class ("view");
+            get_wallpaper_container (ref system_wallpaper_flow_box, "System Wallpapers");
+            this.add (Page.get_scroll_widget (wallpaper_box, false, true, int.MAX, int.MAX));
 
-            add_system_wallpapers ();
-
-            this.add (preview_image);
-            box.add (wallpaper_box);
-            box.show_all ();
-            this.add (Page.get_scroll_widget (box, false, true, int.MAX, int.MAX));
             this.show_all ();
         }
 
@@ -55,20 +62,19 @@ namespace SwaySettings {
                                                      true);
         }
 
-        void add_system_wallpapers () {
-            var wallpaper_header = new Gtk.Label ("System Wallpapers");
-            wallpaper_header.xalign = 0.0f;
-            wallpaper_header.get_style_context ().add_class ("category-title");
-            var wallpaper_flow_box = new Gtk.FlowBox ();
-            wallpaper_flow_box.max_children_per_line = 8;
-            wallpaper_flow_box.min_children_per_line = 1;
-            wallpaper_flow_box.homogeneous = true;
-            wallpaper_flow_box.set_margin_start (4);
-            wallpaper_flow_box.set_margin_top (4);
-            wallpaper_flow_box.set_margin_end (4);
-            wallpaper_flow_box.set_margin_bottom (4);
+        void get_wallpaper_container(ref Gtk.FlowBox flow_box, string title) {
+            var header = new Gtk.Label (title);
+            header.xalign = 0.0f;
+            header.get_style_context ().add_class ("category-title");
+            flow_box.max_children_per_line = 8;
+            flow_box.min_children_per_line = 1;
+            flow_box.homogeneous = true;
+            flow_box.set_margin_start (4);
+            flow_box.set_margin_top (4);
+            flow_box.set_margin_end (4);
+            flow_box.set_margin_bottom (4);
 
-            wallpaper_flow_box.child_activated.connect ((widget) => {
+            flow_box.child_activated.connect ((widget) => {
                 List_Lazy_Image img = (List_Lazy_Image) widget.get_child ();
                 if (img.image_path != null) {
                     set_wallpaper (img.image_path);
@@ -76,10 +82,25 @@ namespace SwaySettings {
                 }
             });
 
-            add_images.begin (Functions.get_wallpapers (), wallpaper_flow_box);
+            wallpaper_box.add (header);
+            wallpaper_box.add (flow_box);
+        }
 
-            wallpaper_box.add (wallpaper_header);
-            wallpaper_box.add (wallpaper_flow_box);
+        void add_wallpapers (ArrayList<string> wallpapers,
+                             ref ArrayList<string> compare, ref Gtk.FlowBox flow_box) {
+            if(wallpapers.size == 0) return;
+            if(wallpapers.size == compare.size) {
+                bool equals = true;
+                for (int i = 0; i < wallpapers.size; i++) {
+                    if (wallpapers[i] != compare[i]) {
+                        equals = false;
+                        break;
+                    }
+                }
+                if (equals) return;
+            }
+            compare = wallpapers;
+            add_images.begin (compare, flow_box);
         }
 
         async void add_images (ArrayList<string> paths, Gtk.FlowBox flow_box) {

@@ -155,7 +155,7 @@ namespace SwaySettings {
             return themes;
         }
 
-        public static ArrayList<string> get_wallpapers () {
+        public static ArrayList<string> get_system_wallpapers () {
             ArrayList<string> default_paths = new ArrayList<string>.wrap ({
                 "/usr/share/backgrounds",
                 "/usr/share/wallpapers",
@@ -187,6 +187,7 @@ namespace SwaySettings {
                     }
                 });
             }
+            wallpaper_paths.sort ((a, b) => a == b? 0: (a < b? -1: 1));
             return wallpaper_paths;
         }
 
