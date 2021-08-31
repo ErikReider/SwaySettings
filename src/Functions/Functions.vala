@@ -6,15 +6,6 @@ namespace SwaySettings {
 
         static unowned string settings_gnome_desktop = "org.gnome.desktop.interface";
 
-        public static void scale_image_widget (ref Gtk.Image img, string path, int width, int height) {
-            try {
-                Gdk.Pixbuf pix_buf = new Gdk.Pixbuf.from_file_at_scale (path, width, height, true);
-                img.set_from_pixbuf (pix_buf);
-            } catch (Error e) {
-                print ("Error: %s\n", e.message);
-            }
-        }
-
         public delegate void Delegate_walk_func (FileInfo file_info);
 
         public static int walk_through_dir (string path, Delegate_walk_func func) {

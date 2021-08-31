@@ -3,13 +3,13 @@ using Gee;
 namespace SwaySettings {
     public class Background_Widget : Page_Tab {
 
-        private Gtk.Image preview_image = new Gtk.Image ();
-        private int preview_image_height = 150;
-        private int preview_image_width = 275;
+        private Granite.AsyncImage preview_image = new Granite.AsyncImage (true, false);
+        private int preview_image_height = 216;
+        private int preview_image_width = 384;
         // Parent for all wallpaper categories
         private Gtk.Box wallpaper_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
-        private int list_image_height = 115;
-        private int list_image_width = 154;
+        private int list_image_height = 144;
+        private int list_image_width = 256;
 
         public Background_Widget (string tab_name, IPC ipc) {
             base (tab_name, ipc);
@@ -48,7 +48,11 @@ namespace SwaySettings {
 
         void set_preivew_image () {
             string path = @"$(GLib.Environment.get_home_dir())/.cache/wallpaper";
-            Functions.scale_image_widget (ref preview_image, path, preview_image_width, preview_image_height);
+            File file = File.new_for_path (path);
+            preview_image.set_from_file_async.begin (file,
+                                                     preview_image_width,
+                                                     preview_image_height,
+                                                     true);
         }
 
         void add_system_wallpapers () {
