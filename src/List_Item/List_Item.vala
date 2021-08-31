@@ -105,7 +105,7 @@ namespace SwaySettings {
 
         public Granite.AsyncImage image;
 
-        public List_Lazy_Image (string image_path, int requested_height, int requested_width) {
+        public List_Lazy_Image (string image_path, int height, int width) {
             Object ();
             this.get_style_context ().add_class ("shadow");
             this.image_path = image_path;
@@ -119,32 +119,12 @@ namespace SwaySettings {
 
             image = new Granite.AsyncImage (true, false);
             image.get_style_context ().add_class ("background-image-item");
-            image.set_size_request (requested_width, requested_height);
+            image.set_size_request (width, height);
             this.add (image);
             this.show_all ();
 
-            var thread_func = new Image_Load_Thread (image_path, ref image, requested_width, requested_height);
-            new Thread<void>(image_path, thread_func.run);
-        }
-
-        class Image_Load_Thread {
-
-            private string path;
-            private int img_w;
-            private int img_h;
-            private Granite.AsyncImage image;
-
-            public Image_Load_Thread (string path, ref Granite.AsyncImage image, int img_w, int img_h) {
-                this.path = path;
-                this.image = image;
-                this.img_w = img_w;
-                this.img_h = img_h;
-            }
-
-            public void run () {
-                File file = File.new_for_path (path);
-                image.set_from_file_async.begin(file, img_w, img_h, true);
-            }
+            File file = File.new_for_path (image_path);
+            image.set_from_file_async.begin (file, width, height, true);
         }
     }
 }
