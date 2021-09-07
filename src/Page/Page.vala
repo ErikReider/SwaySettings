@@ -5,9 +5,11 @@ namespace SwaySettings {
         [GtkChild]
         public unowned Gtk.Box root_box;
         [GtkChild]
-        public unowned Hdy.HeaderBar header_bar;
-        [GtkChild]
         public unowned Gtk.Button back_button;
+        [GtkChild]
+        public unowned Gtk.Label title;
+        [GtkChild]
+        public unowned Gtk.ButtonBox button_box;
 
         public string label;
 
@@ -17,7 +19,7 @@ namespace SwaySettings {
             Object ();
             this.ipc = ipc;
             this.label = label;
-            header_bar.set_title (this.label);
+            title.set_text (this.label);
             back_button.clicked.connect (() => {
                 deck.navigate (Hdy.NavigationDirection.BACK);
             });
@@ -60,6 +62,13 @@ namespace SwaySettings {
             root_box.add (get_scroll_widget (set_child ()));
         }
 
+        public void refresh () {
+            foreach (var child in root_box.get_children ()) {
+                root_box.remove (child);
+            }
+            root_box.add (get_scroll_widget (set_child ()));
+        }
+
         public abstract Gtk.Widget set_child ();
     }
 
@@ -76,10 +85,10 @@ namespace SwaySettings {
             stack = new Gtk.Stack ();
             stack.transition_type = Gtk.StackTransitionType.CROSSFADE;
             var stack_switcher = new Gtk.StackSwitcher ();
-            stack_switcher.button_release_event.connect ((widget) => {
-                header_bar.set_subtitle (stack.visible_child_name);
-                return false;
-            });
+            // stack_switcher.button_release_event.connect ((widget) => {
+            // subtitle.set_text (stack.visible_child_name);
+            // return false;
+            // });
             stack_switcher.stack = stack;
             stack_switcher.set_halign (Gtk.Align.CENTER);
             stack_switcher.set_margin_top (8);
@@ -101,15 +110,14 @@ namespace SwaySettings {
                 stack.add (new Gtk.Label (no_tabs_text));
                 stack.show_all ();
             } else {
-                if (all_tabs.length == 1) {
-                    stack_switcher.visible = false;
-                }
                 foreach (var tab in all_tabs) {
                     stack.add_titled (tab, tab.tab_name, tab.tab_name);
                 }
+                if (all_tabs.length == 1) {
+                    stack_switcher.visible = false;
+                    title.set_text (stack.visible_child_name);
+                }
             }
-
-            header_bar.set_subtitle (stack.visible_child_name);
         }
 
         public override void on_back (Hdy.Deck deck) {
