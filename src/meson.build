@@ -1,5 +1,6 @@
 swaysettings_sources = [
   'main.vala',
+  'Widgets/ThumbnailImage/ThumbnailImage.vala',
   'IPC/IPC.vala',
   'Strings.vala',
   'List_Item/List_Item.vala',

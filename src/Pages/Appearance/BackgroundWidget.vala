@@ -13,7 +13,7 @@ namespace SwaySettings {
 
         private Gtk.FlowBox system_wallpaper_flow_box = new Gtk.FlowBox ();
 
-        private ArrayList<string> system_wallpapers = new ArrayList<string>();
+        private ArrayList<Wallpaper ?> system_wallpapers = new ArrayList<Wallpaper ?>();
 
         public Background_Widget (string tab_name, IPC ipc) {
             base (tab_name, ipc);
@@ -28,6 +28,7 @@ namespace SwaySettings {
 
             preview_image.set_size_request (preview_image_width, preview_image_height);
             preview_image.get_style_context ().add_class ("shadow");
+            preview_image.get_style_context ().add_class ("background-image-item");
             preview_image.halign = Gtk.Align.CENTER;
             preview_image.valign = Gtk.Align.START;
             preview_image.get_style_context ().add_class ("frame");
@@ -75,9 +76,9 @@ namespace SwaySettings {
             flow_box.set_margin_bottom (4);
 
             flow_box.child_activated.connect ((widget) => {
-                List_Lazy_Image img = (List_Lazy_Image) widget.get_child ();
+                ThumbnailImage img = (ThumbnailImage) widget.get_child ();
                 if (img.image_path != null) {
-                    set_wallpaper (img.image_path);
+                    set_wallpaper (img.wp.path);
                     set_preivew_image ();
                 }
             });
@@ -86,8 +87,9 @@ namespace SwaySettings {
             wallpaper_box.add (flow_box);
         }
 
-        void add_wallpapers (ArrayList<string> wallpapers,
-                             ref ArrayList<string> compare, ref Gtk.FlowBox flow_box) {
+        void add_wallpapers (ArrayList<Wallpaper?> wallpapers,
+                             ref ArrayList<Wallpaper?> compare,
+                             ref Gtk.FlowBox flow_box) {
             if(wallpapers.size == 0) return;
             if(wallpapers.size == compare.size) {
                 bool equals = true;
@@ -103,9 +105,11 @@ namespace SwaySettings {
             add_images.begin (compare, flow_box);
         }
 
-        async void add_images (ArrayList<string> paths, Gtk.FlowBox flow_box) {
+        async void add_images (ArrayList<Wallpaper ?> paths, Gtk.FlowBox flow_box) {
+            bool checked_folder_exists = false;
             foreach (var path in paths) {
-                flow_box.add (new List_Lazy_Image (path, list_image_height, list_image_width));
+                var item = new List_Lazy_Image (path, list_image_height, list_image_width, ref checked_folder_exists);
+                flow_box.add (item);
                 Idle.add (add_images.callback);
                 yield;
             }

@@ -2,11 +2,17 @@ using Gee;
 
 namespace SwaySettings {
 
+    public struct Wallpaper {
+        string path;
+        string thumbnail_path;
+        bool thumbnail_valid;
+    }
+
     public class Functions {
 
         static unowned string settings_gnome_desktop = "org.gnome.desktop.interface";
 
-        public delegate void Delegate_walk_func (FileInfo file_info);
+        public delegate void Delegate_walk_func (FileInfo file_info, File file);
 
         public static int walk_through_dir (string path, Delegate_walk_func func) {
             try {
@@ -15,7 +21,7 @@ namespace SwaySettings {
                 var enumerator = directory.enumerate_children (FileAttribute.STANDARD_NAME, 0);
                 FileInfo file_prop;
                 while ((file_prop = enumerator.next_file ()) != null) {
-                    func (file_prop);
+                    func (file_prop, directory);
                 }
             } catch (Error e) {
                 print ("Error: %s\n", e.message);
@@ -155,7 +161,7 @@ namespace SwaySettings {
             return themes;
         }
 
-        public static ArrayList<string> get_system_wallpapers () {
+        public static ArrayList<Wallpaper ? > get_system_wallpapers () {
             ArrayList<string> default_paths = new ArrayList<string>.wrap ({
                 "/usr/share/backgrounds",
                 "/usr/share/wallpapers",
@@ -163,20 +169,44 @@ namespace SwaySettings {
                 "/usr/local/share/backgrounds",
             });
 
-            ArrayList<string> wallpaper_paths = new ArrayList<string>();
+            ArrayList<Wallpaper ? > wallpaper_paths = new ArrayList<Wallpaper ? >();
             var supported_formats = new ArrayList<string>.wrap ({ "jpg" });
 
             Gdk.Pixbuf.get_formats ().foreach ((pxfmt) => supported_formats.add (pxfmt.get_name ()));
 
             for (int i = 0; i < default_paths.size; i++) {
                 string path = default_paths[i];
-                walk_through_dir (path, (file_info) => {
+                walk_through_dir (path, (file_info, file) => {
                     switch (file_info.get_file_type ()) {
                         case GLib.FileType.REGULAR:
+                            if (file_info.get_is_hidden ()
+                                || file_info.get_is_backup ()
+                                || file_info.get_is_symlink ()) {
+                                return;
+                            }
                             string name = file_info.get_name ();
                             string suffix = name[name.last_index_of_char ('.') + 1 :];
                             if (supported_formats.contains (suffix)) {
-                                wallpaper_paths.add (path + "/" + file_info.get_name ());
+                                Wallpaper wp = Wallpaper ();
+                                wp.path = path + "/" + file_info.get_name ();
+                                try {
+                                    string[] required = {
+                                        FileAttribute.THUMBNAIL_PATH,
+                                        FileAttribute.THUMBNAIL_IS_VALID
+                                    };
+                                    var info = File.new_for_path (wp.path).query_info (
+                                        string.joinv (",", required),
+                                        GLib.FileQueryInfoFlags.NONE);
+                                    string thumb_path = info.get_attribute_as_string (
+                                        FileAttribute.THUMBNAIL_PATH);
+                                    bool thumb_valid = info.get_attribute_boolean (
+                                        FileAttribute.THUMBNAIL_IS_VALID);
+                                    wp.thumbnail_path = thumb_path;
+                                    wp.thumbnail_valid = thumb_valid;
+                                } catch (Error e) {
+                                    print ("Error: %s\n", e.message);
+                                }
+                                wallpaper_paths.add (wp);
                             }
                             break;
                         case GLib.FileType.DIRECTORY:
@@ -187,7 +217,6 @@ namespace SwaySettings {
                     }
                 });
             }
-            wallpaper_paths.sort ((a, b) => a == b? 0: (a < b? -1: 1));
             return wallpaper_paths;
         }
 

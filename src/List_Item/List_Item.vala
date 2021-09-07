@@ -99,16 +99,13 @@ namespace SwaySettings {
         }
     }
 
-    public class List_Lazy_Image : Gtk.Box {
+    public class List_Lazy_Image : Gtk.FlowBoxChild {
 
-        public string image_path;
-
-        public Granite.AsyncImage image;
-
-        public List_Lazy_Image (string image_path, int height, int width) {
-            Object ();
+        public List_Lazy_Image (Wallpaper wp,
+                                int height,
+                                int width,
+                                ref bool checked_folder_exists) {
             this.get_style_context ().add_class ("shadow");
-            this.image_path = image_path;
 
             this.valign = Gtk.Align.CENTER;
             this.halign = Gtk.Align.CENTER;
@@ -117,14 +114,9 @@ namespace SwaySettings {
             this.set_margin_end (8);
             this.set_margin_bottom (8);
 
-            image = new Granite.AsyncImage (true, false);
-            image.get_style_context ().add_class ("background-image-item");
-            image.set_size_request (width, height);
-            this.add (image);
-            this.show_all ();
+            this.add (new ThumbnailImage (wp, height, width, ref checked_folder_exists));
 
-            File file = File.new_for_path (image_path);
-            image.set_from_file_async.begin (file, width, height, true);
+            this.show_all ();
         }
     }
 }
