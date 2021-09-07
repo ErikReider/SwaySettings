@@ -313,10 +313,6 @@ namespace SwaySettings {
                     break;
                 }
             }
-            if (path == "") {
-                stderr.printf ("COULD NOT FIND CONFIG FILE! REINSTALL THE PACKAGE!\n");
-                Process.exit (1);
-            }
             return path;
         }
     }

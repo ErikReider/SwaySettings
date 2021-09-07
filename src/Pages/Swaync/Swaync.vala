@@ -91,6 +91,7 @@ namespace SwaySettings {
 
         private ConfigModel read_file (string path) {
             try {
+                if (path.length == 0) return new ConfigModel ();
                 Json.Parser parser = new Json.Parser ();
                 parser.load_from_file (path);
                 var node = parser.get_root ();
