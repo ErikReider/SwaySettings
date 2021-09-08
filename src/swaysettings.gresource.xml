@@ -5,7 +5,7 @@
       <file>Page/Page.ui</file>
       <file>Item/Item.ui</file>
       <file>List_Item/List_Item.ui</file>
-      <file>Pages/Apps/Startup_Apps_Item.ui</file>
-      <file>Pages/Apps/Desktop_App_Chooser.ui</file>
+      <file>Pages/StartupApps/Startup_Apps_Item.ui</file>
+      <file>Pages/StartupApps/Startup_Apps_Chooser.ui</file>
   </gresource>
 </gresources>

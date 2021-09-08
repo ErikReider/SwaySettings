@@ -1,15 +1,17 @@
 using Gee;
 
 namespace SwaySettings {
-    public class Startup_Apps : Page_Tab {
+    public class Startup_Apps : Page_Scroll {
 
         Gtk.ListBox list_box;
 
         ArrayList<DesktopAppInfo> startup_apps;
 
-        public Startup_Apps (string tab_label, IPC ipc) {
-            base (tab_label, ipc);
+        public Startup_Apps (string page_label,Hdy.Deck deck, IPC ipc) {
+            base (page_label,deck, ipc);
+        }
 
+        public override Gtk.Widget set_child() {
             var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 8);
             list_box = new Gtk.ListBox ();
             list_box.selection_mode = Gtk.SelectionMode.NONE;
@@ -28,7 +30,7 @@ namespace SwaySettings {
 
             box.add (list_box);
             box.add (add_button);
-            this.add (Page.get_scroll_widget (box));
+            return box;
         }
 
         void add_apps () {
@@ -47,7 +49,7 @@ namespace SwaySettings {
         }
     }
 
-    [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/Apps/Startup_Apps_Item.ui")]
+    [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/StartupApps/Startup_Apps_Item.ui")]
     class Startup_Apps_Item : Gtk.ListBoxRow {
 
         [GtkChild]
@@ -75,7 +77,7 @@ namespace SwaySettings {
         }
     }
 
-    [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/Apps/Desktop_App_Chooser.ui")]
+    [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/StartupApps/Startup_Apps_Chooser.ui")]
     class Desktop_App_Chooser : Hdy.Window {
 
         Gtk.ListStore liststore = new Gtk.ListStore (3,

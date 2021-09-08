@@ -1,7 +1,7 @@
 using Gee;
 
 namespace SwaySettings {
-    public class Background_Widget : Page_Tab {
+    public class Background_Widget : Page {
 
         private Granite.AsyncImage preview_image = new Granite.AsyncImage (true, false);
         private int preview_image_height = 216;
@@ -15,8 +15,8 @@ namespace SwaySettings {
 
         private ArrayList<Wallpaper ?> system_wallpapers = new ArrayList<Wallpaper ?>();
 
-        public Background_Widget (string tab_name, IPC ipc) {
-            base (tab_name, ipc);
+        public Background_Widget (string page_name, Hdy.Deck deck, IPC ipc) {
+            base (page_name, deck, ipc);
 
             realize.connect (()=> {
                 set_preivew_image ();
@@ -37,12 +37,12 @@ namespace SwaySettings {
             preview_image.set_margin_start (margin);
             preview_image.set_margin_bottom (margin);
             preview_image.set_margin_end (margin);
-            this.add (preview_image);
+            root_box.add (preview_image);
 
             wallpaper_box.expand = true;
             wallpaper_box.get_style_context ().add_class ("view");
             get_wallpaper_container (ref system_wallpaper_flow_box, "System Wallpapers");
-            this.add (Page.get_scroll_widget (wallpaper_box, false, true, int.MAX, int.MAX));
+            root_box.add (Page.get_scroll_widget (wallpaper_box, false, true, int.MAX, int.MAX));
 
             this.show_all ();
         }

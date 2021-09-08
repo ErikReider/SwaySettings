@@ -57,16 +57,47 @@ namespace SwaySettings {
 
     public abstract class Page_Scroll : Page {
 
+        public virtual bool have_margin {
+            get {
+                return true;
+            }
+        }
+        public virtual bool shadow {
+            get {
+                return false;
+            }
+        }
+        public virtual int clamp_max {
+            get {
+                return 600;
+            }
+        }
+        public virtual int clamp_tight {
+            get {
+                return 400;
+            }
+        }
+
         protected Page_Scroll (string label, Hdy.Deck deck, IPC ipc) {
             base (label, deck, ipc);
-            root_box.add (get_scroll_widget (set_child ()));
+            root_box.add (get_scroll_widget (
+                              set_child (),
+                              have_margin,
+                              shadow,
+                              clamp_max,
+                              clamp_tight));
         }
 
         public void refresh () {
             foreach (var child in root_box.get_children ()) {
                 root_box.remove (child);
             }
-            root_box.add (get_scroll_widget (set_child ()));
+            root_box.add (get_scroll_widget (
+                              set_child (),
+                              have_margin,
+                              shadow,
+                              clamp_max,
+                              clamp_tight));
         }
 
         public abstract Gtk.Widget set_child ();

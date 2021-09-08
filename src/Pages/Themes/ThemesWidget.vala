@@ -1,19 +1,21 @@
 using Gee;
 
 namespace SwaySettings {
-    public class Themes_Widget : Page_Tab {
+    public class Themes_Widget : Page_Scroll {
 
         private Gtk.ListBox list_box;
 
-        public Themes_Widget (string tab_name, IPC ipc) {
-            base (tab_name, ipc);
+        public Themes_Widget (string page_name, Hdy.Deck deck, IPC ipc) {
+            base (page_name, deck, ipc);
+        }
 
+        public override Gtk.Widget set_child () {
             var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
             list_box = new Gtk.ListBox ();
             list_box.get_style_context ().add_class ("content");
 
-            gtk_theme ("GTK Application Theme", "gtk-theme", "themes");
-            gtk_theme ("GTK Icon Theme", "icon-theme", "icons");
+            list_box.add (gtk_theme ("GTK Application Theme", "gtk-theme", "themes"));
+            list_box.add (gtk_theme ("GTK Icon Theme", "icon-theme", "icons"));
 
             box.add (list_box);
             box.set_margin_top (8);
@@ -21,10 +23,10 @@ namespace SwaySettings {
             box.set_margin_bottom (8);
             box.set_margin_end (8);
             box.show_all ();
-            this.add (Page.get_scroll_widget (box, false));
+            return box;
         }
 
-        public void gtk_theme (string title, string setting_name, string folder_name) {
+        private Hdy.ComboRow gtk_theme (string title, string setting_name, string folder_name) {
             var gtk_theme_expander = new Hdy.ComboRow ();
             gtk_theme_expander.set_title (title);
 
@@ -46,8 +48,7 @@ namespace SwaySettings {
                 var theme = gtk_themes.get (((Hdy.ComboRow)sender).get_selected_index ());
                 Functions.set_gtk_theme (setting_name, theme);
             });
-
-            list_box.add (gtk_theme_expander);
+            return gtk_theme_expander;
         }
     }
 }

@@ -16,7 +16,7 @@ namespace SwaySettings {
 
             try {
                 Gtk.CssProvider css_provider = new Gtk.CssProvider ();
-                css_provider.load_from_path (Functions.get_style_path());
+                css_provider.load_from_path (Functions.get_style_path ());
                 Gtk.StyleContext.
                  add_provider_for_screen (Gdk.Screen.get_default (),
                                           css_provider,
@@ -29,10 +29,14 @@ namespace SwaySettings {
                 new ArrayList<SettingsCategory ? >.wrap ({
                 SettingsCategory ("Desktop", {
                     SettingsItem ("preferences-desktop-wallpaper",
-                                  new Appearance_Page ("Appearance", deck, ipc)),
+                                  new Background_Widget ("Background", deck, ipc)),
+                    SettingsItem ("preferences-desktop-wallpaper",
+                                  new Themes_Widget ("Appearance", deck, ipc)),
 
                     SettingsItem ("applications-other",
-                                  new Apps ("Applications", deck, ipc)),
+                                  new Startup_Apps ("Startup Applications", deck, ipc)),
+                    SettingsItem ("applications-other",
+                                  new Default_Apps ("Default Applications", deck, ipc)),
                     SettingsItem ("mail-unread",
                                   new Swaync ("Sway Notification Center", deck, ipc),
                                   !Functions.is_swaync_installed ()),
