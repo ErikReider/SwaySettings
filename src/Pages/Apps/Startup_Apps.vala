@@ -54,7 +54,9 @@ namespace SwaySettings {
         unowned Gtk.Image image;
 
         [GtkChild]
-        unowned Gtk.Label label;
+        unowned Gtk.Label title;
+        [GtkChild]
+        unowned Gtk.Label subtitle;
 
         [GtkChild]
         unowned Gtk.Button button;
@@ -64,7 +66,8 @@ namespace SwaySettings {
         public Startup_Apps_Item (DesktopAppInfo app_info, on_remove callback) {
             Object ();
             image.set_from_gicon (app_info.get_icon (), Gtk.IconSize.DND);
-            label.set_text (app_info.get_display_name ());
+            title.set_text (app_info.get_display_name ());
+            subtitle.set_text (app_info.get_commandline ());
 
             button.clicked.connect (() => {
                 Functions.remove_app_from_startup.begin (app_info.get_filename (), () => callback ());
@@ -169,7 +172,7 @@ namespace SwaySettings {
             Gtk.TreeIter tree_iter;
             selection.get_selected (out tree_model, out tree_iter);
             GLib.Value app_index;
-            // TODO: Fix tree_iter not being validated if no app is selected
+            if(tree_iter.user_data == null) return null;
             tree_model.get_value (tree_iter, 2, out app_index);
             if (!app_index.holds (typeof (int))) return null;
             return apps[app_index.get_int ()];
