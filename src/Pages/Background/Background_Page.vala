@@ -1,7 +1,7 @@
 using Gee;
 
 namespace SwaySettings {
-    public class Background_Widget : Page {
+    public class Background_Page : Page {
 
         private Granite.AsyncImage preview_image = new Granite.AsyncImage (true, false);
         private int preview_image_height = 216;
@@ -15,7 +15,7 @@ namespace SwaySettings {
 
         private ArrayList<Wallpaper ?> system_wallpapers = new ArrayList<Wallpaper ?>();
 
-        public Background_Widget (string page_name, Hdy.Deck deck, IPC ipc) {
+        public Background_Page (string page_name, Hdy.Deck deck, IPC ipc) {
             base (page_name, deck, ipc);
 
             realize.connect (()=> {

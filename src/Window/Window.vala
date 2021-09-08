@@ -29,9 +29,9 @@ namespace SwaySettings {
                 new ArrayList<SettingsCategory ? >.wrap ({
                 SettingsCategory ("Desktop", {
                     SettingsItem ("preferences-desktop-wallpaper",
-                                  new Background_Widget ("Background", deck, ipc)),
+                                  new Background_Page ("Background", deck, ipc)),
                     SettingsItem ("preferences-desktop-theme",
-                                  new Themes_Widget ("Appearance", deck, ipc)),
+                                  new Themes_Page ("Appearance", deck, ipc)),
 
                     SettingsItem ("applications-other",
                                   new Startup_Apps ("Startup Applications", deck, ipc)),

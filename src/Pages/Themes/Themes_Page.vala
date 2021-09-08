@@ -1,11 +1,11 @@
 using Gee;
 
 namespace SwaySettings {
-    public class Themes_Widget : Page_Scroll {
+    public class Themes_Page : Page_Scroll {
 
         private Gtk.ListBox list_box;
 
-        public Themes_Widget (string page_name, Hdy.Deck deck, IPC ipc) {
+        public Themes_Page (string page_name, Hdy.Deck deck, IPC ipc) {
             base (page_name, deck, ipc);
         }
 
