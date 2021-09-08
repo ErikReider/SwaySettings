@@ -143,11 +143,8 @@ namespace SwaySettings {
                     apps.add (desktop);
                 }
             });
-            add_items.begin (apps);
-        }
-
-        async void add_items (ArrayList<DesktopAppInfo> apps) {
             apps.sort ((a, b) => {
+                if (a.get_display_name () == b.get_display_name ()) return 0;
                 return a.get_display_name () > b.get_display_name () ? 1 : -1;
             });
             for (int index = 0; index < apps.size; index++) {
@@ -160,9 +157,6 @@ namespace SwaySettings {
                 liststore.append (out iter);
                 liststore.set (iter, 0, app.get_display_name (), 1,
                                app_icon, 2, index);
-
-                Idle.add (add_items.callback);
-                yield;
             }
         }
 
@@ -172,7 +166,7 @@ namespace SwaySettings {
             Gtk.TreeIter tree_iter;
             selection.get_selected (out tree_model, out tree_iter);
             GLib.Value app_index;
-            if(tree_iter.user_data == null) return null;
+            if (tree_iter.user_data == null) return null;
             tree_model.get_value (tree_iter, 2, out app_index);
             if (!app_index.holds (typeof (int))) return null;
             return apps[app_index.get_int ()];
