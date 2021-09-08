@@ -17,6 +17,7 @@
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
+            <property name="valign">center</property>
             <property name="margin-start">8</property>
             <property name="margin-end">8</property>
             <property name="margin-top">8</property>
@@ -25,7 +26,9 @@
               <object class="GtkImage">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="pixel-size">12</property>
                 <property name="icon-name">close-symbolic</property>
+                <property name="icon_size">0</property>
               </object>
             </child>
           </object>
@@ -38,12 +41,14 @@
           <object class="GtkBox">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="valign">center</property>
             <property name="hexpand">True</property>
             <property name="vexpand">True</property>
             <child>
               <object class="GtkImage" id="image">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="valign">center</property>
                 <property name="margin-start">8</property>
                 <property name="margin-end">8</property>
                 <property name="margin-top">8</property>
