@@ -137,26 +137,25 @@ namespace SwaySettings {
         }
 
         void populate_list () {
-            GLib.AppInfo.get_all ().foreach ((val) => {
-                var desktop = new DesktopAppInfo (val.get_id ());
-                if (desktop.should_show () && !desktop.get_is_hidden ()) {
-                    apps.add (desktop);
-                }
-            });
-            apps.sort ((a, b) => {
+            var all_apps = GLib.AppInfo.get_all ();
+            all_apps.sort ((a, b) => {
                 if (a.get_display_name () == b.get_display_name ()) return 0;
                 return a.get_display_name () > b.get_display_name () ? 1 : -1;
             });
-            for (int index = 0; index < apps.size; index++) {
-                var app = apps[index];
-                var app_icon = "gtk-missing-icon";
-                if (app.get_icon () != null) {
-                    app_icon = app.get_icon ().to_string ();
+            for (uint index = 0, shown_index = 0; index < all_apps.length (); index++) {
+                var app_val = all_apps.nth_data (index);
+                var app = new DesktopAppInfo (app_val.get_id ());
+                if (app.should_show () && !app.get_is_hidden ()) {
+                    apps.add (app);
+                    var app_icon = "gtk-missing-icon";
+                    if (app.get_icon () != null) {
+                        app_icon = app.get_icon ().to_string ();
+                    }
+                    Gtk.TreeIter iter;
+                    liststore.append (out iter);
+                    liststore.set (iter, 0, app.get_display_name (), 1,
+                                   app_icon, 2, shown_index++);
                 }
-                Gtk.TreeIter iter;
-                liststore.append (out iter);
-                liststore.set (iter, 0, app.get_display_name (), 1,
-                               app_icon, 2, index);
             }
         }
 
