@@ -30,12 +30,12 @@ namespace SwaySettings {
                 SettingsCategory ("Desktop", {
                     SettingsItem ("preferences-desktop-wallpaper",
                                   new Background_Widget ("Background", deck, ipc)),
-                    SettingsItem ("preferences-desktop-wallpaper",
+                    SettingsItem ("preferences-desktop-theme",
                                   new Themes_Widget ("Appearance", deck, ipc)),
 
                     SettingsItem ("applications-other",
                                   new Startup_Apps ("Startup Applications", deck, ipc)),
-                    SettingsItem ("applications-other",
+                    SettingsItem ("preferences-other",
                                   new Default_Apps ("Default Applications", deck, ipc)),
                     SettingsItem ("mail-unread",
                                   new Swaync ("Sway Notification Center", deck, ipc),
