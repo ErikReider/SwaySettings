@@ -49,11 +49,11 @@
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="valign">center</property>
-                <property name="margin-start">8</property>
-                <property name="margin-end">8</property>
-                <property name="margin-top">8</property>
-                <property name="margin-bottom">8</property>
-                <property name="stock">gtk-missing-image</property>
+                <property name="margin-start">4</property>
+                <property name="margin-end">4</property>
+                <property name="margin-top">4</property>
+                <property name="margin-bottom">4</property>
+                <property name="icon-name">image-missing</property>
                 <property name="icon_size">5</property>
               </object>
               <packing>
@@ -63,16 +63,48 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="label">
+              <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="margin-end">8</property>
-                <property name="margin-top">8</property>
-                <property name="margin-bottom">8</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkLabel" id="title">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="margin-end">8</property>
+                    <property name="label" translatable="yes">Geary	</property>
+                    <property name="single-line-mode">True</property>
+                    <property name="xalign">0</property>
+                    <attributes>
+                      <attribute name="weight" value="bold"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="subtitle">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="margin-end">8</property>
+                    <property name="label" translatable="yes">text</property>
+                    <property name="single-line-mode">True</property>
+                    <property name="xalign">0</property>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
               </object>
               <packing>
-                <property name="expand">False</property>
+                <property name="expand">True</property>
                 <property name="fill">True</property>
+                <property name="padding">8</property>
                 <property name="position">1</property>
               </packing>
             </child>
