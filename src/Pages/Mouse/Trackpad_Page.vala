@@ -1,10 +1,16 @@
 using Gee;
 
 namespace SwaySettings {
-    public class Trackpad_Widget : Input_Tab {
+    public class Trackpad_Widget : Input_Page {
 
-        public Trackpad_Widget (string tab_name, Input_Device touchpad, IPC ipc) {
-            base (tab_name, Input_Types.touchpad, touchpad, ipc);
+        public Trackpad_Widget (string label, Hdy.Deck deck, IPC ipc) {
+            base (label, deck, ipc);
+        }
+
+        public override SwaySettings.Input_Types input_type {
+            get {
+                return Input_Types.touchpad;
+            }
         }
 
         public override ArrayList<Gtk.Widget> get_options () {

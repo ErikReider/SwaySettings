@@ -19,10 +19,16 @@ namespace SwaySettings {
         }
     }
 
-    public struct Input_Device {
-        string identifier;
-        Input_Types type;
-        Inp_Dev_Settings settings;
+    public class Input_Device {
+        public string identifier;
+        public Input_Types type;
+        public Inp_Dev_Settings settings;
+
+        public Input_Device(string identifier, Input_Types type) {
+            this.identifier = identifier;
+            this.type = type;
+            this.settings = new Inp_Dev_Settings ();
+        }
 
         public Array<string> get_settings () {
             Array<string> lines = new Array<string>();
@@ -41,7 +47,6 @@ namespace SwaySettings {
 
         private Array<string> get_type_settings () {
             Array<string> settings_list = new Array<string>();
-
             // events
             settings_list.append_val (get_string_line (
                                           settings.doem.get_line ()));

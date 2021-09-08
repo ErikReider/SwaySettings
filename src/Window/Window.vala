@@ -43,7 +43,9 @@ namespace SwaySettings {
                 }),
                 SettingsCategory ("Hardware", {
                     SettingsItem ("input-mouse",
-                                  new Mouse_Page ("Inputs", deck, ipc)),
+                                  new Mouse_Widget ("Mouse", deck, ipc)),
+                    SettingsItem ("input-touchpad",
+                                  new Trackpad_Widget ("Trackpad", deck, ipc)),
                 }),
             });
 

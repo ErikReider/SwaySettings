@@ -1,10 +1,16 @@
 using Gee;
 
 namespace SwaySettings {
-    public class Mouse_Widget : Input_Tab {
+    public class Mouse_Widget : Input_Page {
 
-        public Mouse_Widget (string tab_name, Input_Device mouse, IPC ipc) {
-            base (tab_name, Input_Types.pointer, mouse, ipc);
+        public Mouse_Widget (string label, Hdy.Deck deck, IPC ipc) {
+            base (label, deck, ipc);
+        }
+
+        public override SwaySettings.Input_Types input_type {
+            get {
+                return Input_Types.pointer;
+            }
         }
 
         public override ArrayList<Gtk.Widget> get_options () {
