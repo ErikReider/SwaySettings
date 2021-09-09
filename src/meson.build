@@ -16,6 +16,7 @@ swaysettings_sources = [
   'Pages/DefaultApps/Default_Apps.vala',
   'Pages/StartupApps/Startup_Apps.vala',
   'Pages/Swaync/Swaync.vala',
+  'Pages/Users/Users.vala',
 ]
 
 swaysettings_deps = [
