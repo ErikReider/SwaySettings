@@ -65,6 +65,7 @@ namespace SwaySettings {
                 title.set_margin_end (margin);
 
                 var flow_box = new Gtk.FlowBox ();
+                flow_box.set_homogeneous (true);
                 flow_box.vexpand = false;
                 flow_box.min_children_per_line = 3;
                 flow_box.max_children_per_line = 7;
