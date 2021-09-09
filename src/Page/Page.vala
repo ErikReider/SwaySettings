@@ -179,7 +179,6 @@ namespace SwaySettings {
     }
     public abstract class Input_Page : Page_Scroll {
         Input_Device device;
-        bool has_type = false;
         HashMap<string, Language ? > languages = null;
 
         public abstract Input_Types input_type { get; }
@@ -201,9 +200,10 @@ namespace SwaySettings {
                 languages = Functions.get_languages ();
             }
 
-            init_input_devices ();
+            bool has_type = init_input_devices ();
 
             var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 8);
+            // Disables all controls when there's no device detected
             if (!has_type) box.set_sensitive (false);
 
             var top_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
@@ -214,7 +214,7 @@ namespace SwaySettings {
             foreach (var top_widget in top_widgets) {
                 if (top_widget != null) top_box.add (top_widget);
             }
-            box.add (top_box);
+            if (top_box.get_children ().length () > 0) box.add (top_box);
 
             var list_box = new Gtk.ListBox ();
             list_box.get_style_context ().add_class ("content");
@@ -222,22 +222,22 @@ namespace SwaySettings {
             foreach (var option in options) {
                 if (option != null) list_box.add (option);
             }
-            box.add (list_box);
+            if (list_box.get_children ().length () > 0) box.add (list_box);
 
             return box;
         }
 
-        void init_input_devices () {
+        bool init_input_devices () {
             var ipc_output = ipc.get_reply (Sway_commands.GET_IMPUTS).get_array ();
             foreach (var elem in ipc_output.get_elements ()) {
                 var obj = elem.get_object ();
                 Input_Types type = Input_Types.parse_string (obj.get_string_member ("type") ?? "");
                 if (input_type != type) continue;
-                has_type = true;
                 get_device_settings (obj, type);
-                return;
+                return true;
             }
             if (device == null) device = new Input_Device ("", input_type);
+            return false;
         }
 
         void get_device_settings (Json.Object ? obj, Input_Types type) {
