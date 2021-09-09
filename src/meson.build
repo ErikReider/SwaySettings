@@ -8,6 +8,7 @@ swaysettings_sources = [
   'Functions/Functions.vala',
   'Window/Window.vala',
   'Page/Page.vala',
+  'Page/Input_Page.vala',
   'Item/Item.vala',
   'InputSettings/Input_Settings.vala',
   'Pages/Background/Background_Page.vala',
