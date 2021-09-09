@@ -8,6 +8,16 @@ namespace SwaySettings {
         bool thumbnail_valid;
     }
 
+    public class Language : StringType {
+        public string name;
+        public string shortDescription;
+        public string description;
+
+        public override string to_string () {
+            return description;
+        }
+    }
+
     public class Functions {
 
         static unowned string settings_gnome_desktop = "org.gnome.desktop.interface";
@@ -343,6 +353,67 @@ namespace SwaySettings {
                 }
             }
             return path;
+        }
+
+        public static HashMap<string, Language ? > get_languages () {
+            var languages = new HashMap<string, Language ? > ();
+            string path = "/usr/share/X11/xkb/rules/evdev.xml";
+            Xml.Doc * doc = Xml.Parser.parse_file (path);
+            if (doc == null) {
+                stderr.printf ("File %s not found or permissions missing", path);
+                return languages;
+            }
+
+            // Get the root node. notice the dereferencing operator -> instead of .
+            unowned Xml.Node root = doc->get_root_element ();
+            if (root == null) {
+                // Free the document manually before returning
+                delete doc;
+                stderr.printf ("The xml file '%s' is empty", path);
+                return languages;
+            }
+
+            unowned Xml.Node list = null;
+            for (unowned Xml.Node iter = root.children; iter != null; iter = iter.next) {
+                if (iter.type != Xml.ElementType.ELEMENT_NODE) continue;
+                if (iter.name != "layoutList") continue;
+                list = iter;
+                break;
+            }
+
+            if (list != null) {
+                for (unowned Xml.Node prop = list.children; prop != null; prop = prop.next) {
+                    if (prop.type != Xml.ElementType.ELEMENT_NODE) continue;
+                    if (prop.name != "layout") continue;
+                    for (unowned Xml.Node prop2 = prop.children; prop2 != null; prop2 = prop2.next) {
+                        if (prop2.type != Xml.ElementType.ELEMENT_NODE) continue;
+                        if (prop2.name != "configItem") continue;
+                        bool valid = false;
+                        var lang = new Language ();
+                        for (unowned Xml.Node p = prop2.children; p != null; p = p.next) {
+                            string content = p.get_content ();
+                            switch (p.name) {
+                                case "name":
+                                    lang.name = content;
+                                    valid = true;
+                                    break;
+                                case "shortDescription":
+                                    lang.shortDescription = content;
+                                    valid = true;
+                                    break;
+                                case "description":
+                                    lang.description = content;
+                                    valid = true;
+                                    break;
+                            }
+                        }
+                        if (valid) {
+                            languages[lang.description] = lang;
+                        }
+                    }
+                }
+            }
+            return languages;
         }
     }
 }

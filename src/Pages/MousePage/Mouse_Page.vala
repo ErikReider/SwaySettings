@@ -1,9 +1,9 @@
 using Gee;
 
 namespace SwaySettings {
-    public class Mouse_Widget : Input_Page {
+    public class Mouse_Page : Input_Page {
 
-        public Mouse_Widget (string label, Hdy.Deck deck, IPC ipc) {
+        public Mouse_Page (string label, Hdy.Deck deck, IPC ipc) {
             base (label, deck, ipc);
         }
 

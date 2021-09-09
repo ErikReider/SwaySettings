@@ -1,6 +1,7 @@
 swaysettings_sources = [
   'main.vala',
   'Widgets/ThumbnailImage/ThumbnailImage.vala',
+  'Widgets/OrderListSelector/OrderListSelector.vala',
   'IPC/IPC.vala',
   'Strings.vala',
   'List_Item/List_Item.vala',
@@ -11,6 +12,7 @@ swaysettings_sources = [
   'InputSettings/Input_Settings.vala',
   'Pages/Background/Background_Page.vala',
   'Pages/Themes/Themes_Page.vala',
+  'Pages/KeyboardPage/Keyboard_Page.vala',
   'Pages/MousePage/Mouse_Page.vala',
   'Pages/TrackpadPage/Trackpad_Page.vala',
   'Pages/DefaultApps/Default_Apps.vala',
@@ -25,6 +27,7 @@ swaysettings_deps = [
   dependency('json-glib-1.0'),
   dependency('gee-0.8'),
   dependency('granite'),
+  dependency('libxml-2.0'),
   meson.get_compiler('vala').find_library('posix'),
 ]
 

@@ -1,9 +1,9 @@
 using Gee;
 
 namespace SwaySettings {
-    public class Trackpad_Widget : Input_Page {
+    public class Trackpad_Page : Input_Page {
 
-        public Trackpad_Widget (string label, Hdy.Deck deck, IPC ipc) {
+        public Trackpad_Page (string label, Hdy.Deck deck, IPC ipc) {
             base (label, deck, ipc);
         }
 
