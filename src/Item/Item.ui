@@ -29,10 +29,14 @@
         </child>
         <child>
           <object class="GtkLabel" id="btn_label">
+            <property name="height-request">36</property>
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="label" translatable="yes">label</property>
+            <property name="label" translatable="yes">Sway Notification Center</property>
+            <property name="justify">center</property>
             <property name="wrap">True</property>
+            <property name="width-chars">16</property>
+            <property name="max-width-chars">16</property>
             <property name="track-visited-links">False</property>
           </object>
           <packing>
