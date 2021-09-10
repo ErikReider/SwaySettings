@@ -51,8 +51,7 @@ namespace SwaySettings {
             var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 8);
             // Disables all controls when there's no device detected
             // or when no languages could be found for the keyboard page
-            if (!has_type ||
-                (input_type == Input_Types.keyboard && languages.size == 0)) {
+            if (!has_type) {
                 box.set_sensitive (false);
             }
 
@@ -197,8 +196,9 @@ namespace SwaySettings {
 
         // Keyboard input language
         public Gtk.Widget get_keyboard_language () {
-            return new OrderListSelector (device.settings.xkb_layout_names, (list) => {
-                device.settings.xkb_layout_names = (ArrayList<Language ? >) list;
+            var osl = new OrderListSelector (device.settings.xkb_layout_names,
+                                             (list) => {
+                device.settings.xkb_layout_names = (ArrayList<Language>) list;
                 string[] array = {};
                 foreach (var item in list) {
                     Language lang = (Language) item;
@@ -214,6 +214,8 @@ namespace SwaySettings {
                     device.settings.xkb_layout_names,
                     order_list_selector);
             });
+            osl.sensitive = languages.size > 0;
+            return osl;
         }
 
         // scroll_factor
