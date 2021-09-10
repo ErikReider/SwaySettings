@@ -12,6 +12,7 @@ namespace SwaySettings {
         public override Gtk.Widget set_child () {
             var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
             list_box = new Gtk.ListBox ();
+            list_box.set_selection_mode (Gtk.SelectionMode.NONE);
             list_box.get_style_context ().add_class ("content");
 
             list_box.add (gtk_theme ("GTK Application Theme", "gtk-theme", "themes"));
