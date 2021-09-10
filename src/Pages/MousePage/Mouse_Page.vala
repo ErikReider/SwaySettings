@@ -13,13 +13,13 @@ namespace SwaySettings {
             }
         }
 
-        public override ArrayList<Gtk.Widget> get_options () {
-            return new ArrayList<Gtk.Widget>.wrap ({
+        public override Input_Page_Option get_options () {
+            return new Input_Page_Option (new ArrayList<Gtk.Widget>.wrap ({
                 get_scroll_factor (),
                 get_natural_scroll (),
                 get_accel_profile (),
                 get_pointer_accel (),
-            });
+            }), "General");
         }
     }
 }

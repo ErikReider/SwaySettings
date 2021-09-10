@@ -13,9 +13,9 @@ namespace SwaySettings {
             }
         }
 
-        public override ArrayList<Gtk.Widget> get_top_widgets () {
-            return new ArrayList<Gtk.Widget>.wrap ({
-                get_keyboard_language (),
+        public override ArrayList<Input_Page_Section> get_top_sections () {
+            return new ArrayList<Input_Page_Section>.wrap ({
+                new Input_Page_Section(get_keyboard_language (), "Keyboard Layout"),
             });
         }
     }

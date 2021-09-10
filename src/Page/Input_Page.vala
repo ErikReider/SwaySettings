@@ -1,6 +1,28 @@
 using Gee;
 
 namespace SwaySettings {
+
+    public class Input_Page_Section {
+        public string ? title;
+        public Gtk.Widget widget;
+
+        public Input_Page_Section (Gtk.Widget widget, string ? title = null) {
+            this.widget = widget;
+            this.title = title;
+        }
+    }
+
+    public class Input_Page_Option {
+        public string ? title;
+        public ArrayList<Gtk.Widget> widgets;
+
+        public Input_Page_Option (ArrayList<Gtk.Widget> widgets,
+                                  string ? title = null) {
+            this.widgets = widgets;
+            this.title = title;
+        }
+    }
+
     public abstract class Input_Page : Page_Scroll {
         Input_Device device;
         HashMap<string, Language> languages = null;
@@ -11,12 +33,12 @@ namespace SwaySettings {
             base (label, deck, ipc);
         }
 
-        public virtual ArrayList<Gtk.Widget> get_top_widgets () {
-            return new ArrayList<Gtk.Widget> ();
+        public virtual ArrayList<Input_Page_Section> get_top_sections () {
+            return new ArrayList<Input_Page_Section> ();
         }
 
-        public virtual ArrayList<Gtk.Widget> get_options () {
-            return new ArrayList<Gtk.Widget> ();
+        public virtual Input_Page_Option get_options () {
+            return new Input_Page_Option (new ArrayList<Gtk.Widget> ());
         }
 
         public override Gtk.Widget set_child () {
@@ -34,23 +56,52 @@ namespace SwaySettings {
                 box.set_sensitive (false);
             }
 
-            var top_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
-            top_box.get_style_context ().add_class ("content");
-            top_box.get_style_context ().add_class ("view");
-            top_box.get_style_context ().add_class ("frame");
-            var top_widgets = get_top_widgets ();
-            foreach (var top_widget in top_widgets) {
-                if (top_widget != null) top_box.add (top_widget);
+            var top_sections = get_top_sections ();
+            for (int i = 0; i < top_sections.size; i++) {
+                var section = top_sections[i];
+                if (section != null) {
+                    var section_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 8);
+                    section_box.margin_top = 16;
+                    if (section.title != null) {
+                        var label = new Gtk.Label (section.title);
+                        label.set_alignment (0f, 0.5f);
+                        label.set_single_line_mode (true);
+                        Pango.AttrList attrs = new Pango.AttrList ();
+                        attrs.insert (Pango.attr_weight_new (Pango.Weight.BOLD));
+                        label.attributes = attrs;
+                        section_box.add (label);
+                    }
+                    var widget_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
+                    widget_box.get_style_context ().add_class ("content");
+                    widget_box.get_style_context ().add_class ("view");
+                    widget_box.get_style_context ().add_class ("frame");
+                    widget_box.add (section.widget);
+                    section_box.add (widget_box);
+                    box.add (section_box);
+                }
             }
-            if (top_box.get_children ().length () > 0) box.add (top_box);
 
-            var list_box = new Gtk.ListBox ();
-            list_box.get_style_context ().add_class ("content");
             var options = get_options ();
-            foreach (var option in options) {
-                if (option != null) list_box.add (option);
+            if (options.widgets.size > 0) {
+                var options_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 8);
+                options_box.margin_top = 16;
+                if (options.title != null) {
+                    var label = new Gtk.Label (options.title);
+                    label.set_alignment (0f, 0.5f);
+                    label.set_single_line_mode (true);
+                    Pango.AttrList attrs = new Pango.AttrList ();
+                    attrs.insert (Pango.attr_weight_new (Pango.Weight.BOLD));
+                    label.attributes = attrs;
+                    options_box.add (label);
+                }
+                var list_box = new Gtk.ListBox ();
+                list_box.get_style_context ().add_class ("content");
+                foreach (var option in options.widgets) {
+                    if (option != null) list_box.add (option);
+                }
+                options_box.add (list_box);
+                box.add (options_box);
             }
-            if (list_box.get_children ().length () > 0) box.add (list_box);
 
             return box;
         }
