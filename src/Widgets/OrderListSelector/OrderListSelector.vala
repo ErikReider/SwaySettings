@@ -91,21 +91,12 @@ namespace SwaySettings {
             }
             for (int i = 0; i < list.size; i++) {
                 var item = list[i];
-                var row = new OrderListSelectorRow (item);
+                var row = new Gtk.ListBoxRow ();
+                row.add(new Gtk.Label (item.to_string ()));
                 list_box.add (row);
                 if (selected_index == i) row.activate ();
             }
             this.show_all ();
-        }
-    }
-
-    private class OrderListSelectorRow : Gtk.ListBoxRow {
-
-        public StringType child_value;
-
-        public OrderListSelectorRow (StringType child_value) {
-            this.child_value = child_value;
-            this.add (new Gtk.Label (child_value.to_string ()));
         }
     }
 }
