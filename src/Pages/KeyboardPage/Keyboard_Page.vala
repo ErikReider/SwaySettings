@@ -15,7 +15,7 @@ namespace SwaySettings {
 
         public override ArrayList<Input_Page_Section> get_top_sections () {
             return new ArrayList<Input_Page_Section>.wrap ({
-                new Input_Page_Section(get_keyboard_language (), "Keyboard Layout"),
+                new Input_Page_Section (get_keyboard_language (), "Keyboard Layout"),
             });
         }
     }
