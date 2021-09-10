@@ -31,7 +31,13 @@ namespace SwaySettings {
             while (values.next ()) {
                 var lang = values.get ();
                 if (used_languages.contains (lang)) continue;
-                list_box.add (new Gtk.Label (lang.to_string ()));
+                var label = new Gtk.Label (lang.to_string ());
+                label.set_alignment (0f, 0.5f);
+                label.set_single_line_mode (true);
+                Pango.AttrList attrs = new Pango.AttrList ();
+                attrs.insert (Pango.attr_scale_new (1.1));
+                label.attributes = attrs;
+                list_box.add (label);
                 langs += lang;
             }
 
