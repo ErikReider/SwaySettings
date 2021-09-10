@@ -13,17 +13,16 @@ namespace SwaySettings {
         unowned Gtk.Button button_cancel;
 
         public KeyboardInputSelector (SwaySettings.Window window,
-                                      HashMap<string, Language> languages,
+                                      HashMap<string, Language> all_languages,
                                       ArrayList<Language> used_languages,
                                       OrderListSelector ols) {
-            Object ();
             this.set_attached_to (window);
             this.set_transient_for (window);
 
             button_add.sensitive = false;
 
             // Sort by description
-            var values = languages.values.order_by ((a, b) => {
+            var values = all_languages.values.order_by ((a, b) => {
                 if (a.description == b.description) return 0;
                 return a.description > b.description ? 1 : -1;
             });
@@ -65,6 +64,7 @@ namespace SwaySettings {
 
             this.show_all ();
             list_box.unselect_all ();
+            list_box.set_focus_child (null);
         }
     }
 }
