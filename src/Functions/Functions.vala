@@ -380,11 +380,6 @@ namespace SwaySettings {
                 var lang = new Language ();
                 for (unowned Xml.Node p = node.children; p != null; p = p.next) {
                     string content = p.get_content ();
-                    // To remove the "custom" layout
-                    if (content == "custom") {
-                        valid = false;
-                        break;
-                    }
                     switch (p.name) {
                         case "name" :
                             lang.name = content;
