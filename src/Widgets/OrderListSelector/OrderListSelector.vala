@@ -34,6 +34,12 @@ namespace SwaySettings {
             this.update_callback = update_callback;
             this.list = list;
 
+            // Activates row on keyboard navigation
+            list_box.row_selected.connect ((_, r) => {
+                int index = r.get_index ();
+                if (r != null && index >= 0) r.activate ();
+            });
+
             list_box.row_activated.connect ((_, row) => {
                 selected_index = row.get_index ();
                 button_down.sensitive = selected_index + 1 < list.size;
