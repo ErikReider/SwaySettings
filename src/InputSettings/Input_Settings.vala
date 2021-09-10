@@ -134,7 +134,7 @@ namespace SwaySettings {
         public tap_button_maps tap_button_map = tap_button_maps.lrm;
 
         // Keyboard
-        public ArrayList<Language ? > xkb_layout_names = new ArrayList<Language ? >();
+        public ArrayList<Language> xkb_layout_names = new ArrayList<Language>();
 
         public static bool parse (string value) {
             return value == "enabled" ? true : false;

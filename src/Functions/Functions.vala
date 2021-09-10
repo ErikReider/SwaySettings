@@ -355,8 +355,8 @@ namespace SwaySettings {
             return path;
         }
 
-        public static HashMap<string, Language ? > get_languages () {
-            var languages = new HashMap<string, Language ? > ();
+        public static HashMap<string, Language> get_languages () {
+            var languages = new HashMap<string, Language> ();
             string path = "/usr/share/X11/xkb/rules/evdev.xml";
             Xml.Doc * doc = Xml.Parser.parse_file (path);
             if (doc == null) {
@@ -373,6 +373,8 @@ namespace SwaySettings {
                 return languages;
             }
 
+            // Belongs at r/programminghorror
+            // Needs a fix
             unowned Xml.Node list = null;
             for (unowned Xml.Node iter = root.children; iter != null; iter = iter.next) {
                 if (iter.type != Xml.ElementType.ELEMENT_NODE) continue;
@@ -380,7 +382,6 @@ namespace SwaySettings {
                 list = iter;
                 break;
             }
-
             if (list != null) {
                 for (unowned Xml.Node prop = list.children; prop != null; prop = prop.next) {
                     if (prop.type != Xml.ElementType.ELEMENT_NODE) continue;
@@ -392,6 +393,11 @@ namespace SwaySettings {
                         var lang = new Language ();
                         for (unowned Xml.Node p = prop2.children; p != null; p = p.next) {
                             string content = p.get_content ();
+                            // To remove the "custom" layout
+                            if (content == "custom") {
+                                valid = false;
+                                break;
+                            }
                             switch (p.name) {
                                 case "name":
                                     lang.name = content;

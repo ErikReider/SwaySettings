@@ -3,7 +3,7 @@ using Gee;
 namespace SwaySettings {
     public abstract class Input_Page : Page_Scroll {
         Input_Device device;
-        HashMap<string, Language ? > languages = null;
+        HashMap<string, Language> languages = null;
 
         public abstract Input_Types input_type { get; }
 
@@ -28,7 +28,11 @@ namespace SwaySettings {
 
             var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 8);
             // Disables all controls when there's no device detected
-            if (!has_type) box.set_sensitive (false);
+            // or when no languages could be found for the keyboard page
+            if (!has_type ||
+                (input_type == Input_Types.keyboard && languages.size == 0)) {
+                box.set_sensitive (false);
+            }
 
             var top_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
             top_box.get_style_context ().add_class ("content");
@@ -142,7 +146,7 @@ namespace SwaySettings {
 
         // Keyboard input language
         public Gtk.Widget get_keyboard_language () {
-            var e = new OrderListSelector (device.settings.xkb_layout_names, (list) => {
+            return new OrderListSelector (device.settings.xkb_layout_names, (list) => {
                 device.settings.xkb_layout_names = (ArrayList<Language ? >) list;
                 string[] array = {};
                 foreach (var item in list) {
@@ -151,8 +155,14 @@ namespace SwaySettings {
                 }
                 var cmd = @"input type:$(device.type.parse ()) xkb_layout \"$(string.joinv (", ", array))\"";
                 write_new_settings (cmd);
+            }, (order_list_selector) => {
+                var window = (SwaySettings.Window)get_toplevel ();
+                new KeyboardInputSelector (
+                    window,
+                    languages,
+                    device.settings.xkb_layout_names,
+                    order_list_selector);
             });
-            return e;
         }
 
         // scroll_factor

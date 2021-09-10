@@ -2,6 +2,7 @@
 <gresources>
   <gresource prefix="/org/erikreider/swaysettings">
       <file>Widgets/OrderListSelector/OrderListSelector.ui</file>
+      <file>Widgets/KeyboardInputSelector/KeyboardInputSelector.ui</file>
       <file>Window/Window.ui</file>
       <file>Page/Page.ui</file>
       <file>Item/Item.ui</file>

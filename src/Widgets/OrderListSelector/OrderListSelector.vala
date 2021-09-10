@@ -22,10 +22,16 @@ namespace SwaySettings {
         public ArrayList<StringType> list;
         public int selected_index = 0;
 
-        public delegate void update_cb (ArrayList<StringType> list);
+        private unowned Update_cb update_callback;
+
+        public delegate void Add_cb (OrderListSelector ols);
+
+        public delegate void Update_cb (ArrayList<StringType> list);
 
         public OrderListSelector (ArrayList<StringType> list,
-                                  update_cb callback) {
+                                  Update_cb update_callback,
+                                  Add_cb add_callback) {
+            this.update_callback = update_callback;
             this.list = list;
 
             list_box.row_activated.connect ((_, row) => {
@@ -35,12 +41,16 @@ namespace SwaySettings {
                 button_remove.sensitive = list.size > 1;
             });
 
+            button_add.clicked.connect (() => {
+                add_callback (this);
+            });
+
             button_remove.clicked.connect (() => {
                 list.remove_at (selected_index);
                 if (selected_index == list.size) selected_index -= 1;
                 if (selected_index < 0) selected_index = 0;
                 update_list ();
-                callback (list);
+                update_callback (list);
             });
 
             button_up.clicked.connect (() => {
@@ -48,7 +58,7 @@ namespace SwaySettings {
                 list.remove_at (selected_index);
                 list.insert (--selected_index, item);
                 update_list ();
-                callback (list);
+                update_callback (list);
             });
 
             button_down.clicked.connect (() => {
@@ -56,10 +66,17 @@ namespace SwaySettings {
                 list.remove_at (selected_index);
                 list.insert (++selected_index, item);
                 update_list ();
-                callback (list);
+                update_callback (list);
             });
 
             update_list ();
+        }
+
+        public void add_row (StringType item) {
+            list.add (item);
+            selected_index = list.size - 1;
+            update_list ();
+            update_callback (list);
         }
 
         void update_list () {
