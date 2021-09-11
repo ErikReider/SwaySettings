@@ -30,7 +30,6 @@ swaysettings_deps = [
   dependency('gee-0.8'),
   dependency('granite'),
   dependency('libxml-2.0'),
-  meson.get_compiler('vala').find_library('posix'),
 ]
 
 sysconfdir = get_option('sysconfdir')
