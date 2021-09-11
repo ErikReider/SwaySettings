@@ -279,22 +279,6 @@ namespace SwaySettings {
             }
         }
 
-        public static void set_default_for_mimes (default_app_data def_data,
-                                                  AppInfo selected_app,
-                                                  bool web = false) {
-            string app_id = selected_app.get_id ();
-            string cmd;
-            if (web) {
-                cmd = @"xdg-settings set default-web-browser $(app_id)";
-            } else {
-                cmd = @"xdg-mime default $(app_id) $(def_data.mime_type)";
-            }
-
-            new Thread<void>("set_default_app", () => {
-                Posix.system (cmd);
-            });
-        }
-
         public static ArrayList<DesktopAppInfo> get_startup_apps () {
             ArrayList<DesktopAppInfo> apps = new ArrayList<DesktopAppInfo>();
             string auto_start_path = @"$(Environment.get_user_config_dir())/autostart";
@@ -308,13 +292,42 @@ namespace SwaySettings {
             return apps;
         }
 
-        public static async void add_app_to_startup (string filename) {
-            string cmd = @"cp $filename $(Environment.get_user_config_dir())/autostart/";
-            Posix.system (cmd);
+        public static async void add_app_to_startup (string file_path) {
+            try {
+                string dest_path = Path.build_path (
+                    "/",
+                    Environment.get_user_config_dir (),
+                    "autostart",
+                    Path.get_basename (file_path));
+
+                File file = File.new_for_path (file_path);
+                File file_dest = File.new_for_path (dest_path);
+
+                if (!file.query_exists ()) {
+                        stderr.printf (
+                            "File %s not found or permissions missing",
+                            file_path);
+                    return;
+                }
+                file.copy (file_dest, GLib.FileCopyFlags.OVERWRITE);
+            } catch (Error e) {
+                stderr.printf ("%s\n", e.message);
+            }
         }
 
-        public static async void remove_app_from_startup (string filename) {
-            Posix.system (@"rm $filename");
+        public static async void remove_app_from_startup (string file_path) {
+            try {
+                File file = File.new_for_path (file_path);
+                if (!file.query_exists ()) {
+                    stderr.printf (
+                        "File %s not found or permissions missing",
+                        file_path);
+                    return;
+                }
+                file.delete ();
+            } catch (Error e) {
+                stderr.printf ("%s\n", e.message);
+            }
         }
 
         public static bool is_swaync_installed () {

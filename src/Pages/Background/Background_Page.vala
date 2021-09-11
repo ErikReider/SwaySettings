@@ -13,12 +13,12 @@ namespace SwaySettings {
 
         private Gtk.FlowBox system_wallpaper_flow_box = new Gtk.FlowBox ();
 
-        private ArrayList<Wallpaper ?> system_wallpapers = new ArrayList<Wallpaper ?>();
+        private ArrayList<Wallpaper ? > system_wallpapers = new ArrayList<Wallpaper ? >();
 
         public Background_Page (string page_name, Hdy.Deck deck, IPC ipc) {
             base (page_name, deck, ipc);
 
-            realize.connect (()=> {
+            realize.connect (() => {
                 set_preivew_image ();
                 add_wallpapers (Functions.get_system_wallpapers (),
                                 ref system_wallpapers,
@@ -47,11 +47,29 @@ namespace SwaySettings {
             this.show_all ();
         }
 
-        private void set_wallpaper (string path) {
-            if (path == null) return;
-            string wall_dir = @"$(Environment.get_user_cache_dir())/wallpaper";
-            Posix.system (@"cp $(path.replace (" ", "\\ ")) $(wall_dir)");
-            ipc.run_command (@"output * bg $(wall_dir) fill");
+        private void set_wallpaper (string file_path) {
+            if (file_path == null) return;
+            try {
+                string dest_path = Path.build_path (
+                    "/",
+                    Environment.get_user_cache_dir (),
+                    "wallpaper");
+
+                File file = File.new_for_path (file_path);
+                File file_dest = File.new_for_path (dest_path);
+
+                if (!file.query_exists ()) {
+                        stderr.printf (
+                            "File %s not found or permissions missing",
+                            file_path);
+                    return;
+                }
+
+                file.copy (file_dest, GLib.FileCopyFlags.OVERWRITE);
+                ipc.run_command (@"output * bg $(dest_path) fill");
+            } catch (Error e) {
+                stderr.printf ("%s\n", e.message);
+            }
         }
 
         void set_preivew_image () {
@@ -63,7 +81,7 @@ namespace SwaySettings {
                                                      true);
         }
 
-        void get_wallpaper_container(ref Gtk.FlowBox flow_box, string title) {
+        void get_wallpaper_container (ref Gtk.FlowBox flow_box, string title) {
             var header = new Gtk.Label (title);
             header.xalign = 0.0f;
             header.get_style_context ().add_class ("category-title");
@@ -87,11 +105,11 @@ namespace SwaySettings {
             wallpaper_box.add (flow_box);
         }
 
-        void add_wallpapers (ArrayList<Wallpaper?> wallpapers,
-                             ref ArrayList<Wallpaper?> compare,
+        void add_wallpapers (ArrayList<Wallpaper ? > wallpapers,
+                             ref ArrayList<Wallpaper ? > compare,
                              ref Gtk.FlowBox flow_box) {
-            if(wallpapers.size == 0) return;
-            if(wallpapers.size == compare.size) {
+            if (wallpapers.size == 0) return;
+            if (wallpapers.size == compare.size) {
                 bool equals = true;
                 for (int i = 0; i < wallpapers.size; i++) {
                     if (wallpapers[i] != compare[i]) {
@@ -105,7 +123,7 @@ namespace SwaySettings {
             add_images.begin (compare, flow_box);
         }
 
-        async void add_images (ArrayList<Wallpaper ?> paths, Gtk.FlowBox flow_box) {
+        async void add_images (ArrayList<Wallpaper ? > paths, Gtk.FlowBox flow_box) {
             bool checked_folder_exists = false;
             foreach (var path in paths) {
                 var item = new List_Lazy_Image (path, list_image_height, list_image_width, ref checked_folder_exists);
