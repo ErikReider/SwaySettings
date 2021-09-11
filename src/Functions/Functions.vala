@@ -13,6 +13,13 @@ namespace SwaySettings {
         public string shortDescription;
         public string description;
 
+        public bool is_valid () {
+            bool n_valid = name != null && name.length > 0;
+            bool sd_valid = shortDescription != null && shortDescription.length > 0;
+            bool d_valid = description != null && description.length > 0;
+            return n_valid && sd_valid && d_valid;
+        }
+
         public override string to_string () {
             return description;
         }
@@ -376,28 +383,24 @@ namespace SwaySettings {
 
             for (var i = 0; i < object.nodesetval->length (); i++) {
                 unowned Xml.Node node = object.nodesetval->item (i);
-                bool valid = false;
                 var lang = new Language ();
-                for (unowned Xml.Node p = node.children; p != null; p = p.next) {
-                    string content = p.get_content ();
-                    switch (p.name) {
+                unowned Xml.Node child = node.children;
+                while ((child = child.next) != null) {
+                    switch (child.name) {
                         case "name" :
-                            lang.name = content;
-                            valid = true;
+                            lang.name = child.get_content ();
                             break;
                         case "shortDescription":
-                            lang.shortDescription = content;
-                            valid = true;
+                            lang.shortDescription = child.get_content ();
                             break;
                         case "description":
-                            lang.description = content;
-                            valid = true;
+                            lang.description = child.get_content ();
+                            break;
+                        default:
                             break;
                     }
                 }
-                if (valid) {
-                    languages[lang.description] = lang;
-                }
+                if (lang.is_valid ()) languages[lang.description] = lang;
             }
             return languages;
         }
