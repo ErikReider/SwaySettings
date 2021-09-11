@@ -279,22 +279,6 @@ namespace SwaySettings {
             }
         }
 
-        public static void set_default_for_mimes (default_app_data def_data,
-                                                  AppInfo selected_app,
-                                                  bool web = false) {
-            string app_id = selected_app.get_id ();
-            string cmd;
-            if (web) {
-                cmd = @"xdg-settings set default-web-browser $(app_id)";
-            } else {
-                cmd = @"xdg-mime default $(app_id) $(def_data.mime_type)";
-            }
-
-            new Thread<void>("set_default_app", () => {
-                Posix.system (cmd);
-            });
-        }
-
         public static ArrayList<DesktopAppInfo> get_startup_apps () {
             ArrayList<DesktopAppInfo> apps = new ArrayList<DesktopAppInfo>();
             string auto_start_path = @"$(Environment.get_user_config_dir())/autostart";
