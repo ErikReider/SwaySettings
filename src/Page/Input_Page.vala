@@ -48,7 +48,7 @@ namespace SwaySettings {
 
             bool has_type = init_input_devices ();
 
-            var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 8);
+            var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 32);
             // Disables all controls when there's no device detected
             // or when no languages could be found for the keyboard page
             if (!has_type) {
@@ -60,7 +60,6 @@ namespace SwaySettings {
                 var section = top_sections[i];
                 if (section != null) {
                     var section_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 8);
-                    section_box.margin_top = 16;
                     if (section.title != null) {
                         var label = new Gtk.Label (section.title);
                         label.set_alignment (0f, 0.5f);
@@ -83,7 +82,6 @@ namespace SwaySettings {
             var options = get_options ();
             if (options.widgets.size > 0) {
                 var options_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 8);
-                options_box.margin_top = 16;
                 if (options.title != null) {
                     var label = new Gtk.Label (options.title);
                     label.set_alignment (0f, 0.5f);

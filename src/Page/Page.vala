@@ -43,7 +43,7 @@ namespace SwaySettings {
             clamp.tightening_threshold = clamp_tight;
             clamp.orientation = Gtk.Orientation.HORIZONTAL;
             if (have_margin) {
-                int margin = 8;
+                int margin = 16;
                 clamp.set_margin_top (margin);
                 clamp.set_margin_start (margin);
                 clamp.set_margin_bottom (margin);
