@@ -303,6 +303,12 @@ namespace SwaySettings {
                 File file = File.new_for_path (file_path);
                 File file_dest = File.new_for_path (dest_path);
 
+                if (!file.query_exists ()) {
+                        stderr.printf (
+                            "File %s not found or permissions missing",
+                            file_path);
+                    return;
+                }
                 file.copy (file_dest, GLib.FileCopyFlags.OVERWRITE);
             } catch (Error e) {
                 stderr.printf ("%s\n", e.message);
@@ -312,6 +318,12 @@ namespace SwaySettings {
         public static async void remove_app_from_startup (string file_path) {
             try {
                 File file = File.new_for_path (file_path);
+                if (!file.query_exists ()) {
+                    stderr.printf (
+                        "File %s not found or permissions missing",
+                        file_path);
+                    return;
+                }
                 file.delete ();
             } catch (Error e) {
                 stderr.printf ("%s\n", e.message);
