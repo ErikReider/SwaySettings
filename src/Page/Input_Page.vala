@@ -25,7 +25,7 @@ namespace SwaySettings {
 
     public abstract class Input_Page : Page_Scroll {
         Input_Device device;
-        HashMap<string, Language> languages = null;
+        HashMap<string, Language> languages = new HashMap<string, Language>();
 
         public abstract Input_Types input_type { get; }
 
