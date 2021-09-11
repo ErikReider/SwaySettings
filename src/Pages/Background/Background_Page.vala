@@ -47,11 +47,23 @@ namespace SwaySettings {
             this.show_all ();
         }
 
-        private void set_wallpaper (string path) {
-            if (path == null) return;
-            string wall_dir = @"$(Environment.get_user_cache_dir())/wallpaper";
-            Posix.system (@"cp $(path.replace (" ", "\\ ")) $(wall_dir)");
-            ipc.run_command (@"output * bg $(wall_dir) fill");
+        private void set_wallpaper (string file_path) {
+            if (file_path == null) return;
+            try {
+                string dest_path = Path.build_path (
+                    "/",
+                    Environment.get_user_cache_dir(),
+                    "wallpaper");
+
+                File file = File.new_for_path (file_path);
+                File file_dest = File.new_for_path (dest_path);
+
+                file.copy (file_dest, GLib.FileCopyFlags.OVERWRITE);
+
+                ipc.run_command (@"output * bg $(dest_path) fill");
+            } catch (Error e) {
+                stderr.printf ("%s\n", e.message);
+            }
         }
 
         void set_preivew_image () {

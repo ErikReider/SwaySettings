@@ -308,13 +308,30 @@ namespace SwaySettings {
             return apps;
         }
 
-        public static async void add_app_to_startup (string filename) {
-            string cmd = @"cp $filename $(Environment.get_user_config_dir())/autostart/";
-            Posix.system (cmd);
+        public static async void add_app_to_startup (string file_path) {
+            try {
+                string dest_path = Path.build_path (
+                    "/",
+                    Environment.get_user_config_dir (),
+                    "autostart",
+                    Path.get_basename (file_path));
+
+                File file = File.new_for_path (file_path);
+                File file_dest = File.new_for_path (dest_path);
+
+                file.copy (file_dest, GLib.FileCopyFlags.OVERWRITE);
+            } catch (Error e) {
+                stderr.printf ("%s\n", e.message);
+            }
         }
 
-        public static async void remove_app_from_startup (string filename) {
-            Posix.system (@"rm $filename");
+        public static async void remove_app_from_startup (string file_path) {
+            try {
+                File file = File.new_for_path (file_path);
+                file.delete ();
+            } catch (Error e) {
+                stderr.printf ("%s\n", e.message);
+            }
         }
 
         public static bool is_swaync_installed () {
