@@ -3,28 +3,19 @@ using Gee;
 namespace SwaySettings {
     public class Themes_Page : Page_Scroll {
 
-        private Gtk.ListBox list_box;
-
         public Themes_Page (string page_name, Hdy.Deck deck, IPC ipc) {
             base (page_name, deck, ipc);
         }
 
         public override Gtk.Widget set_child () {
-            var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
-            list_box = new Gtk.ListBox ();
+            Gtk.ListBox list_box = new Gtk.ListBox ();
             list_box.set_selection_mode (Gtk.SelectionMode.NONE);
             list_box.get_style_context ().add_class ("content");
 
             list_box.add (gtk_theme ("GTK Application Theme", "gtk-theme", "themes"));
             list_box.add (gtk_theme ("GTK Icon Theme", "icon-theme", "icons"));
 
-            box.add (list_box);
-            box.set_margin_top (8);
-            box.set_margin_start (8);
-            box.set_margin_bottom (8);
-            box.set_margin_end (8);
-            box.show_all ();
-            return box;
+            return list_box;
         }
 
         private Hdy.ComboRow gtk_theme (string title, string setting_name, string folder_name) {
