@@ -28,7 +28,7 @@ namespace SwaySettings {
         public override Gtk.Widget set_child () {
             dbus_connect ();
 
-            account.Changed.connect (() => this.refresh ());
+            account.Changed.connect (() => this.on_refresh ());
 
             add_save_button ();
 
