@@ -25,7 +25,7 @@ namespace SwaySettings {
 
     public abstract class Input_Page : Page_Scroll {
         Input_Device device;
-        HashMap<string, Language> languages = new HashMap<string, Language>();
+        HashMap<string, Language> languages;
 
         public abstract Input_Types input_type { get; }
 
@@ -44,6 +44,8 @@ namespace SwaySettings {
         public override Gtk.Widget set_child () {
             if (input_type == Input_Types.keyboard) {
                 languages = Functions.get_languages ();
+            } else {
+                languages = new HashMap<string, Language>();
             }
 
             bool has_type = init_input_devices ();
@@ -104,15 +106,17 @@ namespace SwaySettings {
         }
 
         bool init_input_devices () {
-            var ipc_output = ipc.get_reply (Sway_commands.GET_IMPUTS).get_array ();
-            foreach (var elem in ipc_output.get_elements ()) {
-                var obj = elem.get_object ();
-                Input_Types type = Input_Types.parse_string (obj.get_string_member ("type") ?? "");
-                if (input_type != type) continue;
-                get_device_settings (obj, type);
-                return true;
+            Json.Node ipc_output = ipc.get_reply (Sway_commands.GET_IMPUTS);
+            if (ipc_output.get_node_type () == Json.NodeType.ARRAY) {
+                foreach (var elem in ipc_output.get_array ().get_elements ()) {
+                    var obj = elem.get_object ();
+                    Input_Types type = Input_Types.parse_string (obj.get_string_member ("type") ?? "");
+                    if (input_type != type) continue;
+                    get_device_settings (obj, type);
+                    return true;
+                }
             }
-            if (device == null) device = new Input_Device ("", input_type);
+            device = new Input_Device ("", input_type);
             return false;
         }
 
