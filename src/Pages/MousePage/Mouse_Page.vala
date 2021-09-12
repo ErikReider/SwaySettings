@@ -1,9 +1,9 @@
 using Gee;
 
 namespace SwaySettings {
-    public class Mouse_Widget : Input_Page {
+    public class Mouse_Page : Input_Page {
 
-        public Mouse_Widget (string label, Hdy.Deck deck, IPC ipc) {
+        public Mouse_Page (string label, Hdy.Deck deck, IPC ipc) {
             base (label, deck, ipc);
         }
 
@@ -13,13 +13,13 @@ namespace SwaySettings {
             }
         }
 
-        public override ArrayList<Gtk.Widget> get_options () {
-            return new ArrayList<Gtk.Widget>.wrap ({
+        public override Input_Page_Option get_options () {
+            return new Input_Page_Option (new ArrayList<Gtk.Widget>.wrap ({
                 get_scroll_factor (),
                 get_natural_scroll (),
                 get_accel_profile (),
                 get_pointer_accel (),
-            });
+            }), "General");
         }
     }
 }

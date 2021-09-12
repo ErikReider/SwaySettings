@@ -8,6 +8,7 @@ A GUI for configuring your sway desktop
 - Change default apps
 - Change GTK theme (GTK 3 and potentially GTK 2)
 - Mouse and trackpad settings
+- Keyboard layout settings
 - Switch Wallpaper (selected wallpaper will be located at .cache/wallpaper)
 - Configure 
 [Sway Notification Center](https://github.com/ErikReider/SwayNotificationCenter)

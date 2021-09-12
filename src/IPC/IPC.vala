@@ -114,6 +114,11 @@ namespace SwaySettings {
                 Bytes message = ByteArray.free_to_bytes (np);
 
                 socket.send (message.get_data ());
+
+                // If not receiving message the result for the next `get_reply`
+                // will be this reply
+                uint8[] buffer = new uint8[buffer_size];
+                socket.receive (buffer);
             } catch (Error e) {
                 stderr.printf (e.message + "\n");
                 return false;

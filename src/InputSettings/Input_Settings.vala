@@ -4,6 +4,7 @@ namespace SwaySettings {
     public enum Input_Types {
         pointer,
         touchpad,
+        keyboard,
         NEITHER;
 
         public string parse () {
@@ -24,7 +25,7 @@ namespace SwaySettings {
         public Input_Types type;
         public Inp_Dev_Settings settings;
 
-        public Input_Device(string identifier, Input_Types type) {
+        public Input_Device (string identifier, Input_Types type) {
             this.identifier = identifier;
             this.type = type;
             this.settings = new Inp_Dev_Settings ();
@@ -35,7 +36,7 @@ namespace SwaySettings {
             lines.append_val (@"input type:$(type.parse()) {\n");
             var settings_lines = get_type_settings ();
             foreach (string line in settings_lines.data) {
-                lines.append_val (line.replace (",", "."));
+                lines.append_val (get_string_line (line));
             }
             lines.append_val ("}\n");
             return lines;
@@ -47,70 +48,78 @@ namespace SwaySettings {
 
         private Array<string> get_type_settings () {
             Array<string> settings_list = new Array<string>();
-            // events
-            settings_list.append_val (get_string_line (
-                                          settings.doem.get_line ()));
 
-            // pointer_accel
-            settings_list.append_val (
-                get_string_line (
-                    @"pointer_accel $(settings.pointer_accel)"));
+            switch (type) {
+                case Input_Types.keyboard:
+                    // xkb_layout_names
+                    string[] array = {};
+                    foreach (var lang in settings.xkb_layout_names) {
+                        array += lang.name;
+                    }
+                    settings_list.append_val (
+                        @"xkb_layout \"$(string.joinv (", ", array))\"");
+                    break;
+                case Input_Types.pointer:
+                case Input_Types.touchpad:
+                    // events
+                    settings_list.append_val (
+                        settings.doem.get_line ());
 
-            // accel_profile
-            settings_list.append_val (get_string_line (
-                                          settings.accel_profile.get_line ()));
+                    // pointer_accel
+                    settings_list.append_val (
+                        @"pointer_accel $(settings.pointer_accel)");
 
-            // natural_scroll
-            settings_list.append_val (
-                get_string_line (
-                    @"natural_scroll $(Inp_Dev_Settings.parse_bool(settings.natural_scroll))"));
+                    // accel_profile
+                    settings_list.append_val (
+                        settings.accel_profile.get_line ());
 
-            // left_handed
-            settings_list.append_val (
-                get_string_line (
-                    @"left_handed $(Inp_Dev_Settings.parse_bool(settings.left_handed))"));
+                    // natural_scroll
+                    settings_list.append_val (
+                        @"natural_scroll $(Inp_Dev_Settings.parse_bool(settings.natural_scroll))");
 
-            // scroll_factor
-            settings_list.append_val (
-                get_string_line (
-                    @"scroll_factor $(settings.scroll_factor)"));
+                    // left_handed
+                    settings_list.append_val (
+                        @"left_handed $(Inp_Dev_Settings.parse_bool(settings.left_handed))");
 
-            // middle_emulation
-            settings_list.append_val (
-                get_string_line (
-                    @"middle_emulation $(Inp_Dev_Settings.parse_bool(settings.middle_emulation))"));
+                    // scroll_factor
+                    settings_list.append_val (
+                        @"scroll_factor $(settings.scroll_factor)");
 
-            if (Input_Types.touchpad == type) {
-                // scroll_method
-                settings_list.append_val (
-                    get_string_line (
-                        settings.scroll_method.get_line ()));
+                    // middle_emulation
+                    settings_list.append_val (
+                        @"middle_emulation $(Inp_Dev_Settings.parse_bool(settings.middle_emulation))");
 
-                // dwt
-                settings_list.append_val (
-                    get_string_line (
-                        @"dwt $(Inp_Dev_Settings.parse_bool(settings.dwt))"));
+                    if (Input_Types.touchpad == type) {
+                        // scroll_method
+                        settings_list.append_val (
+                            settings.scroll_method.get_line ());
 
-                // tap
-                settings_list.append_val (
-                    get_string_line (
-                        @"tap $(Inp_Dev_Settings.parse_bool(settings.tap))"));
+                        // dwt
+                        settings_list.append_val (
+                            @"dwt $(Inp_Dev_Settings.parse_bool(settings.dwt))");
 
-                // tap_button_map
-                settings_list.append_val (
-                    get_string_line (
-                        settings.tap_button_map.get_line ()));
+                        // tap
+                        settings_list.append_val (
+                            @"tap $(Inp_Dev_Settings.parse_bool(settings.tap))");
 
-                // click_method
-                settings_list.append_val (
-                    get_string_line (
-                        settings.click_method.get_line ()));
+                        // tap_button_map
+                        settings_list.append_val (
+                            settings.tap_button_map.get_line ());
+
+                        // click_method
+                        settings_list.append_val (
+                            settings.click_method.get_line ());
+                    }
+                    break;
+                default:
+                    break;
             }
             return settings_list;
         }
     }
 
     public class Inp_Dev_Settings {
+        // Pointer and touchpad
         public accel_profiles accel_profile = accel_profiles.adaptive;
         public bool dwt = false;
         public Doem doem = new Doem (false);
@@ -123,6 +132,9 @@ namespace SwaySettings {
         public click_methods click_method = click_methods.clickfinger;
         public scroll_methods scroll_method = scroll_methods.two_finger;
         public tap_button_maps tap_button_map = tap_button_maps.lrm;
+
+        // Keyboard
+        public ArrayList<Language> xkb_layout_names = new ArrayList<Language>();
 
         public static bool parse (string value) {
             return value == "enabled" ? true : false;

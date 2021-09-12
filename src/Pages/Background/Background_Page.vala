@@ -3,29 +3,24 @@ using Gee;
 namespace SwaySettings {
     public class Background_Page : Page {
 
-        private Granite.AsyncImage preview_image = new Granite.AsyncImage (true, false);
+        private Granite.AsyncImage preview_image;
         private int preview_image_height = 216;
         private int preview_image_width = 384;
         // Parent for all wallpaper categories
-        private Gtk.Box wallpaper_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
+        private Gtk.Box wallpaper_box;
         private int list_image_height = 144;
         private int list_image_width = 256;
 
-        private Gtk.FlowBox system_wallpaper_flow_box = new Gtk.FlowBox ();
-
-        private ArrayList<Wallpaper ?> system_wallpapers = new ArrayList<Wallpaper ?>();
-
         public Background_Page (string page_name, Hdy.Deck deck, IPC ipc) {
             base (page_name, deck, ipc);
+        }
 
-            realize.connect (()=> {
-                set_preivew_image ();
-                add_wallpapers (Functions.get_system_wallpapers (),
-                                ref system_wallpapers,
-                                ref system_wallpaper_flow_box);
-                this.show_all ();
-            });
+        public override void on_refresh () {
+            foreach (var child in content_box.get_children ()) {
+                content_box.remove (child);
+            }
 
+            preview_image = new Granite.AsyncImage (true, false);
             preview_image.set_size_request (preview_image_width, preview_image_height);
             preview_image.get_style_context ().add_class ("shadow");
             preview_image.get_style_context ().add_class ("background-image-item");
@@ -37,25 +32,52 @@ namespace SwaySettings {
             preview_image.set_margin_start (margin);
             preview_image.set_margin_bottom (margin);
             preview_image.set_margin_end (margin);
-            root_box.add (preview_image);
+            content_box.add (preview_image);
 
+            wallpaper_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
             wallpaper_box.expand = true;
             wallpaper_box.get_style_context ().add_class ("view");
+
+            Gtk.FlowBox system_wallpaper_flow_box = new Gtk.FlowBox ();
+            // Adds header and flowbox to wallpaper_box
             get_wallpaper_container (ref system_wallpaper_flow_box, "System Wallpapers");
-            root_box.add (Page.get_scroll_widget (wallpaper_box, false, true, int.MAX, int.MAX));
+
+            content_box.add (Page.get_scroll_widget (wallpaper_box, false, true, int.MAX, int.MAX));
+
+            set_preivew_image ();
+            add_wallpapers (Functions.get_system_wallpapers (),
+                            ref system_wallpaper_flow_box);
 
             this.show_all ();
         }
 
-        private void set_wallpaper (string path) {
-            if (path == null) return;
-            string wall_dir = @"$(Environment.get_user_cache_dir())/wallpaper";
-            Posix.system (@"cp $(path.replace (" ", "\\ ")) $(wall_dir)");
-            ipc.run_command (@"output * bg $(wall_dir) fill");
+        private void set_wallpaper (string file_path) {
+            if (file_path == null) return;
+            try {
+                string dest_path = Path.build_path (
+                    "/",
+                    Environment.get_user_cache_dir (),
+                    "wallpaper");
+
+                File file = File.new_for_path (file_path);
+                File file_dest = File.new_for_path (dest_path);
+
+                if (!file.query_exists ()) {
+                    stderr.printf (
+                        "File %s not found or permissions missing",
+                        file_path);
+                    return;
+                }
+
+                file.copy (file_dest, GLib.FileCopyFlags.OVERWRITE);
+                ipc.run_command (@"output * bg $(dest_path) fill");
+            } catch (Error e) {
+                stderr.printf ("%s\n", e.message);
+            }
         }
 
         void set_preivew_image () {
-            string path = @"$(GLib.Environment.get_home_dir())/.cache/wallpaper";
+            string path = @"$(Environment.get_home_dir())/.cache/wallpaper";
             File file = File.new_for_path (path);
             preview_image.set_from_file_async.begin (file,
                                                      preview_image_width,
@@ -63,7 +85,7 @@ namespace SwaySettings {
                                                      true);
         }
 
-        void get_wallpaper_container(ref Gtk.FlowBox flow_box, string title) {
+        void get_wallpaper_container (ref Gtk.FlowBox flow_box, string title) {
             var header = new Gtk.Label (title);
             header.xalign = 0.0f;
             header.get_style_context ().add_class ("category-title");
@@ -87,25 +109,13 @@ namespace SwaySettings {
             wallpaper_box.add (flow_box);
         }
 
-        void add_wallpapers (ArrayList<Wallpaper?> wallpapers,
-                             ref ArrayList<Wallpaper?> compare,
+        void add_wallpapers (ArrayList<Wallpaper ? > wallpapers,
                              ref Gtk.FlowBox flow_box) {
-            if(wallpapers.size == 0) return;
-            if(wallpapers.size == compare.size) {
-                bool equals = true;
-                for (int i = 0; i < wallpapers.size; i++) {
-                    if (wallpapers[i] != compare[i]) {
-                        equals = false;
-                        break;
-                    }
-                }
-                if (equals) return;
-            }
-            compare = wallpapers;
-            add_images.begin (compare, flow_box);
+            if (wallpapers.size == 0) return;
+            add_images.begin (wallpapers, flow_box);
         }
 
-        async void add_images (ArrayList<Wallpaper ?> paths, Gtk.FlowBox flow_box) {
+        async void add_images (ArrayList<Wallpaper ? > paths, Gtk.FlowBox flow_box) {
             bool checked_folder_exists = false;
             foreach (var path in paths) {
                 var item = new List_Lazy_Image (path, list_image_height, list_image_width, ref checked_folder_exists);

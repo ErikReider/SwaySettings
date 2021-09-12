@@ -86,7 +86,7 @@ namespace SwaySettings {
             list_box.add (comboX);
             list_box.add (comboY);
 
-            return Page.get_scroll_widget (list_box);
+            return list_box;
         }
 
         private ConfigModel read_file (string path) {

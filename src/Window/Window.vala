@@ -42,10 +42,12 @@ namespace SwaySettings {
                                   !Functions.is_swaync_installed ()),
                 }),
                 SettingsCategory ("Hardware", {
+                    SettingsItem ("input-keyboard",
+                                  new Keyboard_Page ("Keyboard", deck, ipc)),
                     SettingsItem ("input-mouse",
-                                  new Mouse_Widget ("Mouse", deck, ipc)),
+                                  new Mouse_Page ("Mouse", deck, ipc)),
                     SettingsItem ("input-touchpad",
-                                  new Trackpad_Widget ("Trackpad", deck, ipc)),
+                                  new Trackpad_Page ("Trackpad", deck, ipc)),
                 }),
                 SettingsCategory ("Administration", {
                     SettingsItem ("system-users",
