@@ -5,13 +5,13 @@ namespace SwaySettings {
     public abstract class Page : Gtk.Box {
 
         [GtkChild]
-        public unowned Gtk.Box content_box;
+        public unowned Hdy.HeaderBar header_bar;
         [GtkChild]
         public unowned Gtk.Button back_button;
         [GtkChild]
-        public unowned Gtk.Label title;
-        [GtkChild]
         public unowned Gtk.ButtonBox button_box;
+        [GtkChild]
+        public unowned Gtk.Box content_box;
 
         public string label;
 
@@ -27,7 +27,7 @@ namespace SwaySettings {
             Object ();
             this.ipc = ipc;
             this.label = label;
-            title.set_text (this.label);
+            header_bar.set_title (this.label);
             back_button.clicked.connect (() => {
                 deck.navigate (Hdy.NavigationDirection.BACK);
             });
@@ -98,6 +98,9 @@ namespace SwaySettings {
         }
 
         public override void on_refresh () {
+            foreach (var child in button_box.get_children ()) {
+                button_box.remove (child);
+            }
             foreach (var child in content_box.get_children ()) {
                 content_box.remove (child);
             }
@@ -155,7 +158,7 @@ namespace SwaySettings {
                 }
                 if (all_tabs.length == 1) {
                     stack_switcher.visible = false;
-                    title.set_text (stack.visible_child_name);
+                    header_bar.set_title (stack.visible_child_name);
                 }
             }
         }

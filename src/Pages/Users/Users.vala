@@ -1,98 +1,82 @@
 // https://sssd.io/design-pages/accounts_service.html
 namespace SwaySettings {
-    [DBus (name = "org.freedesktop.Accounts")]
-    interface Properties : GLib.Object {
-        public abstract string FindUserByName (string name) throws Error;
-    }
-
-    [DBus (name = "org.freedesktop.Accounts.User")]
-    interface Account : GLib.Object {
-        public abstract string UserName { owned get; }
-        public abstract string RealName { owned get; }
-        public abstract string IconFile { owned get; }
-
-        public signal void Changed ();
-
-        public abstract void SetRealName (string full_name) throws Error;
-    }
-
     public class Users : Page_Scroll {
-        private Account account = null;
+        private unowned Act.UserManager user_manager = Act.UserManager.get_default ();
+        private unowned Act.User current_user;
 
-        private Gtk.Button button;
+        private Users_Content content;
+
+        private Gtk.Button save_button;
 
         public Users (string label, Hdy.Deck deck, IPC ipc) {
             base (label, deck, ipc);
         }
 
         public override Gtk.Widget set_child () {
-            dbus_connect ();
+            string username = GLib.Environment.get_user_name ();
+            content = new Users_Content ();
 
-            account.Changed.connect (() => this.on_refresh ());
-
-            add_save_button ();
-
-            var grid = new Gtk.Grid ();
-            grid.column_homogeneous = true;
-            grid.column_spacing = 24;
-
-            grid.add (get_avatar ());
-            grid.add (get_real_name ());
-
-            return Page.get_scroll_widget (grid);
-        }
-
-        void add_save_button () {
-            button = new Gtk.Button.with_label ("Save");
-            button.get_style_context ().add_class ("suggested-action");
-            this.button_box.add (button);
+            // Save button
+            save_button = new Gtk.Button.with_label ("Save");
+            save_button.get_style_context ().add_class ("suggested-action");
+            this.button_box.add (save_button);
             this.button_box.show_all ();
-        }
 
-        Hdy.Avatar get_avatar () {
-            Hdy.Avatar avatar = new Hdy.Avatar (96, account.RealName, true);
-            if (account.IconFile != null && account.IconFile.length > 0) {
-                File icon_file = File.new_for_path (account.IconFile);
-                avatar.set_loadable_icon (new FileIcon (icon_file));
+            // Avatar
+            content.avatar_event_box.button_press_event.connect (() => {
+
+                return true;
+            });
+
+            // Name_entry
+
+            if (current_user == null || !current_user.is_loaded) {
+                current_user = user_manager.get_user (username);
+                current_user.notify["is-loaded"].connect (() => set_user_data ());
+                current_user.changed.connect (()=> this.on_refresh ());
+            } else {
+                set_user_data ();
             }
-            avatar.halign = Gtk.Align.END;
-            return avatar;
+
+            return Page.get_scroll_widget (content);
         }
 
-        Gtk.Box get_real_name () {
-            Gtk.Box box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
-
-            Gtk.Label label = new Gtk.Label (account.UserName);
-            label.halign = Gtk.Align.START;
-            label.margin_start = 8;
-            label.margin_top = 4;
-            label.margin_bottom = 4;
-            box.add (label);
-
-            Gtk.Entry entry = new Gtk.Entry ();
-            entry.text = account.RealName ?? "";
-            box.add (entry);
-
-            box.halign = Gtk.Align.START;
-            box.valign = Gtk.Align.CENTER;
-            return box;
-        }
-
-        void dbus_connect () {
-            try {
-                Properties properties = Bus.get_proxy_sync (
-                    BusType.SYSTEM,
-                    "org.freedesktop.Accounts",
-                    "/org/freedesktop/Accounts");
-                account = Bus.get_proxy_sync (
-                    BusType.SYSTEM,
-                    "org.freedesktop.Accounts",
-                    properties.FindUserByName (
-                        GLib.Environment.get_user_name ()));
-            } catch (Error e) {
-                stderr.printf (@"$(e.code): $(e.message)\n");
-                stderr.printf ("Could not connect to Account service\n");
+        void set_user_data () {
+            // Avatar
+            content.avatar.set_text (current_user.real_name);
+            if (current_user.icon_file != null && current_user.icon_file.length > 0) {
+                File icon_file = File.new_for_path (current_user.icon_file);
+                content.avatar.set_loadable_icon (new FileIcon (icon_file));
             }
+
+            // Title
+            content.title.set_text (current_user.real_name);
+
+            // Subtitle
+            string sub_string = current_user.email;
+            if(sub_string == null || sub_string.length == 0){
+                sub_string = current_user.user_name;
+            }
+            content.subtitle.set_text (sub_string);
+
+            // Subtitle2
+            string user_type = current_user.system_account? "Root Account": "Regular Account";
+            content.subtitle2.set_text (user_type);
         }
+    }
+
+    [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/Users/Users.ui")]
+    private class Users_Content : Gtk.Box {
+        [GtkChild]
+        public unowned Gtk.EventBox avatar_event_box;
+        [GtkChild]
+        public unowned Hdy.Avatar avatar;
+
+        [GtkChild]
+        public unowned Gtk.Label title;
+        [GtkChild]
+        public unowned Gtk.Label subtitle;
+        [GtkChild]
+        public unowned Gtk.Label subtitle2;
     }
 }

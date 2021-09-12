@@ -9,5 +9,6 @@
       <file>List_Item/List_Item.ui</file>
       <file>Pages/StartupApps/Startup_Apps_Item.ui</file>
       <file>Pages/StartupApps/Startup_Apps_Chooser.ui</file>
+      <file>Pages/Users/Users.ui</file>
   </gresource>
 </gresources>
