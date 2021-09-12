@@ -36,8 +36,7 @@ namespace SwaySettings {
 
             // Activates row on keyboard navigation
             list_box.row_selected.connect ((_, r) => {
-                int index = r.get_index ();
-                if (r != null && index >= 0) r.activate ();
+                if (r != null && r.get_index () >= 0) r.activate ();
             });
 
             list_box.row_activated.connect ((_, row) => {
@@ -92,7 +91,7 @@ namespace SwaySettings {
             for (int i = 0; i < list.size; i++) {
                 var item = list[i];
                 var row = new Gtk.ListBoxRow ();
-                row.add(new Gtk.Label (item.to_string ()));
+                row.add (new Gtk.Label (item.to_string ()));
                 list_box.add (row);
                 if (selected_index == i) row.activate ();
             }
