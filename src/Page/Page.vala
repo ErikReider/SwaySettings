@@ -2,10 +2,10 @@ using Gee;
 
 namespace SwaySettings {
     [GtkTemplate (ui = "/org/erikreider/swaysettings/Page/Page.ui")]
-    public abstract class Page : Gtk.Bin {
+    public abstract class Page : Gtk.Box {
 
         [GtkChild]
-        public unowned Gtk.Box root_box;
+        public unowned Gtk.Box content_box;
         [GtkChild]
         public unowned Gtk.Button back_button;
         [GtkChild]
@@ -16,6 +16,12 @@ namespace SwaySettings {
         public string label;
 
         public IPC ipc;
+
+        public virtual bool refresh_on_realize {
+            get {
+                return true;
+            }
+        }
 
         protected Page (string label, Hdy.Deck deck, IPC ipc) {
             Object ();
@@ -28,6 +34,13 @@ namespace SwaySettings {
             deck.child_switched.connect ((deck_child_index) => {
                 if (deck_child_index == 0) on_back (deck);
             });
+
+            if (refresh_on_realize) {
+                this.realize.connect (() => on_refresh ());
+            }
+        }
+
+        public virtual void on_refresh () {
         }
 
         public virtual void on_back (Hdy.Deck deck) {
@@ -82,19 +95,13 @@ namespace SwaySettings {
 
         protected Page_Scroll (string label, Hdy.Deck deck, IPC ipc) {
             base (label, deck, ipc);
-            root_box.add (get_scroll_widget (
-                              set_child (),
-                              have_margin,
-                              shadow,
-                              clamp_max,
-                              clamp_tight));
         }
 
-        public void refresh () {
-            foreach (var child in root_box.get_children ()) {
-                root_box.remove (child);
+        public override void on_refresh () {
+            foreach (var child in content_box.get_children ()) {
+                content_box.remove (child);
             }
-            root_box.add (get_scroll_widget (
+            content_box.add (get_scroll_widget (
                               set_child (),
                               have_margin,
                               shadow,
@@ -134,9 +141,9 @@ namespace SwaySettings {
             // stack.set_margin_bottom (margin);
             // stack.set_margin_end (margin);
 
-            root_box.add (stack_switcher);
-            root_box.add (stack);
-            root_box.show_all ();
+            content_box.add (stack_switcher);
+            content_box.add (stack);
+            content_box.show_all ();
 
             var all_tabs = tabs ();
             if (all_tabs.length < 1) {
