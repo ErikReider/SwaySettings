@@ -22,18 +22,16 @@ namespace SwaySettings {
             this.button_box.add (save_button);
             this.button_box.show_all ();
 
-            // Avatar
+            // Avatar EventBox
             content.avatar_event_box.button_press_event.connect (() => {
 
                 return true;
             });
 
-            // Name_entry
-
             if (current_user == null || !current_user.is_loaded) {
                 current_user = user_manager.get_user (username);
-                current_user.notify["is-loaded"].connect (() => set_user_data ());
-                current_user.changed.connect (()=> this.on_refresh ());
+                current_user.notify["is-loaded"].connect (set_user_data);
+                current_user.changed.connect (() => this.on_refresh ());
             } else {
                 set_user_data ();
             }
@@ -44,7 +42,8 @@ namespace SwaySettings {
         void set_user_data () {
             // Avatar
             content.avatar.set_text (current_user.real_name);
-            if (current_user.icon_file != null && current_user.icon_file.length > 0) {
+            if (current_user.icon_file != null
+                && current_user.icon_file.length > 0) {
                 File icon_file = File.new_for_path (current_user.icon_file);
                 content.avatar.set_loadable_icon (new FileIcon (icon_file));
             }
@@ -54,13 +53,14 @@ namespace SwaySettings {
 
             // Subtitle
             string sub_string = current_user.email;
-            if(sub_string == null || sub_string.length == 0){
+            if (sub_string == null || sub_string.length == 0) {
                 sub_string = current_user.user_name;
             }
             content.subtitle.set_text (sub_string);
 
             // Subtitle2
-            string user_type = current_user.system_account? "Root Account": "Regular Account";
+            string user_type = current_user.system_account ?
+                               "Root Account" : "Regular Account";
             content.subtitle2.set_text (user_type);
         }
     }

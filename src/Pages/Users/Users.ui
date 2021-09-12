@@ -25,6 +25,7 @@
                   <object class="GtkBox">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="halign">center</property>
                     <property name="spacing">12</property>
                     <child>
                       <object class="GtkEventBox" id="avatar_event_box">
@@ -32,10 +33,6 @@
                         <property name="can-focus">False</property>
                         <property name="halign">center</property>
                         <property name="valign">center</property>
-                        <property name="margin-start">8</property>
-                        <property name="margin-end">8</property>
-                        <property name="margin-top">8</property>
-                        <property name="margin-bottom">8</property>
                         <child>
                           <object class="HdyAvatar" id="avatar">
                             <property name="visible">True</property>
@@ -122,9 +119,6 @@
                         <property name="fill">True</property>
                         <property name="position">1</property>
                       </packing>
-                    </child>
-                    <child>
-                      <placeholder/>
                     </child>
                   </object>
                   <packing>
