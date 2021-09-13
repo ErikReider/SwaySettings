@@ -99,6 +99,25 @@ namespace SwaySettings {
             var add_button = new Gtk.Button.from_icon_name ("list-add-symbolic",
                                                             Gtk.IconSize.DND);
             add_button.get_style_context ().add_class ("circular");
+            add_button.clicked.connect (() => {
+                var image_chooser = new Gtk.FileChooserNative (
+                    "Select Image",
+                    (Gtk.Window)get_toplevel (),
+                    Gtk.FileChooserAction.OPEN,
+                    "_Open",
+                    "_Cancel");
+                // Only show images
+                var filter = new Gtk.FileFilter ();
+                filter.add_mime_type ("image/*");
+                image_chooser.set_filter (filter);
+                // Run and get result
+                int res = image_chooser.run ();
+                if (res == Gtk.ResponseType.ACCEPT) {
+                    string ? path = image_chooser.get_filename ();
+                    if (path != null) popover_img_click (path);
+                }
+                image_chooser.destroy ();
+            });
             content.popover_flowbox.add (add_button);
             // Add all children
             Functions.walk_through_dir ("/usr/share/pixmaps/faces",
@@ -106,7 +125,7 @@ namespace SwaySettings {
                 string path = Path.build_filename (file.get_path (),
                                                    info.get_name ());
                 switch (info.get_file_type ()) {
-                    case FileType.DIRECTORY:
+                    case FileType.DIRECTORY :
                         Functions.walk_through_dir (path, (i, f) => {
                         if (i.get_file_type () != FileType.REGULAR) return;
                         string subpath = Path.build_filename (f.get_path (),
@@ -129,6 +148,10 @@ namespace SwaySettings {
         void popover_img_click (string path) {
             current_user.set_icon_file (path);
             content.popover.popdown ();
+        }
+
+        // TODO: Implement image cropping/centering and resizing of image to 96px
+        void resize_img () {
         }
     }
 
