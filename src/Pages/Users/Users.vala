@@ -83,7 +83,7 @@ namespace SwaySettings {
 
             // Subtitle2
             string user_type = current_user.system_account ?
-                               "Root Account" : "Regular Account";
+                               "Root User" : "Regular User";
             content.subtitle2.set_text (user_type);
         }
     }
