@@ -16,7 +16,7 @@ namespace SwaySettings {
 
             // Avatar EventBox
             content.avatar_event_box.button_press_event.connect (() => {
-
+                content.popover.popup ();
                 return true;
             });
 
@@ -85,6 +85,50 @@ namespace SwaySettings {
             string user_type = current_user.system_account ?
                                "Root User" : "Regular User";
             content.subtitle2.set_text (user_type);
+
+            fill_popover ();
+        }
+
+        void fill_popover () {
+            // Remove all children
+            foreach (var child in content.popover_flowbox.get_children ()) {
+                content.popover_flowbox.remove (child);
+            }
+
+            // Add file chooser button
+            var add_button = new Gtk.Button.from_icon_name ("list-add-symbolic",
+                                                            Gtk.IconSize.DND);
+            add_button.get_style_context ().add_class ("circular");
+            content.popover_flowbox.add (add_button);
+            // Add all children
+            Functions.walk_through_dir ("/usr/share/pixmaps/faces",
+                                        (info, file) => {
+                string path = Path.build_filename (file.get_path (),
+                                                   info.get_name ());
+                switch (info.get_file_type ()) {
+                    case FileType.DIRECTORY:
+                        Functions.walk_through_dir (path, (i, f) => {
+                        if (i.get_file_type () != FileType.REGULAR) return;
+                        string subpath = Path.build_filename (f.get_path (),
+                                                              i.get_name ());
+                        content.popover_flowbox.add (
+                            new Popover_Image (subpath, popover_img_click));
+                    });
+                        break;
+                    case FileType.REGULAR:
+                        content.popover_flowbox.add (
+                            new Popover_Image (path, popover_img_click));
+                        break;
+                    default:
+                        return;
+                }
+            });
+            content.popover_flowbox.show_all ();
+        }
+
+        void popover_img_click (string path) {
+            current_user.set_icon_file (path);
+            content.popover.popdown ();
         }
     }
 
@@ -108,5 +152,42 @@ namespace SwaySettings {
         public unowned Gtk.Label subtitle;
         [GtkChild]
         public unowned Gtk.Label subtitle2;
+
+        [GtkChild]
+        public unowned Gtk.Popover popover;
+        [GtkChild]
+        public unowned Gtk.FlowBox popover_flowbox;
+    }
+
+    private class Popover_Image : Gtk.EventBox {
+        public delegate void On_click (string path);
+
+        public Popover_Image (string path, On_click cb) {
+            try {
+                const int size = 64;
+                const int h_size = 32;
+                var pixbuf = new Gdk.Pixbuf.from_file_at_size (path, size, size);
+
+                var surface = new Cairo.ImageSurface (Cairo.Format.ARGB32, size, size);
+                var ctx = new Cairo.Context (surface);
+                Gdk.cairo_set_source_pixbuf (ctx, pixbuf, 0, 0);
+
+                ctx.arc (h_size, h_size, h_size, 0, 2 * Math.PI);
+                ctx.clip ();
+                ctx.paint ();
+                var img = new Gtk.Image.from_surface (surface);
+                this.add (img);
+            } catch (Error e) {
+                this.hide ();
+                this.destroy ();
+            }
+
+            this.button_press_event.connect (() => {
+                cb (path);
+                return false;
+            });
+
+            this.show_all ();
+        }
     }
 }
