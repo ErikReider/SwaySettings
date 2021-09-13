@@ -20,6 +20,36 @@ namespace SwaySettings {
                 return true;
             });
 
+            // Title Entry on press ESC
+            content.title_entry.key_press_event.connect ((_, eventKey) => {
+                if (eventKey.keyval == Gdk.Key.Escape) {
+                    string text = current_user.real_name;
+                    content.title.set_text (text);
+                    content.title_entry.set_text (text);
+                    content.title_button.set_active (false);
+                }
+                return false;
+            });
+            // Title Entry on press Enter
+            content.title_entry.activate.connect (() => {
+                string text = content.title_entry.text;
+                content.title.set_text (text);
+                content.title_entry.set_text (text);
+                current_user.set_real_name (text);
+                content.title_button.set_active (false);
+            });
+            // Title Togglebutton on toggle
+            content.title_button.toggled.connect (() => {
+                bool toggle_value = content.title_button.get_active ();
+                string name = toggle_value ? "entry" : "title";
+                content.title_stack.set_visible_child_name (name);
+                if (toggle_value) {
+                    content.title_entry.set_text (current_user.real_name);
+                    content.title_entry.grab_focus_without_selecting ();
+                    content.title_entry.set_position (-1);
+                }
+            });
+
             if (current_user == null || !current_user.is_loaded) {
                 current_user = user_manager.get_user (username);
                 current_user.notify["is-loaded"].connect (set_user_data);
@@ -43,34 +73,6 @@ namespace SwaySettings {
             // Title
             content.title.set_text (current_user.real_name);
             content.title_entry.set_text (current_user.real_name);
-            // On press ESC
-            content.title_entry.key_press_event.connect ((_, eventKey) => {
-                if (eventKey.keyval == Gdk.Key.Escape) {
-                    string text = current_user.real_name;
-                    content.title.set_text (text);
-                    content.title_entry.set_text (text);
-                    content.title_button.set_active (false);
-                }
-                return false;
-            });
-            // On press Enter
-            content.title_entry.activate.connect (() => {
-                string text = content.title_entry.text;
-                content.title.set_text (text);
-                content.title_entry.set_text (text);
-                current_user.set_real_name (text);
-                content.title_button.set_active (false);
-            });
-            content.title_button.toggled.connect (() => {
-                bool toggle_value = content.title_button.get_active ();
-                string name = toggle_value ? "entry" : "title";
-                content.title_stack.set_visible_child_name (name);
-                if (toggle_value) {
-                    content.title_entry.set_text (current_user.real_name);
-                    content.title_entry.grab_focus_without_selecting ();
-                    content.title_entry.set_position (-1);
-                }
-            });
 
             // Subtitle
             string sub_string = current_user.email;
