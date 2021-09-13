@@ -59,21 +59,82 @@
                         <property name="orientation">vertical</property>
                         <property name="spacing">4</property>
                         <child>
-                          <object class="GtkLabel" id="title">
+                          <object class="GtkBox">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="valign">center</property>
-                            <property name="label" translatable="yes">asdasdasdas</property>
-                            <property name="xalign">0</property>
-                            <attributes>
-                              <attribute name="weight" value="bold"/>
-                              <attribute name="size" value="14336"/>
-                            </attributes>
+                            <property name="spacing">8</property>
+                            <child>
+                              <object class="GtkStack" id="title_stack">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="transition-duration">100</property>
+                                <property name="transition-type">crossfade</property>
+                                <child>
+                                  <object class="GtkLabel" id="title">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="valign">center</property>
+                                    <property name="label" translatable="yes">Title</property>
+                                    <property name="xalign">0</property>
+                                    <attributes>
+                                      <attribute name="weight" value="bold"/>
+                                      <attribute name="size" value="14336"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="name">title</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkEntry" id="title_entry">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="activates-default">True</property>
+                                    <property name="input-purpose">name</property>
+                                  </object>
+                                  <packing>
+                                    <property name="name">entry</property>
+                                    <property name="position">1</property>
+                                    <property name="needs-attention">True</property>
+                                  </packing>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkToggleButton" id="title_button">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">True</property>
+                                <property name="halign">center</property>
+                                <property name="valign">center</property>
+                                <child>
+                                  <object class="GtkImage">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="xpad">4</property>
+                                    <property name="icon-name">edit-symbolic</property>
+                                  </object>
+                                </child>
+                                <style>
+                                  <class name="circular"/>
+                                </style>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
                           </object>
                           <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
                             <property name="position">0</property>
                           </packing>
                         </child>
@@ -83,7 +144,7 @@
                             <property name="can-focus">False</property>
                             <property name="halign">start</property>
                             <property name="valign">center</property>
-                            <property name="label" translatable="yes">asdasdasdasdasdas</property>
+                            <property name="label" translatable="yes">Subtitle</property>
                             <property name="xalign">0</property>
                             <attributes>
                               <attribute name="weight" value="semilight"/>
@@ -101,7 +162,7 @@
                             <property name="can-focus">False</property>
                             <property name="halign">start</property>
                             <property name="valign">center</property>
-                            <property name="label" translatable="yes">asdasdasdasdasdas</property>
+                            <property name="label" translatable="yes">Subtitle2</property>
                             <property name="xalign">0</property>
                             <attributes>
                               <attribute name="weight" value="semilight"/>

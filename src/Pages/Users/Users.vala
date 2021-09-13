@@ -6,8 +6,6 @@ namespace SwaySettings {
 
         private Users_Content content;
 
-        private Gtk.Button save_button;
-
         public Users (string label, Hdy.Deck deck, IPC ipc) {
             base (label, deck, ipc);
         }
@@ -15,12 +13,6 @@ namespace SwaySettings {
         public override Gtk.Widget set_child () {
             string username = GLib.Environment.get_user_name ();
             content = new Users_Content ();
-
-            // Save button
-            save_button = new Gtk.Button.with_label ("Save");
-            save_button.get_style_context ().add_class ("suggested-action");
-            this.button_box.add (save_button);
-            this.button_box.show_all ();
 
             // Avatar EventBox
             content.avatar_event_box.button_press_event.connect (() => {
@@ -31,7 +23,7 @@ namespace SwaySettings {
             if (current_user == null || !current_user.is_loaded) {
                 current_user = user_manager.get_user (username);
                 current_user.notify["is-loaded"].connect (set_user_data);
-                current_user.changed.connect (() => this.on_refresh ());
+                current_user.changed.connect (set_user_data);
             } else {
                 set_user_data ();
             }
@@ -50,6 +42,35 @@ namespace SwaySettings {
 
             // Title
             content.title.set_text (current_user.real_name);
+            content.title_entry.set_text (current_user.real_name);
+            // On press ESC
+            content.title_entry.key_press_event.connect ((_, eventKey) => {
+                if (eventKey.keyval == Gdk.Key.Escape) {
+                    string text = current_user.real_name;
+                    content.title.set_text (text);
+                    content.title_entry.set_text (text);
+                    content.title_button.set_active (false);
+                }
+                return false;
+            });
+            // On press Enter
+            content.title_entry.activate.connect (() => {
+                string text = content.title_entry.text;
+                content.title.set_text (text);
+                content.title_entry.set_text (text);
+                current_user.set_real_name (text);
+                content.title_button.set_active (false);
+            });
+            content.title_button.toggled.connect (() => {
+                bool toggle_value = content.title_button.get_active ();
+                string name = toggle_value ? "entry" : "title";
+                content.title_stack.set_visible_child_name (name);
+                if (toggle_value) {
+                    content.title_entry.set_text (current_user.real_name);
+                    content.title_entry.grab_focus_without_selecting ();
+                    content.title_entry.set_position (-1);
+                }
+            });
 
             // Subtitle
             string sub_string = current_user.email;
@@ -73,7 +94,14 @@ namespace SwaySettings {
         public unowned Hdy.Avatar avatar;
 
         [GtkChild]
+        public unowned Gtk.Stack title_stack;
+        [GtkChild]
+        public unowned Gtk.ToggleButton title_button;
+        [GtkChild]
         public unowned Gtk.Label title;
+        [GtkChild]
+        public unowned Gtk.Entry title_entry;
+
         [GtkChild]
         public unowned Gtk.Label subtitle;
         [GtkChild]
