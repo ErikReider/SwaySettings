@@ -48,7 +48,9 @@ namespace SwaySettings {
                 string text = content.title_entry.text;
                 content.title.set_text (text);
                 content.title_entry.set_text (text);
-                current_user.set_real_name (text);
+                if (current_user.get_real_name () != text) {
+                    current_user.set_real_name (text);
+                }
                 content.title_button.set_active (false);
             });
             // Title Togglebutton on toggle
