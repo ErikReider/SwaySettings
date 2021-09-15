@@ -1,5 +1,18 @@
 // https://sssd.io/design-pages/accounts_service.html
 namespace SwaySettings {
+
+    private struct Image {
+        string path;
+        bool correct_size;
+
+        // public Image(string path, bool correct_size) {
+        // this.path = path;
+        // this.correct_size = correct_size;
+        // }
+    }
+
+    private errordomain PathError { INVALID_PATH }
+
     public class Users : Page_Scroll {
         private unowned Act.UserManager user_manager = Act.UserManager.get_default ();
         private unowned Act.User current_user;
@@ -114,7 +127,14 @@ namespace SwaySettings {
                 int res = image_chooser.run ();
                 if (res == Gtk.ResponseType.ACCEPT) {
                     string ? path = image_chooser.get_filename ();
-                    if (path != null) popover_img_click (path);
+                    if (path != null) {
+                        Image img = Image ();
+                        int w, h;
+                        Gdk.Pixbuf.get_file_info (path, out w, out h);
+                        img.path = path;
+                        img.correct_size = w == 96 && h == 96;
+                        set_user_img (img);
+                    }
                 }
                 image_chooser.destroy ();
             });
@@ -131,12 +151,12 @@ namespace SwaySettings {
                         string subpath = Path.build_filename (f.get_path (),
                                                               i.get_name ());
                         content.popover_flowbox.add (
-                            new Popover_Image (subpath, popover_img_click));
+                            new Popover_Image (subpath, set_user_img));
                     });
                         break;
                     case FileType.REGULAR:
                         content.popover_flowbox.add (
-                            new Popover_Image (path, popover_img_click));
+                            new Popover_Image (path, set_user_img));
                         break;
                     default:
                         return;
@@ -145,13 +165,24 @@ namespace SwaySettings {
             content.popover_flowbox.show_all ();
         }
 
-        void popover_img_click (string path) {
-            current_user.set_icon_file (path);
-            content.popover.popdown ();
-        }
+        // TODO: Implement image cropping/centering instead of squishing the image
+        void set_user_img (Image img) {
+            try {
+                var pixbuf = new Gdk.Pixbuf.from_file (img.path);
+                if (!img.correct_size) {
+                    pixbuf = pixbuf.scale_simple (
+                        96, 96, Gdk.InterpType.BILINEAR);
+                }
+                string new_path = Path.build_filename (
+                    Environment.get_home_dir (), ".face");
+                pixbuf.save (new_path, "jpeg");
+                pixbuf.dispose ();
 
-        // TODO: Implement image cropping/centering and resizing of image to 96px
-        void resize_img () {
+                current_user.set_icon_file (new_path);
+                content.popover.popdown ();
+            } catch (Error e) {
+                stderr.printf (e.message + "\n");
+            }
         }
     }
 
@@ -183,12 +214,28 @@ namespace SwaySettings {
     }
 
     private class Popover_Image : Gtk.EventBox {
-        public delegate void On_click (string path);
+        public delegate void On_click (Image img);
 
         public Popover_Image (string path, On_click cb) {
+            if (path == null || path.length == 0) {
+                this.destroy ();
+                this.dispose ();
+                return;
+            }
+
+            Image img = Image ();
+
+            const int size = 64;
+            const int h_size = 32;
             try {
-                const int size = 64;
-                const int h_size = 32;
+                if (path == null || path.length == 0) {
+                    throw new PathError.INVALID_PATH ("The image path is invalid!");
+                }
+                int w, h;
+                Gdk.Pixbuf.get_file_info (path, out w, out h);
+                img.path = path;
+                img.correct_size = w == 96 && h == 96;
+
                 var pixbuf = new Gdk.Pixbuf.from_file_at_size (path, size, size);
 
                 var surface = new Cairo.ImageSurface (Cairo.Format.ARGB32, size, size);
@@ -198,15 +245,17 @@ namespace SwaySettings {
                 ctx.arc (h_size, h_size, h_size, 0, 2 * Math.PI);
                 ctx.clip ();
                 ctx.paint ();
-                var img = new Gtk.Image.from_surface (surface);
-                this.add (img);
+                var img_surf = new Gtk.Image.from_surface (surface);
+                this.add (img_surf);
             } catch (Error e) {
+                stderr.printf (e.message + "\n");
                 this.hide ();
                 this.destroy ();
+                return;
             }
 
             this.button_press_event.connect (() => {
-                cb (path);
+                cb (img);
                 return false;
             });
 
