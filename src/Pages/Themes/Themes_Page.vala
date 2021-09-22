@@ -2,9 +2,7 @@ using Gee;
 
 namespace SwaySettings {
     public class Themes_Page : Page_Scroll {
-        static unowned string settings_gnome_desktop = "org.gnome.desktop.interface";
-
-        Settings settings = new Settings (settings_gnome_desktop);
+        Settings settings = new Settings ("org.gnome.desktop.interface");
 
         public Themes_Page (string page_name, Hdy.Deck deck, IPC ipc) {
             base (page_name, deck, ipc);
@@ -65,13 +63,13 @@ namespace SwaySettings {
             settings.set_string (type, theme_name);
             // Also set the .config/gtk-3.0/settings.ini
             // (Firefox ignores the gsettings variable)
-            string settings_path =
-                @"$(Environment.get_user_config_dir())/gtk-3.0/settings.ini";
+            string settings_path = Path.build_filename (
+                Environment.get_user_config_dir (), "gtk-3.0", "settings.ini");
             var file = File.new_for_path (settings_path);
             // TODO: Implement alt action instead of skipping
             if (!file.query_exists ()) return;
             try {
-                ArrayList<string> theme_data = new ArrayList<string>();
+                string theme_data = "";
 
                 // Read data
                 var dis = new DataInputStream (file.read ());
@@ -95,21 +93,16 @@ namespace SwaySettings {
                             read_line = @"$(split[0])=$(theme_name)";
                         }
                     }
-                    theme_data.add (@"$(read_line)\n");
+                    theme_data += @"$(read_line)\n";
                 }
                 dis.close ();
 
                 // Write data
-                var fos = file.replace (
-                    null,
-                    false,
-                    FileCreateFlags.REPLACE_DESTINATION,
-                    null);
-                var dos = new DataOutputStream (fos);
-                foreach (string write_line in theme_data) {
-                    dos.put_string (write_line);
-                }
-                dos.close ();
+                file.replace_contents (theme_data.data,
+                                       null,
+                                       false,
+                                       GLib.FileCreateFlags.REPLACE_DESTINATION,
+                                       null);
             } catch (Error e) {
                 print ("Error: %s\n", e.message);
                 Process.exit (1);
@@ -123,11 +116,11 @@ namespace SwaySettings {
         ArrayList<string> get_gtk_themes (string setting_name, string folder_name) {
             string[] paths = Environment.get_system_data_dirs ();
 
-            paths += GLib.Environment.get_user_data_dir ();
+            paths += Environment.get_user_data_dir ();
             for (var i = 0; i < paths.length; i++) {
                 paths[i] = Path.build_path ("/", paths[i], folder_name);
             }
-            paths += @"$(GLib.Environment.get_home_dir ())/.$(folder_name)";
+            paths += @"$(Environment.get_home_dir ())/.$(folder_name)";
 
             var themes = new ArrayList<string>();
 
@@ -135,16 +128,21 @@ namespace SwaySettings {
             if (min_ver % 2 != 0) min_ver++;
 
             foreach (string path in paths) {
-                if (!FileUtils.test (path, GLib.FileTest.IS_DIR)) continue;
+                if (!FileUtils.test (path, FileTest.IS_DIR)) continue;
                 try {
                     var directory = File.new_for_path (path);
-                    var enumerator = directory.enumerate_children (FileAttribute.STANDARD_NAME, 0);
+                    var enumerator = directory.enumerate_children (
+                        FileAttribute.STANDARD_NAME, 0);
                     FileInfo file_prop;
                     while ((file_prop = enumerator.next_file ()) != null) {
                         string name = file_prop.get_name ();
-                        string folder_path = @"$(path)/$(name)";
-                        if (GLib.FileType.DIRECTORY != file_prop.get_file_type ()
-                            || path.contains (@"flatpak/exports/share/$(folder_name)")) continue;
+                        string folder_path = Path.build_path ("/", path, name);
+                        string flatpak_path = Path.build_path (
+                            "/", "flatpak", "exports", "share", folder_name);
+                        if (FileType.DIRECTORY != file_prop.get_file_type ()
+                            || path.contains (flatpak_path)) {
+                            continue;
+                        }
 
                         switch (folder_name) {
                             case "themes":
@@ -180,21 +178,21 @@ namespace SwaySettings {
                 case "cursor-theme":
                     var cursors_file = File.new_for_path (@"$(folder_path)/cursors");
                     FileType file_type = cursors_file.query_file_type (
-                        GLib.FileQueryInfoFlags.NOFOLLOW_SYMLINKS);
+                        FileQueryInfoFlags.NOFOLLOW_SYMLINKS);
                     if (file_type == FileType.DIRECTORY) return true;
                     break;
                 case "icon-theme":
                     var theme_file = File.new_for_path (
                         @"$(folder_path)/index.theme");
                     var file_type = theme_file.query_file_type (0);
-                    if (GLib.FileType.REGULAR == file_type) {
+                    if (FileType.REGULAR == file_type) {
                         var dir = File.new_for_path (folder_path);
                         var enu = dir.enumerate_children (
                             FileAttribute.STANDARD_NAME,
                             FileQueryInfoFlags.NOFOLLOW_SYMLINKS);
                         FileInfo prop;
                         while ((prop = enu.next_file ()) != null) {
-                            if (prop.get_file_type () == GLib.FileType.DIRECTORY) {
+                            if (prop.get_file_type () == FileType.DIRECTORY) {
                                 string file_name = prop.get_name ().down ();
                                 // validate ex: 384x384 or 16x16
                                 bool valid_res = false;
