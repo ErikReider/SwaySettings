@@ -27,6 +27,8 @@ namespace SwaySettings {
             string username = GLib.Environment.get_user_name ();
             content = new Users_Content ();
 
+            Window window = (Window) get_toplevel ();
+
             // Avatar EventBox
             content.avatar_event_box.button_press_event.connect (() => {
                 content.popover.popup ();
@@ -63,6 +65,35 @@ namespace SwaySettings {
                     content.title_entry.grab_focus_without_selecting ();
                     content.title_entry.set_position (-1);
                 }
+            });
+
+            // Change password
+            content.action_row_pass.set_activatable (true);
+            content.action_row_pass.activated.connect (() => {
+                var dialog = new Gtk.Dialog.with_buttons (
+                    "Choose password", window,
+                    Gtk.DialogFlags.USE_HEADER_BAR,
+                    "_Confirm", Gtk.ResponseType.APPLY,
+                    "_Cancel", Gtk.ResponseType.CANCEL);
+                dialog.set_resizable (false);
+                dialog.set_response_sensitive (Gtk.ResponseType.APPLY, false);
+
+                var dialog_content = new Users_PasswordDialog (dialog);
+                dialog.get_content_area ().add (dialog_content);
+
+                int res = dialog.run ();
+                if (res == Gtk.ResponseType.ACCEPT) {
+                    // string ? path = image_chooser.get_filename ();
+                    // if (path != null) {
+                    // Image img = Image ();
+                    // int w, h;
+                    // Gdk.Pixbuf.get_file_info (path, out w, out h);
+                    // img.path = path;
+                    // img.correct_size = w == 96 && h == 96;
+                    // set_user_img (img);
+                    // }
+                }
+                dialog.destroy ();
             });
 
             if (current_user == null || !current_user.is_loaded) {
@@ -213,6 +244,23 @@ namespace SwaySettings {
         public unowned Gtk.Popover popover;
         [GtkChild]
         public unowned Gtk.FlowBox popover_flowbox;
+
+        [GtkChild]
+        public unowned Hdy.ActionRow action_row_pass;
+    }
+
+    [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/Users/Users_PasswordDialog.ui")]
+    private class Users_PasswordDialog : Gtk.Grid {
+        [GtkChild]
+        public unowned Gtk.Entry current_password;
+        [GtkChild]
+        public unowned Gtk.Entry new_password;
+        [GtkChild]
+        public unowned Gtk.Entry confirm_password;
+
+        public Users_PasswordDialog (Gtk.Dialog dialog) {
+
+        }
     }
 
     private class Popover_Image : Gtk.EventBox {
