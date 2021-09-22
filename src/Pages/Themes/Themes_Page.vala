@@ -4,8 +4,13 @@ namespace SwaySettings {
     public class Themes_Page : Page_Scroll {
         static unowned string settings_gnome_desktop = "org.gnome.desktop.interface";
 
+        Settings settings = new Settings (settings_gnome_desktop);
+
         public Themes_Page (string page_name, Hdy.Deck deck, IPC ipc) {
             base (page_name, deck, ipc);
+            // Refresh all of the widgets when a value changes
+            // This also gets called when ex gnome-tweaks changes a value
+            settings.changed.connect ((settings, str) => this.on_refresh ());
         }
 
         public override Gtk.Widget set_child () {
@@ -45,7 +50,7 @@ namespace SwaySettings {
         }
 
         void set_gtk_theme (string type, string theme_name) {
-            new Settings (settings_gnome_desktop).set_string (type, theme_name);
+            settings.set_string (type, theme_name);
             // Also set the .config/gtk-3.0/settings.ini (Firefox ignores the gsettings variable)
             string settings_path = @"$(Environment.get_user_config_dir())/gtk-3.0/settings.ini";
             var file = File.new_for_path (settings_path);
@@ -95,7 +100,7 @@ namespace SwaySettings {
         }
 
         string get_current_gtk_theme (string type) {
-            return new Settings (settings_gnome_desktop).get_string (type) ?? "";
+            return settings.get_string (type) ?? "";
         }
 
         ArrayList<string> get_gtk_themes (string type) {
