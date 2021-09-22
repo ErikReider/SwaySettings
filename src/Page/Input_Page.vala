@@ -2,6 +2,23 @@ using Gee;
 
 namespace SwaySettings {
 
+    public class Language : StringType {
+        public string name;
+        public string shortDescription;
+        public string description;
+
+        public bool is_valid () {
+            bool n_valid = name != null && name.length > 0;
+            bool sd_valid = shortDescription != null && shortDescription.length > 0;
+            bool d_valid = description != null && description.length > 0;
+            return n_valid && sd_valid && d_valid;
+        }
+
+        public override string to_string () {
+            return description;
+        }
+    }
+
     public class Input_Page_Section {
         public string ? title;
         public Gtk.Widget widget;
@@ -43,7 +60,7 @@ namespace SwaySettings {
 
         public override Gtk.Widget set_child () {
             if (input_type == Input_Types.keyboard) {
-                languages = Functions.get_languages ();
+                languages = get_languages ();
             } else {
                 languages = new HashMap<string, Language>();
             }
@@ -103,6 +120,49 @@ namespace SwaySettings {
             }
 
             return box;
+        }
+
+        HashMap<string, Language> get_languages () {
+            string path = "/usr/share/X11/xkb/rules/evdev.xml";
+            string xpath_q = "/xkbConfigRegistry/layoutList/layout/configItem";
+
+            var languages = new HashMap<string, Language> ();
+            unowned Xml.Doc doc = Xml.Parser.parse_file (path);
+            if (doc == null) {
+                stderr.printf ("File %s not found or permissions missing", path);
+                return languages;
+            }
+
+            Xml.XPath.Context context = new Xml.XPath.Context (doc);
+            unowned Xml.XPath.Object object = context.eval (xpath_q);
+
+            if (object.type != Xml.XPath.ObjectType.NODESET) {
+                stderr.printf ("Object is not of type Node Set");
+                return languages;
+            }
+
+            for (var i = 0; i < object.nodesetval->length (); i++) {
+                unowned Xml.Node node = object.nodesetval->item (i);
+                var lang = new Language ();
+                unowned Xml.Node child = node.children;
+                while ((child = child.next) != null) {
+                    switch (child.name) {
+                        case "name":
+                            lang.name = child.get_content ();
+                            break;
+                        case "shortDescription":
+                            lang.shortDescription = child.get_content ();
+                            break;
+                        case "description":
+                            lang.description = child.get_content ();
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                if (lang.is_valid ()) languages[lang.description] = lang;
+            }
+            return languages;
         }
 
         bool init_input_devices () {

@@ -1,6 +1,12 @@
 using Gee;
 
 namespace SwaySettings {
+    public struct Wallpaper {
+        string path;
+        string thumbnail_path;
+        bool thumbnail_valid;
+    }
+
     public class Background_Page : Page {
 
         private Granite.AsyncImage preview_image;
@@ -45,7 +51,7 @@ namespace SwaySettings {
             content_box.add (Page.get_scroll_widget (wallpaper_box, false, true, int.MAX, int.MAX));
 
             set_preivew_image ();
-            add_wallpapers (Functions.get_system_wallpapers (),
+            add_wallpapers (get_system_wallpapers (),
                             ref system_wallpaper_flow_box);
 
             this.show_all ();
@@ -123,6 +129,65 @@ namespace SwaySettings {
                 Idle.add (add_images.callback);
                 yield;
             }
+        }
+
+        ArrayList<Wallpaper ? > get_system_wallpapers () {
+            ArrayList<string> default_paths = new ArrayList<string>.wrap ({
+                "/usr/share/backgrounds",
+                "/usr/share/wallpapers",
+                "/usr/local/share/wallpapers",
+                "/usr/local/share/backgrounds",
+            });
+
+            ArrayList<Wallpaper ? > wallpaper_paths = new ArrayList<Wallpaper ? >();
+            var supported_formats = new ArrayList<string>.wrap ({ "jpg" });
+
+            Gdk.Pixbuf.get_formats ().foreach ((pxfmt) => supported_formats.add (pxfmt.get_name ()));
+
+            for (int i = 0; i < default_paths.size; i++) {
+                string path = default_paths[i];
+                Functions.walk_through_dir (path, (file_info, file) => {
+                    switch (file_info.get_file_type ()) {
+                        case GLib.FileType.REGULAR:
+                            if (file_info.get_is_hidden ()
+                                || file_info.get_is_backup ()
+                                || file_info.get_is_symlink ()) {
+                                return;
+                            }
+                            string name = file_info.get_name ();
+                            string suffix = name[name.last_index_of_char ('.') + 1 :];
+                            if (supported_formats.contains (suffix)) {
+                                Wallpaper wp = Wallpaper ();
+                                wp.path = path + "/" + file_info.get_name ();
+                                try {
+                                    string[] required = {
+                                        FileAttribute.THUMBNAIL_PATH,
+                                        FileAttribute.THUMBNAIL_IS_VALID
+                                    };
+                                    var info = File.new_for_path (wp.path).query_info (
+                                        string.joinv (",", required),
+                                        GLib.FileQueryInfoFlags.NONE);
+                                    string thumb_path = info.get_attribute_as_string (
+                                        FileAttribute.THUMBNAIL_PATH);
+                                    bool thumb_valid = info.get_attribute_boolean (
+                                        FileAttribute.THUMBNAIL_IS_VALID);
+                                    wp.thumbnail_path = thumb_path;
+                                    wp.thumbnail_valid = thumb_valid;
+                                } catch (Error e) {
+                                    print ("Error: %s\n", e.message);
+                                }
+                                wallpaper_paths.add (wp);
+                            }
+                            break;
+                        case GLib.FileType.DIRECTORY:
+                            default_paths.add (path + "/" + file_info.get_name ());
+                            break;
+                        default:
+                            break;
+                    }
+                });
+            }
+            return wallpaper_paths;
         }
     }
 }
