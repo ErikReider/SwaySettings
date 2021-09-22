@@ -87,6 +87,9 @@ namespace SwaySettings {
                             case "icon-theme":
                                 looking_for = "gtk-icon-theme-name";
                                 break;
+                            case "cursor-theme":
+                                looking_for = "gtk-cursor-theme-name";
+                                break;
                         }
                         if (split[0] == looking_for) {
                             read_line = @"$(split[0])=$(theme_name)";
