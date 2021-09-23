@@ -35,7 +35,9 @@ namespace SwaySettings {
             string ? current_theme = get_current_gtk_theme (setting_name);
             ArrayList<string> themes = get_gtk_themes (setting_name,
                                                        folder_name);
-            if (current_theme == null || themes.size == 0) {
+            if (current_theme == null
+                || themes.size == 0
+                || !settings.settings_schema.has_key (setting_name)) {
                 combo_row.set_sensitive (false);
                 return combo_row;
             }
@@ -60,6 +62,8 @@ namespace SwaySettings {
         }
 
         void set_gtk_theme (string type, string theme_name) {
+            if (!settings.settings_schema.has_key (type)) return;
+
             settings.set_string (type, theme_name);
             // Also set the .config/gtk-3.0/settings.ini
             // (Firefox ignores the gsettings variable)
@@ -110,7 +114,10 @@ namespace SwaySettings {
         }
 
         string ? get_current_gtk_theme (string type) {
-            return settings.get_string (type);
+            if (settings.settings_schema.has_key (type)) {
+                return settings.get_string (type);
+            }
+            return null;
         }
 
         ArrayList<string> get_gtk_themes (string setting_name, string folder_name) {
