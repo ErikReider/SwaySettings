@@ -78,45 +78,21 @@ namespace SwaySettings {
             for (int i = 0; i < top_sections.size; i++) {
                 var section = top_sections[i];
                 if (section != null) {
-                    var section_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 8);
-                    if (section.title != null) {
-                        var label = new Gtk.Label (section.title);
-                        label.set_alignment (0f, 0.5f);
-                        label.set_single_line_mode (true);
-                        Pango.AttrList attrs = new Pango.AttrList ();
-                        attrs.insert (Pango.attr_weight_new (Pango.Weight.BOLD));
-                        label.attributes = attrs;
-                        section_box.add (label);
-                    }
-                    var widget_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
-                    widget_box.get_style_context ().add_class ("content");
-                    widget_box.get_style_context ().add_class ("view");
-                    widget_box.get_style_context ().add_class ("frame");
-                    widget_box.add (section.widget);
-                    section_box.add (widget_box);
-                    box.add (section_box);
+                    var pref_group = new Hdy.PreferencesGroup ();
+                    pref_group.set_title (section.title ?? "");
+                    pref_group.add (section.widget);
+                    box.add (pref_group);
                 }
             }
 
             var options = get_options ();
             if (options.widgets.size > 0) {
-                var options_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 8);
-                if (options.title != null) {
-                    var label = new Gtk.Label (options.title);
-                    label.set_alignment (0f, 0.5f);
-                    label.set_single_line_mode (true);
-                    Pango.AttrList attrs = new Pango.AttrList ();
-                    attrs.insert (Pango.attr_weight_new (Pango.Weight.BOLD));
-                    label.attributes = attrs;
-                    options_box.add (label);
-                }
-                var list_box = new Gtk.ListBox ();
-                list_box.get_style_context ().add_class ("content");
+                var pref_group = new Hdy.PreferencesGroup ();
+                pref_group.set_title (options.title ?? "");
                 foreach (var option in options.widgets) {
-                    if (option != null) list_box.add (option);
+                    if (option != null) pref_group.add (option);
                 }
-                options_box.add (list_box);
-                box.add (options_box);
+                box.add (pref_group);
             }
 
             return box;
