@@ -34,6 +34,10 @@ namespace SwaySettings {
             this.update_callback = update_callback;
             this.list = list;
 
+            this.get_style_context ().add_class ("content");
+            this.get_style_context ().add_class ("view");
+            this.get_style_context ().add_class ("frame");
+
             // Activates row on keyboard navigation
             list_box.row_selected.connect ((_, r) => {
                 if (r != null && r.get_index () >= 0) r.activate ();

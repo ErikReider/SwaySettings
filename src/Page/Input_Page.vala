@@ -2,6 +2,23 @@ using Gee;
 
 namespace SwaySettings {
 
+    public class Language : StringType {
+        public string name;
+        public string shortDescription;
+        public string description;
+
+        public bool is_valid () {
+            bool n_valid = name != null && name.length > 0;
+            bool sd_valid = shortDescription != null && shortDescription.length > 0;
+            bool d_valid = description != null && description.length > 0;
+            return n_valid && sd_valid && d_valid;
+        }
+
+        public override string to_string () {
+            return description;
+        }
+    }
+
     public class Input_Page_Section {
         public string ? title;
         public Gtk.Widget widget;
@@ -43,7 +60,7 @@ namespace SwaySettings {
 
         public override Gtk.Widget set_child () {
             if (input_type == Input_Types.keyboard) {
-                languages = Functions.get_languages ();
+                languages = get_languages ();
             } else {
                 languages = new HashMap<string, Language>();
             }
@@ -61,48 +78,67 @@ namespace SwaySettings {
             for (int i = 0; i < top_sections.size; i++) {
                 var section = top_sections[i];
                 if (section != null) {
-                    var section_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 8);
-                    if (section.title != null) {
-                        var label = new Gtk.Label (section.title);
-                        label.set_alignment (0f, 0.5f);
-                        label.set_single_line_mode (true);
-                        Pango.AttrList attrs = new Pango.AttrList ();
-                        attrs.insert (Pango.attr_weight_new (Pango.Weight.BOLD));
-                        label.attributes = attrs;
-                        section_box.add (label);
-                    }
-                    var widget_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
-                    widget_box.get_style_context ().add_class ("content");
-                    widget_box.get_style_context ().add_class ("view");
-                    widget_box.get_style_context ().add_class ("frame");
-                    widget_box.add (section.widget);
-                    section_box.add (widget_box);
-                    box.add (section_box);
+                    var pref_group = new Hdy.PreferencesGroup ();
+                    pref_group.set_title (section.title ?? "");
+                    pref_group.add (section.widget);
+                    box.add (pref_group);
                 }
             }
 
             var options = get_options ();
             if (options.widgets.size > 0) {
-                var options_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 8);
-                if (options.title != null) {
-                    var label = new Gtk.Label (options.title);
-                    label.set_alignment (0f, 0.5f);
-                    label.set_single_line_mode (true);
-                    Pango.AttrList attrs = new Pango.AttrList ();
-                    attrs.insert (Pango.attr_weight_new (Pango.Weight.BOLD));
-                    label.attributes = attrs;
-                    options_box.add (label);
-                }
-                var list_box = new Gtk.ListBox ();
-                list_box.get_style_context ().add_class ("content");
+                var pref_group = new Hdy.PreferencesGroup ();
+                pref_group.set_title (options.title ?? "");
                 foreach (var option in options.widgets) {
-                    if (option != null) list_box.add (option);
+                    if (option != null) pref_group.add (option);
                 }
-                options_box.add (list_box);
-                box.add (options_box);
+                box.add (pref_group);
             }
 
             return box;
+        }
+
+        HashMap<string, Language> get_languages () {
+            string path = "/usr/share/X11/xkb/rules/evdev.xml";
+            string xpath_q = "/xkbConfigRegistry/layoutList/layout/configItem";
+
+            var languages = new HashMap<string, Language> ();
+            unowned Xml.Doc doc = Xml.Parser.parse_file (path);
+            if (doc == null) {
+                stderr.printf ("File %s not found or permissions missing", path);
+                return languages;
+            }
+
+            Xml.XPath.Context context = new Xml.XPath.Context (doc);
+            unowned Xml.XPath.Object object = context.eval (xpath_q);
+
+            if (object.type != Xml.XPath.ObjectType.NODESET) {
+                stderr.printf ("Object is not of type Node Set");
+                return languages;
+            }
+
+            for (var i = 0; i < object.nodesetval->length (); i++) {
+                unowned Xml.Node node = object.nodesetval->item (i);
+                var lang = new Language ();
+                unowned Xml.Node child = node.children;
+                while ((child = child.next) != null) {
+                    switch (child.name) {
+                        case "name":
+                            lang.name = child.get_content ();
+                            break;
+                        case "shortDescription":
+                            lang.shortDescription = child.get_content ();
+                            break;
+                        case "description":
+                            lang.description = child.get_content ();
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                if (lang.is_valid ()) languages[lang.description] = lang;
+            }
+            return languages;
         }
 
         bool init_input_devices () {

@@ -1,6 +1,6 @@
 namespace SwaySettings {
     [GtkTemplate (ui = "/org/erikreider/swaysettings/List_Item/List_Item.ui")]
-    public class List_Item : Gtk.ListBoxRow {
+    public class List_Item : Hdy.PreferencesRow {
 
         public static unowned int height_req = 70;
 
