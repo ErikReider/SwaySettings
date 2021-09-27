@@ -49,6 +49,10 @@ namespace SwaySettings {
                     SettingsItem ("input-touchpad",
                                   new Trackpad_Page ("Trackpad", deck, ipc)),
                 }),
+                SettingsCategory ("Administration", {
+                    SettingsItem ("system-users",
+                                  new Users ("Users", deck, ipc)),
+                }),
             });
 
             for (int index = 0; index < items.size; index++) {
