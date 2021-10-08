@@ -41,4 +41,8 @@ include ~/.config/sway/.generated_settings/*.conf
 
 # To apply the selected wallpaper
 exec_always swaymsg "output * bg ~/.cache/wallpaper fill"
+
+# Start all of the non-hidden applications in ~/.config/autostart
+# This executable is included in the swaysettings package
+exec sway-autostart
 ```

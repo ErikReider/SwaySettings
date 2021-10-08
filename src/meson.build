@@ -50,3 +50,11 @@ executable(
   install: true,
 )
 install_data('style.css', install_dir : join_paths(sysconfdir, 'xdg/swaysettings'))
+
+executable(
+  'sway-autostart',
+  ['auto_start.vala'],
+  vala_args: '--target-glib=2.50',
+  dependencies: swaysettings_deps,
+  install: true,
+)
