@@ -17,11 +17,7 @@ namespace SwaySettings {
 
         public IPC ipc;
 
-        public virtual bool refresh_on_realize {
-            get {
-                return true;
-            }
-        }
+        public virtual bool refresh_on_realize { get; default = true; }
 
         protected Page (string label, Hdy.Deck deck, IPC ipc) {
             Object ();
@@ -31,8 +27,8 @@ namespace SwaySettings {
             back_button.clicked.connect (() => {
                 deck.navigate (Hdy.NavigationDirection.BACK);
             });
-            deck.child_switched.connect ((deck_child_index) => {
-                if (deck_child_index == 0) on_back (deck);
+            deck.notify["visible-child"].connect (() => {
+                if (deck.visible_child_name == "main_page") on_back (deck);
             });
 
             if (refresh_on_realize) {
@@ -105,11 +101,11 @@ namespace SwaySettings {
                 content_box.remove (child);
             }
             content_box.add (get_scroll_widget (
-                              set_child (),
-                              have_margin,
-                              shadow,
-                              clamp_max,
-                              clamp_tight));
+                                 set_child (),
+                                 have_margin,
+                                 shadow,
+                                 clamp_max,
+                                 clamp_tight));
         }
 
         public abstract Gtk.Widget set_child ();

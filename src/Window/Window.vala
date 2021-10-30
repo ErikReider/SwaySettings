@@ -77,7 +77,9 @@ namespace SwaySettings {
                 flow_box.max_children_per_line = 7;
                 flow_box.selection_mode = Gtk.SelectionMode.NONE;
                 flow_box.child_activated.connect ((child) => {
-                    page_box.remove (page_box.get_children ().nth_data (0));
+                    foreach (var c in page_box.get_children ()) {
+                        if (c != null) page_box.remove (c);
+                    }
                     page_box.add (((Item) child).settings_item.page);
                     deck.navigate (Hdy.NavigationDirection.FORWARD);
                 });
