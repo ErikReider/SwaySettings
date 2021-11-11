@@ -50,6 +50,10 @@ namespace SwaySettings {
                 if (index % 2 != 0) box.get_style_context ().add_class ("view");
 
                 var title = new Gtk.Label (category.title);
+                Pango.AttrList li = new Pango.AttrList ();
+                li.insert (Pango.attr_weight_new (Pango.Weight.BOLD));
+                li.insert (new Pango.AttrSize (12288));
+                title.set_attributes (li);
 
                 title.xalign = 0.0f;
                 int margin = 8;

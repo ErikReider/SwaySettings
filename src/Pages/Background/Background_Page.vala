@@ -91,6 +91,10 @@ namespace SwaySettings {
 
         void get_wallpaper_container (ref Gtk.FlowBox flow_box, string title) {
             var header = new Gtk.Label (title);
+            Pango.AttrList li = new Pango.AttrList ();
+            li.insert (Pango.attr_weight_new (Pango.Weight.BOLD));
+            li.insert (new Pango.AttrSize (12288));
+            header.set_attributes (li);
             header.xalign = 0.0f;
             flow_box.max_children_per_line = 8;
             flow_box.min_children_per_line = 1;
