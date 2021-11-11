@@ -155,7 +155,9 @@ namespace SwaySettings {
                                 return;
                             }
                             string name = file_info.get_name ();
-                            string suffix = name[name.last_index_of_char ('.') + 1 :];
+                            string suffix = name.slice (
+                                name.last_index_of_char ('.') + 1,
+                                name.length);
                             if (supported_formats.contains (suffix)) {
                                 Wallpaper wp = Wallpaper ();
                                 wp.path = path + "/" + file_info.get_name ();
