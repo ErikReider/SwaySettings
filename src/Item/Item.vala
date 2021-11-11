@@ -12,7 +12,6 @@ namespace SwaySettings {
 
         public Item (string text, string icon_name, SettingsItem settings_item) {
             Object ();
-            this.get_style_context().add_class("main-flex-item");
             this.settings_item = settings_item;
 
             btn_label.set_text (text);

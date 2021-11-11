@@ -28,8 +28,6 @@ namespace SwaySettings {
 
             preview_image = new Granite.AsyncImage (true, false);
             preview_image.set_size_request (preview_image_width, preview_image_height);
-            preview_image.get_style_context ().add_class ("shadow");
-            preview_image.get_style_context ().add_class ("background-image-item");
             preview_image.halign = Gtk.Align.CENTER;
             preview_image.valign = Gtk.Align.START;
             preview_image.get_style_context ().add_class ("frame");
@@ -94,7 +92,6 @@ namespace SwaySettings {
         void get_wallpaper_container (ref Gtk.FlowBox flow_box, string title) {
             var header = new Gtk.Label (title);
             header.xalign = 0.0f;
-            header.get_style_context ().add_class ("category-title");
             flow_box.max_children_per_line = 8;
             flow_box.min_children_per_line = 1;
             flow_box.homogeneous = true;

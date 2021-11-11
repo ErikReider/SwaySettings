@@ -14,17 +14,6 @@ namespace SwaySettings {
             Object (application: app);
             IPC ipc = new IPC ();
 
-            try {
-                Gtk.CssProvider css_provider = new Gtk.CssProvider ();
-                css_provider.load_from_path (Functions.get_style_path ());
-                Gtk.StyleContext.
-                 add_provider_for_screen (Gdk.Screen.get_default (),
-                                          css_provider,
-                                          Gtk.STYLE_PROVIDER_PRIORITY_USER);
-            } catch (Error e) {
-                print ("Error: %s\n", e.message);
-            }
-
             ArrayList<SettingsCategory ? > items =
                 new ArrayList<SettingsCategory ? >.wrap ({
                 SettingsCategory ("Desktop", {
@@ -61,7 +50,6 @@ namespace SwaySettings {
                 if (index % 2 != 0) box.get_style_context ().add_class ("view");
 
                 var title = new Gtk.Label (category.title);
-                title.get_style_context ().add_class ("category-title");
 
                 title.xalign = 0.0f;
                 int margin = 8;

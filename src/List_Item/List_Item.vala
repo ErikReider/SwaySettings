@@ -105,7 +105,6 @@ namespace SwaySettings {
                                 int height,
                                 int width,
                                 ref bool checked_folder_exists) {
-            this.get_style_context ().add_class ("shadow");
 
             this.valign = Gtk.Align.CENTER;
             this.halign = Gtk.Align.CENTER;

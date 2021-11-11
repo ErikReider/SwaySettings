@@ -49,7 +49,6 @@ executable(
   dependencies: swaysettings_deps,
   install: true,
 )
-install_data('style.css', install_dir : join_paths(sysconfdir, 'xdg/swaysettings'))
 
 executable(
   'sway-autostart',
