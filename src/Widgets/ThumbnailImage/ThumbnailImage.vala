@@ -82,7 +82,7 @@ namespace SwaySettings {
 
         private async void show_image () {
             image = new Granite.AsyncImage (false, false);
-            image.set_size_request (width, height);
+            image.get_style_context ().add_class ("frame");
             this.add (image);
             this.show_all ();
 
