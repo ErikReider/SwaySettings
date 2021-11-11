@@ -27,6 +27,7 @@ namespace SwaySettings {
             }
 
             preview_image = new Granite.AsyncImage (true, false);
+            preview_image.set_size_request (preview_image_width, preview_image_height);
             preview_image.halign = Gtk.Align.CENTER;
             preview_image.valign = Gtk.Align.START;
             preview_image.get_style_context ().add_class ("frame");
@@ -86,6 +87,7 @@ namespace SwaySettings {
                                                      preview_image_width,
                                                      preview_image_height,
                                                      true);
+            preview_image.set_size_request (-1, -1);
         }
 
         void get_wallpaper_container (ref Gtk.FlowBox flow_box, string title) {
