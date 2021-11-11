@@ -76,8 +76,15 @@ namespace SwaySettings {
             content.avatar.set_text (current_user.real_name);
             if (current_user.icon_file != null
                 && current_user.icon_file.length > 0) {
-                File icon_file = File.new_for_path (current_user.icon_file);
-                content.avatar.set_loadable_icon (new FileIcon (icon_file));
+                content.avatar.set_image_load_func ((size) => {
+                    try{
+                        return new Gdk.Pixbuf.from_file_at_size (
+                            current_user.icon_file, size, size);
+                    } catch (Error e) {
+                        stderr.printf ("ERROR: %s \n", e.message);
+                        return null;
+                    }
+                });
             }
 
             // Title
