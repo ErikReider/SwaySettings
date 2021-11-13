@@ -10,41 +10,71 @@ namespace SwaySettings {
         [GtkChild]
         unowned Gtk.Box page_box;
 
+        private Item[] items = {};
+        private string ? current_page_name = null;
+
+        public void navigato_to_page (string page) {
+            if (current_page_name != null
+                && current_page_name == page
+                && deck.visible_child_name != "main_page") return;
+            foreach (var item in items) {
+                if (item == null) continue;
+                if (item.settings_item.page_name == page) {
+                    item.activate ();
+                    break;
+                }
+            }
+        }
+
         public Window (Gtk.Application app) {
             Object (application: app);
             IPC ipc = new IPC ();
 
-            ArrayList<SettingsCategory ? > items =
-                new ArrayList<SettingsCategory ? >.wrap ({
+            SettingsCategory[] items = {
                 SettingsCategory ("Desktop", {
                     SettingsItem ("preferences-desktop-wallpaper",
-                                  new Background_Page ("Background", deck, ipc)),
+                                  new Background_Page ("Background", deck, ipc),
+                                  "wallpaper"),
                     SettingsItem ("preferences-desktop-theme",
-                                  new Themes_Page ("Appearance", deck, ipc)),
+                                  new Themes_Page ("Appearance", deck, ipc),
+                                  "appearance"),
 
                     SettingsItem ("applications-other",
-                                  new Startup_Apps ("Startup Applications", deck, ipc)),
+                                  new Startup_Apps ("Startup Applications",
+                                                    deck,
+                                                    ipc),
+                                  "startup-apps"),
                     SettingsItem ("preferences-other",
-                                  new Default_Apps ("Default Applications", deck, ipc)),
+                                  new Default_Apps ("Default Applications",
+                                                    deck,
+                                                    ipc),
+                                  "default-apps"),
                     SettingsItem ("mail-unread",
-                                  new Swaync ("Sway Notification Center", deck, ipc),
+                                  new Swaync ("Sway Notification Center",
+                                              deck,
+                                              ipc),
+                                  "swaync",
                                   !Functions.is_swaync_installed ()),
                 }),
                 SettingsCategory ("Hardware", {
                     SettingsItem ("input-keyboard",
-                                  new Keyboard_Page ("Keyboard", deck, ipc)),
+                                  new Keyboard_Page ("Keyboard", deck, ipc),
+                                  "keyboard"),
                     SettingsItem ("input-mouse",
-                                  new Mouse_Page ("Mouse", deck, ipc)),
+                                  new Mouse_Page ("Mouse", deck, ipc),
+                                  "mouse"),
                     SettingsItem ("input-touchpad",
-                                  new Trackpad_Page ("Trackpad", deck, ipc)),
+                                  new Trackpad_Page ("Trackpad", deck, ipc),
+                                  "trackpad"),
                 }),
                 SettingsCategory ("Administration", {
                     SettingsItem ("system-users",
-                                  new Users ("Users", deck, ipc)),
+                                  new Users ("Users", deck, ipc),
+                                  "users"),
                 }),
-            });
+            };
 
-            for (int index = 0; index < items.size; index++) {
+            for (int index = 0; index < items.length; index++) {
                 var category = items[index];
                 var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
                 if (index % 2 != 0) box.get_style_context ().add_class ("view");
@@ -72,7 +102,10 @@ namespace SwaySettings {
                     foreach (var c in page_box.get_children ()) {
                         if (c != null) page_box.remove (c);
                     }
-                    page_box.add (((Item) child).settings_item.page);
+                    Item item = (Item) child;
+                    if (item == null) return;
+                    current_page_name = item.settings_item.page_name;
+                    page_box.add (item.settings_item.page);
                     deck.navigate (Hdy.NavigationDirection.FORWARD);
                 });
                 foreach (var settings_item in category.items) {
@@ -80,6 +113,7 @@ namespace SwaySettings {
                     var item = new Item (settings_item.page.label,
                                          settings_item.image,
                                          settings_item);
+                    this.items += item;
                     flow_box.add (item);
                 }
                 if (flow_box.get_children ().length () <= 0) continue;
@@ -107,10 +141,15 @@ namespace SwaySettings {
         string image;
         Page page;
         bool hidden;
+        string page_name;
 
-        SettingsItem (string image, Page page, bool hidden = false) {
+        SettingsItem (string image,
+                      Page page,
+                      string page_name,
+                      bool hidden = false) {
             this.image = image;
             this.page = page;
+            this.page_name = page_name;
             this.hidden = hidden;
         }
     }
