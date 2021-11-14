@@ -12,6 +12,7 @@ namespace SwaySettings {
 
         private Item[] items = {};
         private string ? current_page_name = null;
+        private Gtk.GestureMultiPress gesture;
 
         public void navigato_to_page (string page) {
             if (current_page_name != null
@@ -29,6 +30,22 @@ namespace SwaySettings {
         public Window (Gtk.Application app) {
             Object (application: app);
             IPC ipc = new IPC ();
+
+            gesture = new Gtk.GestureMultiPress (this);
+            gesture.set_button (0);
+            gesture.set_propagation_phase (Gtk.PropagationPhase.CAPTURE);
+            gesture.pressed.connect ((g, n, x, y) => {
+                switch (g.get_current_button ()) {
+                    case 8:
+                        deck.navigate (Hdy.NavigationDirection.BACK);
+                        break;
+                    case 9:
+                        if (page_box.get_children ().length () > 0) {
+                            deck.navigate (Hdy.NavigationDirection.FORWARD);
+                        }
+                        break;
+                }
+            });
 
             SettingsCategory[] items = {
                 SettingsCategory ("Desktop", {
