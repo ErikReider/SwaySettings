@@ -1,3 +1,4 @@
+using Gee;
 // https://sssd.io/design-pages/accounts_service.html
 namespace SwaySettings {
 
@@ -76,8 +77,9 @@ namespace SwaySettings {
             content.avatar.set_text (current_user.real_name);
             if (current_user.icon_file != null
                 && current_user.icon_file.length > 0) {
+                // Compat with older versions
                 content.avatar.set_image_load_func ((size) => {
-                    try{
+                    try {
                         return new Gdk.Pixbuf.from_file_at_size (
                             current_user.icon_file, size, size);
                     } catch (Error e) {
@@ -143,30 +145,51 @@ namespace SwaySettings {
                 image_chooser.destroy ();
             });
             content.popover_flowbox.add (add_button);
+
             // Add all children
-            Functions.walk_through_dir ("/usr/share/pixmaps/faces",
-                                        (info, file) => {
+            string[] avatar_locations = {
+                "/usr/share/plasma/avatars",
+                "/usr/share/pixmaps/faces"
+            };
+
+            string[] supported_formats = { "jpg" };
+            Gdk.Pixbuf.get_formats ().foreach (
+                (v) => supported_formats += v.get_name ());
+
+            unowned int depth = 0;
+            foreach (string location in avatar_locations) {
+                get_avatars_in_path (location, supported_formats, depth, 3);
+            }
+            content.popover_flowbox.show_all ();
+        }
+
+        void get_avatars_in_path (string location, string[] formats,
+                                  int depth, int max_depth = -1) {
+            Functions.walk_through_dir (location, (info, file) => {
                 string path = Path.build_filename (file.get_path (),
                                                    info.get_name ());
                 switch (info.get_file_type ()) {
                     case FileType.DIRECTORY :
-                        Functions.walk_through_dir (path, (i, f) => {
-                        if (i.get_file_type () != FileType.REGULAR) return;
-                        string subpath = Path.build_filename (f.get_path (),
-                                                              i.get_name ());
-                        content.popover_flowbox.add (
-                            new Popover_Image (subpath, set_user_img));
-                    });
+                        // Limit the search depth
+                        if (depth < max_depth) {
+                            depth++;
+                            get_avatars_in_path (path, formats,
+                                                 depth, max_depth);
+                        }
                         break;
                     case FileType.REGULAR:
-                        content.popover_flowbox.add (
-                            new Popover_Image (path, set_user_img));
+                        string suffix = path.slice (
+                            path.last_index_of_char ('.') + 1,
+                            path.length);
+                        if (suffix in formats) {
+                            content.popover_flowbox.add (
+                                new Popover_Image (path, set_user_img));
+                        }
                         break;
                     default:
                         return;
                 }
             });
-            content.popover_flowbox.show_all ();
         }
 
         // TODO: Implement image cropping/centering instead of squishing the image
