@@ -304,7 +304,7 @@ namespace SwaySettings {
                                         (index) => {
                 var event = (Events) index;
                 device.data.send_events = event;
-                write_new_settings (@"input type:$(device.input_type.parse ()) events $(event.get_value ())");
+                write_new_settings (@"input type:$(device.input_type.parse ()) events $(event.parse ())");
             });
         }
 

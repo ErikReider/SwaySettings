@@ -2,21 +2,37 @@ using Gee;
 
 namespace SwaySettings {
     public enum Input_Types {
+        NEITHER,
         POINTER,
         TOUCHPAD,
-        KEYBOARD,
-        NEITHER;
+        KEYBOARD;
 
         public string parse () {
-            EnumClass enumc = (EnumClass) typeof (Input_Types).class_ref ();
-            return enumc.get_value_by_name (this.to_string ()).value_nick;
+            switch (this) {
+                case POINTER:
+                    return "pointer";
+                case TOUCHPAD:
+                    return "touchpad";
+                case KEYBOARD:
+                    return "keyboard";
+                case NEITHER:
+                default:
+                    return "neither";
+            }
         }
 
-        public static Input_Types parse_string (string val) {
-            EnumClass enumc = (EnumClass) typeof (Input_Types).class_ref ();
-            unowned EnumValue ? eval = enumc.get_value_by_nick (val);
-            if (eval == null) return Input_Types.NEITHER;
-            return (Input_Types) eval.value;
+        public static Input_Types parse_string (string value) {
+            switch (value) {
+                case "pointer":
+                    return POINTER;
+                case "touchpad":
+                    return TOUCHPAD;
+                case "keyboard":
+                    return KEYBOARD;
+                case "neither":
+                default:
+                    return NEITHER;
+            }
         }
     }
 
@@ -76,18 +92,26 @@ namespace SwaySettings {
         ADAPTIVE, FLAT;
 
         public static Accel_Profiles parse_string (string value) {
-            if (value == "flat") return FLAT;
-            return ADAPTIVE;
+            switch (value) {
+                case "flat":
+                    return FLAT;
+                default:
+                    return ADAPTIVE;
+            }
         }
 
         public string parse () {
-            if (this == FLAT) return "flat";
-            return "adaptive";
+            switch (this) {
+                case FLAT:
+                    return "flat";
+                case ADAPTIVE:
+                default:
+                    return "adaptive";
+            }
         }
 
         public string get_line () {
-            string value = (this == FLAT) ? "flat" : "adaptive";
-            return @"accel_profile $(value)";
+            return @"accel_profile $(parse ())";
         }
     }
 
@@ -95,10 +119,17 @@ namespace SwaySettings {
         TWO_FINGER, NONE, EDGE, ON_BUTTON_DOWN;
 
         public static Scroll_Methods parse_string (string value) {
-            if (value == "two_finger") return TWO_FINGER;
-            if (value == "edge") return EDGE;
-            if (value == "on_button_down") return ON_BUTTON_DOWN;
-            return NONE;
+            switch (value) {
+                case "edge":
+                    return EDGE;
+                case "on_button_down":
+                    return ON_BUTTON_DOWN;
+                case "none":
+                    return NONE;
+                case "two_finger":
+                default:
+                    return TWO_FINGER;
+            }
         }
 
         public string parse () {
@@ -116,31 +147,39 @@ namespace SwaySettings {
         }
 
         public string get_line () {
-            string value = "two_finger";
-            if (this == Scroll_Methods.NONE) value = "none";
-            else if (this == Scroll_Methods.ON_BUTTON_DOWN) value = "on_button_down";
-            else if (this == Scroll_Methods.EDGE) value = "edge";
-            return @"scroll_method $(value)";
+            return @"scroll_method $(parse ())";
         }
     }
 
     public enum Click_Methods {
-        BUTTON_AREAS, CLICKFINGER;
+        BUTTON_AREAS, CLICKFINGER, NONE;
 
         public string parse () {
-            if (this == BUTTON_AREAS) return "button_areas";
-            return "clickfinger";
+            switch (this) {
+                case CLICKFINGER:
+                    return "clickfinger";
+                case NONE:
+                    return "none";
+                case BUTTON_AREAS:
+                default:
+                    return "button_areas";
+            }
         }
 
         public static Click_Methods parse_string (string value) {
-            if (value == "button_areas") return BUTTON_AREAS;
-            return CLICKFINGER;
+            switch (value) {
+                case "clickfinger":
+                    return CLICKFINGER;
+                case "none":
+                    return NONE;
+                case "button_areas":
+                default:
+                    return BUTTON_AREAS;
+            }
         }
 
         public string get_line () {
-            string value = "clickfinger";
-            if (this == Click_Methods.BUTTON_AREAS) value = "button_areas";
-            return @"click_method $(value)";
+            return @"click_method $(parse ())";
         }
     }
 
@@ -148,29 +187,34 @@ namespace SwaySettings {
         LRM, LMR;
 
         public static Tap_Button_Maps parse_string (string value) {
-            if (value == "lrm") return LRM;
-            return LMR;
+            switch (value) {
+                case "lmr":
+                    return LMR;
+                case "lrm":
+                default:
+                    return LRM;
+            }
         }
 
         public string parse () {
             switch (this) {
                 case LMR:
                     return "lmr";
+                case LRM:
                 default:
                     return "lrm";
             }
         }
 
         public string get_line () {
-            string value = (this == LRM) ? "lrm" : "lmr";
-            return @"tap_button_map $(value)";
+            return @"tap_button_map $(parse ())";
         }
     }
 
     public enum Events {
         ENABLED, DISABLED, DISABLED_ON_EXTERNAL_MOUSE;
 
-        public static Events parse (string value) {
+        public static Events parse_string (string value) {
             switch (value.down ()) {
                 case "disabled_on_external_mouse":
                     return DISABLED_ON_EXTERNAL_MOUSE;
@@ -182,7 +226,7 @@ namespace SwaySettings {
             }
         }
 
-        public string get_value () {
+        public string parse () {
             switch (this) {
                 case DISABLED_ON_EXTERNAL_MOUSE:
                     return "disabled_on_external_mouse";
@@ -195,7 +239,7 @@ namespace SwaySettings {
         }
 
         public string get_line () {
-            return @"events $(get_value())";
+            return @"events $(parse())";
         }
     }
 
