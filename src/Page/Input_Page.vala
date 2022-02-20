@@ -208,7 +208,7 @@ namespace SwaySettings {
 
         // Keyboard input language
         public Gtk.Widget get_keyboard_language () {
-            var osl = new OrderListSelector (device.data.xkb_layout_names,
+            var ols = new OrderListSelector (device.data.xkb_layout_names,
                                              (list) => {
                 device.data.xkb_layout_names = (ArrayList<Language>) list;
                 string[] array = {};
@@ -216,18 +216,21 @@ namespace SwaySettings {
                     Language lang = (Language) item;
                     if (lang != null) array += lang.name;
                 }
-                var cmd = @"input type:$(device.input_type.parse ()) xkb_layout \"$(string.joinv (", ", array))\"";
+
+                string type = device.input_type.parse ();
+                string langs = string.joinv (", ", array);
+                var cmd = @"input type:$(type) xkb_layout \"$(langs)\"";
                 write_new_settings (cmd);
-            }, (order_list_selector) => {
-                var window = (SwaySettings.Window)get_toplevel ();
+            },
+                                             (order_list_selector) => {
                 new KeyboardInputSelector (
-                    window,
+                    (SwaySettings.Window)get_toplevel (),
                     languages,
                     device.data.xkb_layout_names,
                     order_list_selector);
             });
-            osl.sensitive = languages.size > 0;
-            return osl;
+            ols.sensitive = languages.size > 0;
+            return ols;
         }
 
         // scroll_factor
@@ -239,7 +242,8 @@ namespace SwaySettings {
                 var value = (float) slider.get_value ();
                 device.scroll_factor = value;
                 var str_value = value.to_string ().replace (",", ".");
-                write_new_settings (@"input type:$(device.input_type.parse ()) scroll_factor $(str_value)");
+                write_new_settings (
+                    @"input type:$(device.input_type.parse ()) scroll_factor $(str_value)");
                 return false;
             });
             row.add_mark (1.0, Gtk.PositionType.TOP);

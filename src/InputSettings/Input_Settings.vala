@@ -258,14 +258,12 @@ namespace SwaySettings {
             this.data = new Input_Data ();
         }
 
-        public Array<string> get_settings () {
-            Array<string> lines = new Array<string>();
-            lines.append_val (@"input type:$(input_type.parse()) {\n");
-            var settings_lines = get_type_settings ();
-            foreach (string line in settings_lines.data) {
-                lines.append_val (get_string_line (line));
+        public string[] get_settings () {
+            string[] lines = { @"input type:$(input_type.parse()) {\n" };
+            foreach (string line in get_type_settings ()) {
+                lines += get_string_line (line);
             }
-            lines.append_val ("}\n");
+            lines += "}\n";
             return lines;
         }
 
@@ -273,8 +271,8 @@ namespace SwaySettings {
             return @"\t$(line)\n";
         }
 
-        private Array<string> get_type_settings () {
-            Array<string> settings_list = new Array<string>();
+        private string[] get_type_settings () {
+            string[] settings_list = {};
 
             switch (input_type) {
                 case Input_Types.KEYBOARD:
@@ -283,59 +281,50 @@ namespace SwaySettings {
                     foreach (var lang in data.xkb_layout_names) {
                         array += lang.name;
                     }
-                    settings_list.append_val (
-                        @"xkb_layout \"$(string.joinv (", ", array))\"");
+                    string languages = string.joinv (", ", array);
+                    settings_list += (@"xkb_layout \"$(languages)\"");
                     break;
                 case Input_Types.POINTER:
                 case Input_Types.TOUCHPAD:
                     // events
-                    settings_list.append_val (
-                        data.send_events.get_line ());
+                    settings_list += data.send_events.get_line ();
 
                     // pointer_accel
-                    settings_list.append_val (
-                        @"pointer_accel $(data.accel_speed)");
+                    settings_list += @"pointer_accel $(data.accel_speed)";
 
                     // accel_profile
-                    settings_list.append_val (
-                        data.accel_profile.get_line ());
+                    settings_list += data.accel_profile.get_line ();
 
                     // natural_scroll
-                    settings_list.append_val (
-                        @"natural_scroll $(data.natural_scroll.parse ())");
+                    settings_list +=
+                        @"natural_scroll $(data.natural_scroll.parse ())";
 
                     // left_handed
-                    settings_list.append_val (
-                        @"left_handed $(data.left_handed.parse ())");
+                    settings_list +=
+                        @"left_handed $(data.left_handed.parse ())";
 
                     // scroll_factor
-                    settings_list.append_val (
-                        @"scroll_factor $(scroll_factor)");
+                    settings_list += @"scroll_factor $(scroll_factor)";
 
                     // middle_emulation
-                    settings_list.append_val (
-                        @"middle_emulation $(data.middle_emulation.parse ())");
+                    settings_list +=
+                        @"middle_emulation $(data.middle_emulation.parse ())";
 
                     if (Input_Types.TOUCHPAD == input_type) {
                         // scroll_method
-                        settings_list.append_val (
-                            data.scroll_method.get_line ());
+                        settings_list += data.scroll_method.get_line ();
 
                         // dwt
-                        settings_list.append_val (
-                            @"dwt $(data.dwt.parse ())");
+                        settings_list += @"dwt $(data.dwt.parse ())";
 
                         // tap
-                        settings_list.append_val (
-                            @"tap $(data.tap.parse ())");
+                        settings_list += @"tap $(data.tap.parse ())";
 
                         // tap_button_map
-                        settings_list.append_val (
-                            data.tap_button_map.get_line ());
+                        settings_list += data.tap_button_map.get_line ();
 
                         // click_method
-                        settings_list.append_val (
-                            data.click_method.get_line ());
+                        settings_list += data.click_method.get_line ();
                     }
                     break;
                 default:
