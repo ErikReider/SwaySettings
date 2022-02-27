@@ -288,24 +288,18 @@ namespace SwaySettings {
                 case Input_Types.TOUCHPAD:
                     // events
                     settings_list += data.send_events.get_line ();
-
                     // pointer_accel
                     settings_list += @"pointer_accel $(data.accel_speed)";
-
                     // accel_profile
                     settings_list += data.accel_profile.get_line ();
-
                     // natural_scroll
                     settings_list +=
                         @"natural_scroll $(data.natural_scroll.parse ())";
-
                     // left_handed
                     settings_list +=
                         @"left_handed $(data.left_handed.parse ())";
-
                     // scroll_factor
                     settings_list += @"scroll_factor $(scroll_factor)";
-
                     // middle_emulation
                     settings_list +=
                         @"middle_emulation $(data.middle_emulation.parse ())";
@@ -313,16 +307,12 @@ namespace SwaySettings {
                     if (Input_Types.TOUCHPAD == input_type) {
                         // scroll_method
                         settings_list += data.scroll_method.get_line ();
-
                         // dwt
                         settings_list += @"dwt $(data.dwt.parse ())";
-
                         // tap
                         settings_list += @"tap $(data.tap.parse ())";
-
                         // tap_button_map
                         settings_list += data.tap_button_map.get_line ();
-
                         // click_method
                         settings_list += data.click_method.get_line ();
                     }
