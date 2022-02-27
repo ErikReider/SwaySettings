@@ -9,7 +9,7 @@ namespace SwaySettings {
 
         public override SwaySettings.Input_Types input_type {
             get {
-                return Input_Types.pointer;
+                return Input_Types.POINTER;
             }
         }
 

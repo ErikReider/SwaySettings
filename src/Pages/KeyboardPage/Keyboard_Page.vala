@@ -9,7 +9,7 @@ namespace SwaySettings {
 
         public override SwaySettings.Input_Types input_type {
             get {
-                return Input_Types.keyboard;
+                return Input_Types.KEYBOARD;
             }
         }
 
