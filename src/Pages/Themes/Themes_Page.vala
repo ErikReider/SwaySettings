@@ -4,6 +4,8 @@ namespace SwaySettings {
     public class Themes_Page : Page_Scroll {
         Settings settings = new Settings ("org.gnome.desktop.interface");
 
+        const string[] color_schemes = { "default", "prefer-dark", "prefer-light" };
+
         public Themes_Page (string page_name, Hdy.Deck deck, IPC ipc) {
             base (page_name, deck, ipc);
             // Refresh all of the widgets when a value changes
@@ -22,7 +24,48 @@ namespace SwaySettings {
             pref_group.add (
                 gtk_theme ("Cursor Theme", "cursor-theme", "icons"));
 
+            pref_group.add (gtk4_color_scheme ());
+
             return pref_group;
+        }
+
+        private Hdy.ComboRow gtk4_color_scheme () {
+            string setting_name = "color-scheme";
+            var combo_row = new Hdy.ComboRow ();
+            combo_row.set_title ("Gtk4 Color Scheme");
+
+            if (!settings.settings_schema.has_key (setting_name)) {
+                combo_row.set_sensitive (false);
+                return combo_row;
+            }
+
+            ListStore liststore = new ListStore (typeof (Hdy.ValueObject));
+            string current_theme = settings.get_string (setting_name);
+
+            if (current_theme == null) {
+                combo_row.set_sensitive (false);
+                return combo_row;
+            }
+            int selected_index = 0;
+            for (int i = 0; i < color_schemes.length; i++) {
+                var theme_name = color_schemes[i];
+                liststore.append (new Hdy.ValueObject (theme_name));
+                if (current_theme == theme_name) selected_index = i;
+            }
+
+            combo_row.bind_name_model ((ListModel) liststore, (item) => {
+                return ((Hdy.ValueObject) item).get_string ();
+            });
+            combo_row.set_selected_index (selected_index);
+            combo_row.notify["selected-index"].connect (
+                (sender, property) => {
+                int i = ((Hdy.ComboRow) sender).get_selected_index ();
+                if (i < 0 || i >= color_schemes.length) return;
+                string theme = color_schemes[i];
+                set_gtk_theme (setting_name, theme);
+            });
+
+            return combo_row;
         }
 
         private Hdy.ComboRow gtk_theme (string title,
@@ -56,7 +99,7 @@ namespace SwaySettings {
                 (sender, property) => {
                 string theme = themes.get (((Hdy.ComboRow) sender)
                                             .get_selected_index ());
-                set_gtk_theme (setting_name, theme);
+                settings.set_string (setting_name, theme);
             });
             return combo_row;
         }
