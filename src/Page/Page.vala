@@ -10,6 +10,7 @@ namespace SwaySettings {
         public unowned Gtk.Button back_button;
         [GtkChild]
         public unowned Gtk.ButtonBox button_box;
+
         [GtkChild]
         public unowned Gtk.Box content_box;
 
@@ -27,12 +28,9 @@ namespace SwaySettings {
             back_button.clicked.connect (() => {
                 deck.navigate (Hdy.NavigationDirection.BACK);
             });
-            deck.notify["visible-child"].connect (() => {
-                if (deck.visible_child_name == "main_page") on_back (deck);
-            });
 
             if (refresh_on_realize) {
-                this.realize.connect (() => on_refresh ());
+                this.realize.connect (on_refresh);
             }
         }
 

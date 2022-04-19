@@ -31,6 +31,14 @@ namespace SwaySettings {
             Object (application: app);
             IPC ipc = new IPC ();
 
+            deck.notify["visible-child"].connect (() => {
+                if (deck.visible_child_name == "main_page") {
+                    if (page_box.get_children ().is_empty ()) return;
+                    Gtk.Widget child = page_box.get_children ().first ().data;
+                    if (child is Page) ((Page) child).on_back (deck);
+                }
+            });
+
             gesture = new Gtk.GestureMultiPress (this);
             gesture.set_button (0);
             gesture.set_propagation_phase (Gtk.PropagationPhase.CAPTURE);
