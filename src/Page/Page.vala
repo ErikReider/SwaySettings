@@ -40,15 +40,15 @@ namespace SwaySettings {
         public virtual void on_back (Hdy.Deck deck) {
         }
 
-        public static Gtk.Container get_scroll_widget (Gtk.Widget widget, bool have_margin = true, bool shadow = false,
-                                                       int clamp_max = 600, int clamp_tight = 400) {
-            var scrolled_window = new Gtk.ScrolledWindow (null, null);
-            if (shadow) scrolled_window.shadow_type = Gtk.ShadowType.IN;
-            scrolled_window.expand = true;
-            var clamp = new Hdy.Clamp ();
-            clamp.maximum_size = clamp_max;
-            clamp.tightening_threshold = clamp_tight;
-            clamp.orientation = Gtk.Orientation.HORIZONTAL;
+        public static Hdy.Clamp get_clamped_widget (Gtk.Widget widget,
+                                                    bool have_margin = true,
+                                                    int clamp_max = 600,
+                                                    int clamp_tight = 400) {
+            var clamp = new Hdy.Clamp () {
+                maximum_size = clamp_max,
+                tightening_threshold = clamp_tight,
+                orientation = Gtk.Orientation.HORIZONTAL,
+            };
             if (have_margin) {
                 int margin = 16;
                 clamp.set_margin_top (margin);
@@ -58,7 +58,26 @@ namespace SwaySettings {
             }
 
             clamp.add (widget);
-            scrolled_window.add (clamp);
+            clamp.show ();
+            return clamp;
+        }
+
+        public static Gtk.ScrolledWindow get_scroll_widget (Gtk.Widget widget,
+                                                            bool have_margin = true,
+                                                            bool shadow = false,
+                                                            int clamp_max = 600,
+                                                            int clamp_tight = 400) {
+            var scrolled_window = new Gtk.ScrolledWindow (null, null);
+            if (shadow) scrolled_window.shadow_type = Gtk.ShadowType.IN;
+            scrolled_window.expand = true;
+
+            Gtk.Viewport viewport = new Gtk.Viewport (null, null);
+            scrolled_window.add (viewport);
+            viewport.add(get_clamped_widget (widget,
+                                                     have_margin,
+                                                     clamp_max,
+                                                     clamp_tight));
+
             scrolled_window.show_all ();
             return scrolled_window;
         }

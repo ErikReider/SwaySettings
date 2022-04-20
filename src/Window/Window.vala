@@ -82,6 +82,9 @@ namespace SwaySettings {
                                   !Functions.is_swaync_installed ()),
                 }),
                 SettingsCategory ("Hardware", {
+                    SettingsItem ("bluetooth-symbolic",
+                                  new Bluetooth_Page ("Bluetooth", deck, ipc),
+                                  "bluetooth"),
                     SettingsItem ("input-keyboard",
                                   new Keyboard_Page ("Keyboard", deck, ipc),
                                   "keyboard"),
