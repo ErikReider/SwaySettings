@@ -1,7 +1,6 @@
 namespace Bluez {
-    // https://github.com/elementary/switchboard-plug-bluetooth/blob/master/src/Services/Manager.vala
     class Daemon : Object {
-        private DBusObjectManager object_manager;
+        private DBusObjectManager ? object_manager;
 
         public signal void adapter_added (Adapter1 adapter);
         public signal void adapter_removed (Adapter1 adapter);
@@ -15,10 +14,6 @@ namespace Bluez {
         public bool discoverable { get; private set; }
 
         uint watch_bluez_id = 0;
-
-        // TODO: org.freedesktop.login1 prepareForSleep
-        public Daemon () {
-        }
 
         public void start () {
             if (watch_bluez_id > 0) Bus.unwatch_name (watch_bluez_id);
@@ -161,6 +156,7 @@ namespace Bluez {
         }
 
         public Bluez.Adapter1 ? get_adapter (ObjectPath path) {
+            if (object_manager == null) return null;
             DBusObject ? object = object_manager.get_object (path);
             if (object != null) {
                 var iface = object.get_interface ("org.bluez.Adapter1");
