@@ -328,14 +328,8 @@ namespace SwaySettings {
         }
 
         async void status_switch_cb () {
-            this.status_switch.notify["active"].disconnect (this.status_switch_cb);
-            this.status_switch.sensitive = false;
-
             bool active = this.status_switch.active;
-            yield this.daemon.change_bluetooth_state (active);
-
-            this.status_switch.notify["active"].connect (this.status_switch_cb);
-            this.status_switch.sensitive = true;
+            this.daemon.change_bluetooth_state.begin (active);
         }
 
         void bus_state_change_cb (bool state) {
