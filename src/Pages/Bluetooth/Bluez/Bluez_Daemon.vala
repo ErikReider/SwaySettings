@@ -176,6 +176,16 @@ namespace Bluez {
             return (owned) list;
         }
 
+        public Bluez.Device1 ? get_device (string path) {
+            if (object_manager == null) return null;
+            DBusObject ? object = object_manager.get_object (path);
+            if (object != null) {
+                var iface = object.get_interface ("org.bluez.Device1");
+                if (iface is Bluez.Device1) return (Bluez.Device1) iface;
+            }
+            return null;
+        }
+
         public List<Device1> get_devices () {
             var list = new List<Device1> ();
             if (this.object_manager == null) return (owned) list;

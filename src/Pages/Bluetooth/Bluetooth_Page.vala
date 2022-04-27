@@ -61,7 +61,7 @@ namespace SwaySettings {
                 halign = Gtk.Align.END,
                 valign = Gtk.Align.CENTER,
             };
-            toggle_box.add (status_switch);
+            toggle_box.add (this.status_switch);
 
             // Discoverable Label
             this.status_label = new Gtk.Label (null) {
@@ -261,7 +261,9 @@ namespace SwaySettings {
             Gtk.ListBox * list_box = device.paired ? paired_list_box : nearby_list_box;
 
             var adapter = this.daemon.get_adapter (device.adapter);
-            var row = new Bluetooth_Device_Row (device, adapter);
+            var _device = this.daemon.get_device (
+                ((DBusProxy) device).get_object_path ());
+            var row = new Bluetooth_Device_Row (_device, adapter);
             // Watch property changes
             row.on_update.connect (this.device_changed_cb);
             list_box->add (row);
