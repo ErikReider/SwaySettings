@@ -236,6 +236,7 @@ namespace SwaySettings {
         }
 
         void add_signals () {
+            this.daemon.adapter_added.connect_after (this.adapter_added_cb);
             this.daemon.adapter_removed.connect_after (this.adapter_removed_cb);
             this.daemon.device_added.connect_after (this.device_added_cb);
             this.daemon.device_removed.connect_after (this.device_removed_cb);
@@ -247,6 +248,7 @@ namespace SwaySettings {
         }
 
         void remove_signals () {
+            this.daemon.adapter_added.disconnect (this.adapter_added_cb);
             this.daemon.adapter_removed.disconnect (this.adapter_removed_cb);
             this.daemon.device_added.disconnect (this.device_added_cb);
             this.daemon.device_removed.disconnect (this.device_removed_cb);
@@ -255,6 +257,11 @@ namespace SwaySettings {
             this.daemon.notify["powered"].disconnect (this.powered_state_change_cb);
             this.daemon.notify["discovering"].disconnect (this.discovering_cb);
             this.status_switch.notify["active"].disconnect (this.status_switch_cb);
+        }
+
+        void adapter_added_cb (Bluez.Adapter1 adapter) {
+            error_text = "";
+            stack.set_visible_child (scrolled_window);
         }
 
         void adapter_removed_cb (Bluez.Adapter1 adapter) {
