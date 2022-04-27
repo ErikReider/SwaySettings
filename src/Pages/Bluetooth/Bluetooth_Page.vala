@@ -173,6 +173,7 @@ namespace SwaySettings {
                 valign = Gtk.Align.CENTER,
                 halign = Gtk.Align.CENTER,
                 margin = 24,
+                sensitive = false,
             };
 
             Gtk.Image placeholder_image = new Gtk.Image () {
@@ -193,7 +194,6 @@ namespace SwaySettings {
             var _box = new Gtk.Box (Gtk.Orientation.VERTICAL, 10) {
                 valign = is_paired ? Gtk.Align.START : Gtk.Align.FILL,
                 vexpand = !is_paired,
-                sensitive = false,
             };
 
             var label = new Gtk.Label (title) {
@@ -266,8 +266,7 @@ namespace SwaySettings {
         }
 
         void device_added_cb (Bluez.Device1 device) {
-            Gtk.Box * box = device.paired ? paired_box : nearby_box;
-            Gtk.ListBox * list_box = device.paired ? paired_list_box : nearby_list_box;
+            unowned Gtk.ListBox list_box = device.paired ? paired_list_box : nearby_list_box;
 
             var adapter = this.daemon.get_adapter (device.adapter);
             var _device = this.daemon.get_device (
@@ -275,26 +274,21 @@ namespace SwaySettings {
             var row = new Bluetooth_Device_Row (_device, adapter);
             // Watch property changes
             row.on_update.connect (this.device_changed_cb);
-            list_box->add (row);
-            box->set_sensitive (true);
+            list_box.add (row);
         }
 
         void device_removed_cb (Bluez.Device1 device) {
-            Gtk.ListBox * list_box = device.paired ? paired_list_box : nearby_list_box;
+            unowned Gtk.ListBox list_box = device.paired ? paired_list_box : nearby_list_box;
 
-            foreach (var child in list_box->get_children ()) {
+            foreach (var child in list_box.get_children ()) {
                 if (child == null || !(child is Bluetooth_Device_Row)) continue;
                 var row = (Bluetooth_Device_Row) child;
                 if (row.device == device) {
                     // Remove watch property changes
                     row.on_update.disconnect (this.device_changed_cb);
-                    list_box->remove (child);
+                    list_box.remove (child);
                     break;
                 }
-            }
-            if (this.daemon.get_adapters ().is_empty ()) {
-                Gtk.Box * box = device.paired ? paired_box : nearby_box;
-                box->set_sensitive (false);
             }
         }
 
