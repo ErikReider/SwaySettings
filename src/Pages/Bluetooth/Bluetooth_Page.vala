@@ -114,7 +114,6 @@ namespace SwaySettings {
                 valign = Gtk.Align.START,
                 selection_mode = Gtk.SelectionMode.NONE,
             };
-            paired_list_box.set_sort_func (this.list_box_sort_func);
             this.paired_box = get_list_box (true,
                                             ref paired_list_box,
                                             "Paired Devices");
@@ -124,7 +123,6 @@ namespace SwaySettings {
                 valign = Gtk.Align.FILL,
                 selection_mode = Gtk.SelectionMode.NONE,
             };
-            nearby_list_box.set_sort_func (this.list_box_sort_func);
             this.nearby_box = get_list_box (false,
                                             ref nearby_list_box,
                                             "Nearby Devices");
@@ -167,6 +165,8 @@ namespace SwaySettings {
                               ref Gtk.ListBox list_box,
                               string title) {
             list_box.get_style_context ().add_class ("content");
+            // Sets the sorting function
+            list_box.set_sort_func ((Gtk.ListBoxSortFunc) this.list_box_sort_func);
             // Add placeholder
             var placeholder_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 12) {
                 expand = true,
@@ -216,13 +216,22 @@ namespace SwaySettings {
             return _box;
         }
 
-        int list_box_sort_func (Gtk.ListBoxRow a, Gtk.ListBoxRow b) {
-            int16 a_range = ((Bluetooth_Device_Row) a).device.rssi;
-            int16 b_range = ((Bluetooth_Device_Row) b).device.rssi;
-            if (a_range == b_range) return 0;
+        [CCode (instance_pos = -1)]
+        int list_box_sort_func (Bluetooth_Device_Row a, Bluetooth_Device_Row b) {
+            Bluez.Device1 a_device = a.device;
+            Bluez.Device1 b_device = b.device;
+
+            int16 a_range = a.device.rssi;
+            int16 b_range = b.device.rssi;
+            if (a_range == b_range) {
+                string a_name = a_device.name ?? a_device.address;
+                string b_name = b_device.name ?? b_device.address;
+                return a_name.collate (b_name);
+            }
             // Rows with RSSI values of 0 should be on the bottom
             if (a_range == 0) return 1;
             if (b_range == 0) return -1;
+            // Shortest range on top
             return a_range < b_range ? 1 : -1;
         }
 
