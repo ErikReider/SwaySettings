@@ -4,6 +4,7 @@ swaysettings_sources = [
   'Widgets/OrderListSelector/OrderListSelector.vala',
   'Widgets/KeyboardInputSelector/KeyboardInputSelector.vala',
   'IPC/IPC.vala',
+  'Rfkill/Rfkill.vala',
   'Strings.vala',
   'List_Item/List_Item.vala',
   'Functions/Functions.vala',
@@ -50,7 +51,10 @@ swaysettings_sources += gnome.compile_resources('swaysettings-resources',
 executable(
   'swaysettings',
   swaysettings_sources,
-  vala_args: '--target-glib=2.50',
+  vala_args: [
+    '--target-glib=2.50',
+    '--pkg=linux'
+  ],
   dependencies: swaysettings_deps,
   install: true,
 )
