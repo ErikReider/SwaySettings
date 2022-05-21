@@ -80,9 +80,14 @@ namespace SwaySettings {
 
             // Bluetooth devices
             stack = new Gtk.Stack () {
-                transition_type = Gtk.StackTransitionType.CROSSFADE,
+                transition_type = Gtk.StackTransitionType.NONE,
                 vhomogeneous = false,
             };
+
+            // Add the main GTK Box
+            bluetooth_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 8);
+            this.scrolled_window = get_scroll_widget (bluetooth_box);
+            stack.add (this.scrolled_window);
 
             // Error Page
             error_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 16) {
@@ -91,6 +96,7 @@ namespace SwaySettings {
                 valign = Gtk.Align.CENTER,
             };
             stack.add (error_box);
+            stack.set_transition_type (Gtk.StackTransitionType.CROSSFADE);
             // Error Image
             Gtk.Image error_image = new Gtk.Image () {
                 pixel_size = 128,
@@ -105,11 +111,6 @@ namespace SwaySettings {
                                 error_label, "label",
                                 BindingFlags.SYNC_CREATE);
             error_box.add (error_label);
-
-            // Add the main GTK Box
-            bluetooth_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 8);
-            this.scrolled_window = get_scroll_widget (bluetooth_box);
-            stack.add (this.scrolled_window);
 
             // Setup each ListBox
             // Paired List Box
