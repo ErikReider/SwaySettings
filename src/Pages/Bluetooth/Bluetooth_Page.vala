@@ -24,8 +24,8 @@ namespace SwaySettings {
 
         Bluez.Daemon daemon;
 
-        public Bluetooth_Page (string page_name, Hdy.Deck deck, IPC ipc) {
-            base (page_name, deck, ipc);
+        public Bluetooth_Page (string page_name, Hdy.Deck deck) {
+            base (page_name, deck);
         }
 
         public override void on_back (Hdy.Deck deck) {

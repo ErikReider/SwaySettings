@@ -28,8 +28,11 @@ namespace SwaySettings {
 
         public abstract Input_Types input_type { get; }
 
+        IPC ipc;
+
         protected Input_Page (string label, Hdy.Deck deck, IPC ipc) {
-            base (label, deck, ipc);
+            base (label, deck);
+            this.ipc = ipc;
         }
 
         public virtual ArrayList<Input_Page_Section> get_top_sections () {

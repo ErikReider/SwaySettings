@@ -16,13 +16,10 @@ namespace SwaySettings {
 
         public string label;
 
-        public IPC ipc;
-
         public virtual bool refresh_on_realize { get; default = true; }
 
-        protected Page (string label, Hdy.Deck deck, IPC ipc) {
+        protected Page (string label, Hdy.Deck deck) {
             Object ();
-            this.ipc = ipc;
             this.label = label;
             header_bar.set_title (this.label);
             back_button.clicked.connect (() => {
@@ -37,7 +34,7 @@ namespace SwaySettings {
         public virtual void on_refresh () {
         }
 
-        public virtual void on_back (Hdy.Deck deck) {
+        public virtual async void on_back (Hdy.Deck deck) {
         }
 
         public static Hdy.Clamp get_clamped_widget (Gtk.Widget widget,
@@ -106,8 +103,8 @@ namespace SwaySettings {
             }
         }
 
-        protected Page_Scroll (string label, Hdy.Deck deck, IPC ipc) {
-            base (label, deck, ipc);
+        protected Page_Scroll (string label, Hdy.Deck deck) {
+            base (label, deck);
         }
 
         public override void on_refresh () {
@@ -134,9 +131,8 @@ namespace SwaySettings {
 
         protected Page_Tabbed (string label,
                                Hdy.Deck deck,
-                               IPC ipc,
                                string no_tabs_text = "Nothing here...") {
-            base (label, deck, ipc);
+            base (label, deck);
 
             stack = new Gtk.Stack ();
             stack.transition_type = Gtk.StackTransitionType.CROSSFADE;
@@ -176,7 +172,7 @@ namespace SwaySettings {
             }
         }
 
-        public override void on_back (Hdy.Deck deck) {
+        public override async void on_back (Hdy.Deck deck) {
             stack.set_visible_child (stack.get_children ().nth_data (0));
         }
 

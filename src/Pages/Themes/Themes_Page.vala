@@ -6,8 +6,8 @@ namespace SwaySettings {
 
         const string[] color_schemes = { "default", "prefer-dark", "prefer-light" };
 
-        public Themes_Page (string page_name, Hdy.Deck deck, IPC ipc) {
-            base (page_name, deck, ipc);
+        public Themes_Page (string page_name, Hdy.Deck deck) {
+            base (page_name, deck);
             // Refresh all of the widgets when a value changes
             // This also gets called when ex gnome-tweaks changes a value
             settings.changed.connect ((settings, str) => this.on_refresh ());

@@ -1,6 +1,45 @@
 using Gee;
 
 namespace SwaySettings {
+    public enum PageType {
+        WALLPAPER,
+        APPEARANCE,
+        STARTUP_APPS,
+        DEFAULT_APPS,
+        SWAYNC,
+        BLUETOOTH,
+        KEYBOARD,
+        MOUSE,
+        TRACKPAD,
+        USERS;
+
+        public string ? get_name () {
+            switch (this) {
+                case WALLPAPER:
+                    return "wallpaper";
+                case APPEARANCE:
+                    return "appearance";
+                case STARTUP_APPS:
+                    return "startup-apps";
+                case DEFAULT_APPS:
+                    return "default-apps";
+                case SWAYNC:
+                    return "swaync";
+                case BLUETOOTH:
+                    return "bluetooth";
+                case KEYBOARD:
+                    return "keyboard";
+                case MOUSE:
+                    return "mouse";
+                case TRACKPAD:
+                    return "trackpad";
+                case USERS:
+                    return "users";
+            }
+            return null;
+        }
+    }
+
     [GtkTemplate (ui = "/org/erikreider/swaysettings/Window/Window.ui")]
     public class Window : Hdy.ApplicationWindow {
         [GtkChild]
@@ -14,13 +53,15 @@ namespace SwaySettings {
         private string ? current_page_name = null;
         private Gtk.GestureMultiPress gesture;
 
+        private IPC ipc;
+
         public void navigato_to_page (string page) {
             if (current_page_name != null
                 && current_page_name == page
                 && deck.visible_child_name != "main_page") return;
             foreach (var item in items) {
                 if (item == null) continue;
-                if (item.settings_item.page_name == page) {
+                if (item.settings_item.internal_name == page) {
                     item.activate ();
                     break;
                 }
@@ -29,13 +70,18 @@ namespace SwaySettings {
 
         public Window (Gtk.Application app) {
             Object (application: app);
-            IPC ipc = new IPC ();
+            ipc = new IPC ();
 
             deck.notify["visible-child"].connect (() => {
                 if (deck.visible_child_name == "main_page") {
                     if (page_box.get_children ().is_empty ()) return;
                     Gtk.Widget child = page_box.get_children ().first ().data;
-                    if (child is Page) ((Page) child).on_back (deck);
+                    if (child is Page) {
+                        Page page = ((Page) child);
+                        page.on_back.begin (deck, () => {
+                            page.destroy ();
+                        });
+                    }
                 }
             });
 
@@ -44,61 +90,34 @@ namespace SwaySettings {
             gesture.set_propagation_phase (Gtk.PropagationPhase.CAPTURE);
             gesture.pressed.connect ((g, n, x, y) => {
                 switch (g.get_current_button ()) {
-                    case 8:
-                        deck.navigate (Hdy.NavigationDirection.BACK);
-                        break;
-                    case 9:
-                        if (page_box.get_children ().length () > 0) {
-                            deck.navigate (Hdy.NavigationDirection.FORWARD);
-                        }
-                        break;
+                        case 8:
+                            deck.navigate (Hdy.NavigationDirection.BACK);
+                            break;
+                        case 9:
+                            if (page_box.get_children ().length () > 0) {
+                                deck.navigate (Hdy.NavigationDirection.FORWARD);
+                            }
+                            break;
                 }
             });
 
             SettingsCategory[] items = {
                 SettingsCategory ("Desktop", {
-                    SettingsItem ("preferences-desktop-wallpaper",
-                                  new Background_Page ("Background", deck, ipc),
-                                  "wallpaper"),
-                    SettingsItem ("preferences-desktop-theme",
-                                  new Themes_Page ("Appearance", deck, ipc),
-                                  "appearance"),
+                    SettingsItem ("preferences-desktop-wallpaper", PageType.WALLPAPER, "wallpaper"),
+                    SettingsItem ("preferences-desktop-theme", PageType.APPEARANCE, "appearance"),
 
-                    SettingsItem ("applications-other",
-                                  new Startup_Apps ("Startup Applications",
-                                                    deck,
-                                                    ipc),
-                                  "startup-apps"),
-                    SettingsItem ("preferences-other",
-                                  new Default_Apps ("Default Applications",
-                                                    deck,
-                                                    ipc),
-                                  "default-apps"),
-                    SettingsItem ("mail-unread",
-                                  new Swaync ("Sway Notification Center",
-                                              deck,
-                                              ipc),
-                                  "swaync",
-                                  !Functions.is_swaync_installed ()),
+                    SettingsItem ("applications-other", PageType.STARTUP_APPS, "startup-apps"),
+                    SettingsItem ("preferences-other", PageType.DEFAULT_APPS, "default-apps"),
+                    SettingsItem ("mail-unread", PageType.SWAYNC, "swaync", !Functions.is_swaync_installed ()),
                 }),
                 SettingsCategory ("Hardware", {
-                    SettingsItem ("bluetooth-symbolic",
-                                  new Bluetooth_Page ("Bluetooth", deck, ipc),
-                                  "bluetooth"),
-                    SettingsItem ("input-keyboard",
-                                  new Keyboard_Page ("Keyboard", deck, ipc),
-                                  "keyboard"),
-                    SettingsItem ("input-mouse",
-                                  new Mouse_Page ("Mouse", deck, ipc),
-                                  "mouse"),
-                    SettingsItem ("input-touchpad",
-                                  new Trackpad_Page ("Trackpad", deck, ipc),
-                                  "trackpad"),
+                    SettingsItem ("bluetooth-symbolic", PageType.BLUETOOTH, "bluetooth"),
+                    SettingsItem ("input-keyboard", PageType.KEYBOARD, "keyboard"),
+                    SettingsItem ("input-mouse", PageType.MOUSE, "mouse"),
+                    SettingsItem ("input-touchpad", PageType.TRACKPAD, "trackpad"),
                 }),
                 SettingsCategory ("Administration", {
-                    SettingsItem ("system-users",
-                                  new Users ("Users", deck, ipc),
-                                  "users"),
+                    SettingsItem ("system-users", PageType.USERS, "users"),
                 }),
             };
 
@@ -132,15 +151,17 @@ namespace SwaySettings {
                     }
                     Item item = (Item) child;
                     if (item == null) return;
-                    current_page_name = item.settings_item.page_name;
-                    page_box.add (item.settings_item.page);
+                    current_page_name = item.settings_item.internal_name;
+                    Page ? page = get_page (item.settings_item);
+                    if (page == null) return;
+                    page_box.add (page);
                     deck.navigate (Hdy.NavigationDirection.FORWARD);
                 });
                 foreach (var settings_item in category.items) {
                     if (settings_item.hidden) continue;
-                    var item = new Item (settings_item.page.label,
-                                         settings_item.image,
-                                         settings_item);
+                    string ? name = settings_item.page_type.get_name ();
+                    if (name == null) continue;
+                    var item = new Item (name, settings_item.image, settings_item);
                     this.items += item;
                     flow_box.add (item);
                 }
@@ -152,6 +173,32 @@ namespace SwaySettings {
             }
 
             content_box.show_all ();
+        }
+
+        public Page ? get_page (SettingsItem item) {
+            switch (item.page_type) {
+                case WALLPAPER:
+                    return new Background_Page ("Background", deck, ipc);
+                case APPEARANCE:
+                    return new Themes_Page ("Appearance", deck);
+                case STARTUP_APPS:
+                    return new Startup_Apps ("Startup Applications", deck);
+                case DEFAULT_APPS:
+                    return new Default_Apps ("Default Applications", deck);
+                case SWAYNC:
+                    return new Swaync ("Sway Notification Center", deck, ipc);
+                case BLUETOOTH:
+                    return new Bluetooth_Page ("Bluetooth", deck);
+                case KEYBOARD:
+                    return new Keyboard_Page ("Keyboard", deck, ipc);
+                case MOUSE:
+                    return new Mouse_Page ("Mouse", deck, ipc);
+                case TRACKPAD:
+                    return new Trackpad_Page ("Trackpad", deck, ipc);
+                case USERS:
+                    return new Users ("Users", deck);
+            }
+            return null;
         }
     }
 
@@ -167,17 +214,17 @@ namespace SwaySettings {
 
     public struct SettingsItem {
         string image;
-        Page page;
         bool hidden;
-        string page_name;
+        string internal_name;
+        PageType page_type;
 
         SettingsItem (string image,
-                      Page page,
-                      string page_name,
+                      PageType page_type,
+                      string internal_name,
                       bool hidden = false) {
             this.image = image;
-            this.page = page;
-            this.page_name = page_name;
+            this.internal_name = internal_name;
+            this.page_type = page_type;
             this.hidden = hidden;
         }
     }

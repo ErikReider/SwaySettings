@@ -15,8 +15,8 @@ namespace SwaySettings {
 
         private Users_Content content;
 
-        public Users (string label, Hdy.Deck deck, IPC ipc) {
-            base (label, deck, ipc);
+        public Users (string label, Hdy.Deck deck) {
+            base (label, deck);
         }
 
         public override Gtk.Widget set_child () {
@@ -63,7 +63,7 @@ namespace SwaySettings {
 
             if (current_user == null || !current_user.is_loaded) {
                 current_user = user_manager.get_user (username);
-                current_user.notify["is-loaded"].connect (set_user_data);
+                current_user.notify["is-loaded"].connect ((er,t) => {});
                 current_user.changed.connect (set_user_data);
             } else {
                 set_user_data ();

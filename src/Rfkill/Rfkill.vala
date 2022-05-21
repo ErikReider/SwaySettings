@@ -10,11 +10,11 @@ namespace Rfkill {
 
     public class Rfkill : Object {
         private RfKillType rfkill_type;
-        private bool blocked = false;
         private int file_descriptor = -1;
         private IOSource source;
         private HashTable<uint32, Device> devices;
 
+        public bool blocked { get; private set; default = false; }
         public signal void on_update (RfKillEvent event, bool blocked);
 
         public Rfkill (RfKillType rfkill_type) {
@@ -50,19 +50,6 @@ namespace Rfkill {
                 file_descriptor = -1;
             }
             base.dispose ();
-        }
-
-        /** Gets the blocking state for the Rfkill type */
-        public bool get_is_blocked () {
-            bool blocked = false;
-            foreach (var device in devices.get_values ()) {
-                if (device.soft || device.hard) {
-                    blocked = true;
-                    break;
-                }
-            }
-            if (this.blocked != blocked) this.blocked = blocked;
-            return blocked;
         }
 
         /** Sets the blocking state for the Rfkill type */
@@ -111,7 +98,15 @@ namespace Rfkill {
                 default:
                     break;
             }
-            get_is_blocked ();
+            bool blocked = false;
+            foreach (var device in devices.get_values ()) {
+                if (device.soft || device.hard) {
+                    blocked = true;
+                    break;
+                }
+            }
+            this.blocked = blocked;
+
             on_update (event, this.blocked);
             return true;
         }
