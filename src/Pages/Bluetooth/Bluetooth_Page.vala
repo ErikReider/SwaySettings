@@ -13,6 +13,7 @@ namespace SwaySettings {
 
         Gtk.Label status_label;
         Gtk.Switch status_switch;
+        bool pending_status_switch = false;
 
         Gtk.Spinner discovering_spinner;
 
@@ -28,9 +29,11 @@ namespace SwaySettings {
             base (page_name, deck);
         }
 
-        public override void on_back (Hdy.Deck deck) {
-            this.remove_signals ();
-            this.daemon.set_discovering_state.begin (false);
+        public override async void on_back (Hdy.Deck deck) {
+            this.freeze_notify ();
+            if (this.daemon.powered) {
+                yield this.daemon.set_discovering_state (false);
+            }
         }
 
         public override void on_refresh () {
@@ -134,10 +137,6 @@ namespace SwaySettings {
             remove_signals ();
             add_signals ();
 
-            // Bind the powered bool value to the switch state
-            this.daemon.bind_property ("powered",
-                                       this.status_switch, "active",
-                                       BindingFlags.SYNC_CREATE);
             // Bind the discoverable bool value to the Label text
             this.daemon.bind_property ("discoverable",
                                        status_label, "label",
@@ -154,11 +153,6 @@ namespace SwaySettings {
             this.daemon.start ();
 
             this.powered_state_change_cb ();
-
-            // Start looking for devices
-            if (this.daemon.check_adapter_powered ()) {
-                this.daemon.set_discovering_state.begin (true);
-            }
         }
 
         Gtk.Box get_list_box (bool is_paired,
@@ -243,8 +237,9 @@ namespace SwaySettings {
 
             this.daemon.bluetooth_bus_state_change.connect (this.bus_state_change_cb);
             this.daemon.notify["powered"].connect (this.powered_state_change_cb);
+            this.daemon.notify["rfkill-blocking"].connect (this.powered_state_change_cb);
             this.daemon.notify["discovering"].connect (this.discovering_cb);
-            this.status_switch.notify["active"].connect (this.status_switch_cb);
+            this.status_switch.state_set.connect (this.status_switch_cb);
         }
 
         void remove_signals () {
@@ -255,8 +250,9 @@ namespace SwaySettings {
 
             this.daemon.bluetooth_bus_state_change.disconnect (this.bus_state_change_cb);
             this.daemon.notify["powered"].disconnect (this.powered_state_change_cb);
+            this.daemon.notify["rfkill-blocking"].disconnect (this.powered_state_change_cb);
             this.daemon.notify["discovering"].disconnect (this.discovering_cb);
-            this.status_switch.notify["active"].disconnect (this.status_switch_cb);
+            this.status_switch.state_set.disconnect (this.status_switch_cb);
         }
 
         void adapter_added_cb (Bluez.Adapter1 adapter) {
@@ -327,9 +323,21 @@ namespace SwaySettings {
             }
         }
 
-        async void status_switch_cb () {
-            bool active = this.status_switch.active;
-            this.daemon.change_bluetooth_state.begin (active);
+        /**
+         * Called when ever the status switch is clicked.
+         * Waits until the powered state changes.
+         */
+        bool status_switch_cb (Gtk.Switch _switch, bool state) {
+            pending_status_switch = true;
+            _switch.sensitive = false;
+            _switch.state_set.disconnect (this.status_switch_cb);
+            this.daemon.change_bluetooth_state.begin (state, () => {
+                pending_status_switch = false;
+                _switch.sensitive = true;
+                _switch.set_state (state);
+                _switch.state_set.connect (this.status_switch_cb);
+            });
+            return true;
         }
 
         void bus_state_change_cb (bool state) {
@@ -352,12 +360,17 @@ namespace SwaySettings {
 
         void powered_state_change_cb () {
             bool powered = this.daemon.powered;
-            if (powered) {
+            bool blocking = this.daemon.rfkill_blocking;
+            this.status_switch.state_set.disconnect (this.status_switch_cb);
+            if (!blocking && powered) {
                 stack.set_visible_child (scrolled_window);
+                if (!pending_status_switch) status_switch.set_active (true);
             } else {
                 error_text = "Bluetooth is disabled";
                 stack.set_visible_child (error_box);
+                if (!pending_status_switch) status_switch.set_active (false);
             }
+            this.status_switch.state_set.connect (this.status_switch_cb);
         }
     }
 }

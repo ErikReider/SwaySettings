@@ -15,6 +15,9 @@ namespace Bluez {
 
         uint watch_bluez_id = 0;
 
+        Rfkill.Rfkill rfkill;
+        public bool rfkill_blocking { get; private set; }
+
         public void start () {
             if (watch_bluez_id > 0) Bus.unwatch_name (watch_bluez_id);
 
@@ -28,6 +31,12 @@ namespace Bluez {
             },
                 (connection, name) => {
                 bluetooth_bus_state_change (false);
+            });
+
+            this.rfkill = new Rfkill.Rfkill (Linux.RfKillType.BLUETOOTH);
+            this.rfkill_blocking = rfkill.blocked;
+            this.rfkill.on_update.connect ((event, blocked) => {
+                this.rfkill_blocking = blocked;
             });
         }
 
@@ -51,8 +60,10 @@ namespace Bluez {
                 object_manager.object_added.connect (this.on_object_added_cb);
                 object_manager.object_removed.connect (this.on_object_removed_cb);
 
-                // Init the powered state
-                check_adapter_powered ();
+                // Init the powered state and start looking for devices if powered
+                if (this.check_adapter_powered ()) {
+                    this.set_discovering_state.begin (true);
+                }
                 check_adapter_discovering ();
                 check_adapter_discoverable ();
 
@@ -125,6 +136,7 @@ namespace Bluez {
         }
 
         public bool check_adapter_powered () {
+            if (rfkill_blocking) return false;
             foreach (Adapter1 adapter in this.get_adapters ()) {
                 if (adapter.powered) {
                     this.powered = true;
@@ -203,9 +215,10 @@ namespace Bluez {
             return adapters.first ().data.alias;
         }
 
-        // TODO: Set RFKILL state
         public async void change_bluetooth_state (bool state) {
-            if (!state) {
+            if (state) {
+                this.rfkill.try_set_blocking (false);
+            } else {
                 // Set discovering to state to false before powering off
                 yield this.set_discovering_state (false);
 
@@ -215,20 +228,39 @@ namespace Bluez {
                     try {
                         yield device.disconnect ();
                     } catch (Error e) {
-                        stderr.printf ("Change_bluetooth_state Error: %s\n", e.message);
+                        stderr.printf ("Change_bluetooth_state Error: %s\n",
+                                       e.message);
                     }
                 }
             }
 
-            // Set Adapter powered state
-            foreach (Adapter1 adapter in get_adapters ()) {
+            // Set Adapter powered state and wait until their
+            // powered state has changed
+            uint num_powered = 0;
+            var adapters = get_adapters ();
+            foreach (Adapter1 adapter in adapters) {
                 adapter.powered = state;
+                DBusProxy pxy = ((DBusProxy) adapter);
+                ulong id = 0;
+                id = pxy.g_properties_changed.connect ((cgd, inv) => {
+                    var powered = cgd.lookup_value ("Powered", VariantType.BOOLEAN);
+                    if (powered != null && powered.get_boolean () == state) {
+                        num_powered += 1;
+                        if (num_powered == adapters.length ()) {
+                            change_bluetooth_state.callback ();
+                        }
+                        pxy.disconnect (id);
+                    }
+                });
             }
+            yield;
             powered = state;
 
             if (state) {
                 // Set discovering to state
                 yield this.set_discovering_state (state);
+            } else {
+                this.rfkill.try_set_blocking (true);
             }
         }
 
@@ -241,8 +273,10 @@ namespace Bluez {
             foreach (Adapter1 adapter in adapters) {
                 try {
                     if (state) {
+                        if (adapter.discovering) continue;
                         yield adapter.start_discovery ();
                     } else {
+                        if (!adapter.discovering) continue;
                         yield adapter.stop_discovery ();
                     }
                 } catch (Error e) {
