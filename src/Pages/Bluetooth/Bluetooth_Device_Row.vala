@@ -1,6 +1,37 @@
 namespace SwaySettings {
     [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/Bluetooth/Bluetooth_Device_Row.ui")]
     class Bluetooth_Device_Row : Gtk.ListBoxRow {
+        public enum State {
+            UNPAIRED,
+            PAIRING,
+            CONNECTED,
+            CONNECTING,
+            DISCONNECTING,
+            NOT_CONNECTED,
+            ERROR,
+            ERROR_PAIRED;
+
+            public string get_status () {
+                switch (this) {
+                    default:
+                    case NOT_CONNECTED:
+                    case UNPAIRED:
+                        return "";
+                    case PAIRING:
+                        return "Pairing…";
+                    case CONNECTED:
+                        return "Connected";
+                    case CONNECTING:
+                        return "Connecting…";
+                    case DISCONNECTING:
+                        return "Disconnecting…";
+                    case ERROR:
+                    case ERROR_PAIRED:
+                        return "Unable to Connect";
+                }
+            }
+        }
+
         [GtkChild]
         private unowned Gtk.Image device_image;
         [GtkChild]
@@ -8,7 +39,9 @@ namespace SwaySettings {
 
         [GtkChild]
         private unowned Gtk.Label status_label;
-        public string status { get; private set; }
+
+        [GtkChild]
+        private unowned Gtk.Spinner status_spinner;
 
         [GtkChild]
         private unowned Gtk.Button remove_button;
@@ -18,6 +51,8 @@ namespace SwaySettings {
         public Bluez.Device1 device { get; private set; }
         public Bluez.Adapter1 adapter { get; private set; }
 
+        private ulong props_changed_id;
+
         /** Gets called when Device Paired, Trusted or Blocked changes */
         public signal void on_update (Bluetooth_Device_Row row);
 
@@ -26,92 +61,100 @@ namespace SwaySettings {
             this.adapter = adapter;
 
             this.connect_button.clicked.connect (() => {
-                if (device.connected) {
-                    device.disconnect.begin ();
-                } else {
-                    device.connect.begin ();
-                }
+                this.action_button_clicked_cb.begin (() => {
+                    device.trusted = device.paired;
+                });
             });
 
             this.remove_button.clicked.connect (this.remove_button_clicked_cb);
 
-            this.bind_property ("status",
-                                status_label, "label",
-                                BindingFlags.SYNC_CREATE);
-
             // Watch property changes
-            ((DBusProxy) device).g_properties_changed.connect ((changed, invalid) => {
-                // Only update when Paired, Trusted or Blocked changes
-                var paired = changed.lookup_value ("Paired", VariantType.BOOLEAN);
-                var trusted = changed.lookup_value ("Trusted", VariantType.BOOLEAN);
-                var blocked = changed.lookup_value ("Blocked", VariantType.BOOLEAN);
-                if (paired != null || trusted != null || blocked != null) {
-                    on_update (this);
+            props_changed_id = ((DBusProxy) device).g_properties_changed.connect ((cgd, inv) => {
+                // Disconnect if in destruction
+                if (is_dead ()) {
+                    before_destroy ();
+                    return;
                 }
-
-                update_widget ();
 
                 // Updates the ListBox sorting order
                 this.changed ();
                 // Without this, the style of each row would not be updated.
                 // If the row has rounded borders, those borders would not update.
                 // Would result in rounded rows in the middle
-                this.parent.get_style_context ().changed ();
+                if (parent != null) parent.get_style_context ().changed ();
+
+                if (device.name == "Pro Controller") {
+                    print ("CHANGED %s\n", cgd.print (true));
+                }
+
+                var paired = cgd.lookup_value ("Paired", VariantType.BOOLEAN);
+                if (paired != null) {
+                    device.trusted = device.paired;
+                    // Connect to device if just paired
+                    device.connect.begin ();
+                    on_update (this);
+                    update_state ();
+                }
+
+                var trusted = cgd.lookup_value ("Trusted", VariantType.BOOLEAN);
+                if (trusted != null) {
+                    on_update (this);
+                    update_state ();
+                }
+
+                // Update the state only when paired or connected changes
+                var connected = cgd.lookup_value ("Connected", new VariantType ("b"));
+                if (connected != null) {
+                    on_update (this);
+                    update_state ();
+                }
+
+                update_widget ();
             });
 
+            update_state ();
             update_widget ();
         }
 
-        /**
-         * Sets all relevant widgets sensitivity to value.
-         * Makes sure that remove_button sensitivity is always true
-         */
-        public void set_row_sensitivity (bool value) {
-            this.remove_button.set_sensitive (true);
-            this.device_image.set_sensitive (value);
-            this.status_label.set_sensitive (value);
-            this.device_name.set_sensitive (value);
-            this.connect_button.set_sensitive (value);
+        private bool is_dead () {
+            return !(this.get_child () is Gtk.Widget) || this.in_destruction ();
         }
 
-        public void update_widget () {
-            // Only show devices with low RSSI if paired
-            if (device.rssi == 0 && !device.connected) {
-                set_row_sensitivity (false);
-                if (this.device.paired) {
-                    set_visible (true);
-                    this.status = "Not in range";
-                } else {
-                    set_visible (false);
-                    this.status = "";
+        public void before_destroy () {
+            if (props_changed_id != 0) {
+                ((DBusProxy) device).disconnect (props_changed_id);
+                props_changed_id = 0;
+            }
+        }
+
+        private async void action_button_clicked_cb () {
+            if (!device.paired) {
+                set_row_state (State.PAIRING);
+                try {
+                    yield device.pair ();
+                } catch (Error e) {
+                    set_row_state (State.ERROR);
+                    stderr.printf ("Device Pairing Error: %s\n", e.message);
+                }
+            } else if (!device.connected) {
+                set_row_state (State.CONNECTING);
+                try {
+                    yield device.connect ();
+                } catch (Error e) {
+                    set_row_state (State.ERROR_PAIRED);
+                    stderr.printf ("Device Connecting Error: %s\n", e.message);
                 }
             } else {
-                set_row_sensitivity (true);
-                set_visible (true);
-                if (device.connected) {
-                    this.status = "Connected";
-                } else {
-                    this.status = "";
+                set_row_state (State.DISCONNECTING);
+                try {
+                    yield device.disconnect ();
+                } catch (Error e) {
+                    stderr.printf ("Device Disconnecting Error: %s\n", e.message);
                 }
             }
-
-            device_name.set_label (device.alias);
-
-            remove_button.set_visible (this.device.paired);
-
-            connect_button.label = device.connected ? "Disconnect" : "Connect";
-
-            const string default_icon = "bluetooth-symbolic.symbolic";
-            string icon = default_icon;
-            if (device.icon != null && device.icon.length > 0) icon = device.icon;
-            if (!Gtk.IconTheme.get_default ().has_icon (icon)) {
-                icon = default_icon;
-            }
-            device_image.set_from_icon_name (icon, Gtk.IconSize.INVALID);
-            device_image.icon_size = 48;
         }
 
-        private async void remove_button_clicked_cb () {
+        private void remove_button_clicked_cb () {
             if (!device.paired) return;
 
             const string title = "<b><big>Remove \"%s\"?</big></b>";
@@ -133,9 +176,112 @@ namespace SwaySettings {
             if (result == Gtk.ResponseType.OK) {
                 try {
                     adapter.remove_device (new ObjectPath (((DBusProxy) device).g_object_path));
+                    device.trusted = false;
                 } catch (Error e) {
                     stderr.printf ("Remove device Error: %s\n", e.message);
                 }
+            }
+        }
+
+        /**
+         * Sets all relevant widgets sensitivity to value.
+         * Makes sure that remove_button sensitivity is always true
+         */
+        public void set_row_sensitivity (bool value) {
+            this.remove_button.set_sensitive (true);
+            this.device_image.set_sensitive (value);
+            this.status_label.set_sensitive (value);
+            this.device_name.set_sensitive (value);
+            this.connect_button.set_sensitive (value);
+        }
+
+        public void update_widget () {
+            if (is_dead ()) return;
+
+            // Only show devices with low RSSI if paired
+            if (!device.paired && !device.connected && device.rssi == 0) {
+                set_row_sensitivity (false);
+                set_visible (false);
+            } else {
+                set_row_sensitivity (true);
+                set_visible (true);
+            }
+
+            device_name.set_label ("%s, trusted: %s, paired: %s".printf (device.alias, device.trusted.to_string (), device.paired.to_string ()));
+
+            const string default_icon = "bluetooth-symbolic.symbolic";
+            string icon = default_icon;
+            if (device.icon != null && device.icon.length > 0) icon = device.icon;
+            if (!Gtk.IconTheme.get_default ().has_icon (icon)) {
+                icon = default_icon;
+            }
+            device_image.set_from_icon_name (icon, Gtk.IconSize.INVALID);
+            device_image.icon_size = 48;
+        }
+
+        private void update_state () {
+            if (is_dead ()) return;
+
+            if (!device.paired) {
+                this.set_row_state (State.UNPAIRED);
+            } else if (device.connected) {
+                this.set_row_state (State.CONNECTED);
+            } else {
+                this.set_row_state (State.NOT_CONNECTED);
+            }
+        }
+
+        private void set_row_state (State state) {
+            status_label.label = state.get_status ();
+
+            switch (state) {
+                case State.ERROR:
+                case State.UNPAIRED:
+                    // If not paired and not connected
+                    connect_button.label = "Pair";
+                    connect_button.sensitive = true;
+                    status_spinner.stop ();
+                    remove_button.visible = false;
+                    remove_button.sensitive = false;
+                    break;
+                case State.PAIRING:
+                    // connect_button.label = "Pair";
+                    connect_button.sensitive = false;
+                    status_spinner.start ();
+                    remove_button.visible = false;
+                    remove_button.sensitive = false;
+                    break;
+                case State.CONNECTED:
+                    // If paired and connected
+                    connect_button.label = "Disconnect";
+                    connect_button.sensitive = true;
+                    status_spinner.stop ();
+                    remove_button.visible = true;
+                    remove_button.sensitive = true;
+                    break;
+                case State.CONNECTING:
+                    // connect_button.label = "Disconnect";
+                    connect_button.sensitive = false;
+                    status_spinner.start ();
+                    remove_button.visible = false;
+                    remove_button.sensitive = false;
+                    break;
+                case State.DISCONNECTING:
+                    // connect_button.label = "Disconnect";
+                    connect_button.sensitive = false;
+                    status_spinner.stop ();
+                    remove_button.visible = false;
+                    remove_button.sensitive = false;
+                    break;
+                case State.ERROR_PAIRED:
+                case State.NOT_CONNECTED:
+                    // If paired and not connected
+                    connect_button.label = "Connect";
+                    connect_button.sensitive = true;
+                    status_spinner.stop ();
+                    remove_button.visible = true;
+                    remove_button.sensitive = true;
+                    break;
             }
         }
     }

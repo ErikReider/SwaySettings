@@ -282,15 +282,16 @@ namespace SwaySettings {
         }
 
         void device_removed_cb (Bluez.Device1 device) {
-            unowned Gtk.ListBox list_box = device.paired ? paired_list_box : nearby_list_box;
+            var children = paired_list_box.get_children ();
+            children.concat (nearby_list_box.get_children ());
 
-            foreach (var child in list_box.get_children ()) {
+            foreach (var child in children) {
                 if (child == null || !(child is Bluetooth_Device_Row)) continue;
                 var row = (Bluetooth_Device_Row) child;
                 if (row.device == device) {
                     // Remove watch property changes
-                    row.on_update.disconnect (this.device_changed_cb);
-                    list_box.remove (child);
+                    row.before_destroy ();
+                    row.destroy ();
                     break;
                 }
             }
@@ -299,14 +300,12 @@ namespace SwaySettings {
         void device_changed_cb (Bluetooth_Device_Row row) {
             Gtk.Container parent = row.parent;
             bool paired = row.device.paired;
-            // bool trusted = row.device.trusted;
-            // bool blocked = row.device.blocked;
 
             // Move the Row to the correct LisBox
             // Moving the Row causes a few GTK critical warnings, so
             // creating a new row is the only option...
-            Gtk.ListBox * remove_list_box = null;
-            Gtk.ListBox * add_list_box = null;
+            unowned Gtk.ListBox ? remove_list_box = null;
+            unowned Gtk.ListBox ? add_list_box = null;
             if (paired && parent != paired_list_box) {
                 add_list_box = paired_list_box;
                 remove_list_box = nearby_list_box;
@@ -319,8 +318,9 @@ namespace SwaySettings {
             if (remove_list_box != null && add_list_box != null) {
                 var adapter = this.daemon.get_adapter (row.device.adapter);
                 var device = new Bluetooth_Device_Row (row.device, adapter);
-                add_list_box->add (device);
-                remove_list_box->remove (row);
+                add_list_box.add (device);
+                row.before_destroy ();
+                row.destroy ();
             }
         }
 
