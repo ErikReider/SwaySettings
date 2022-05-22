@@ -207,7 +207,7 @@ namespace SwaySettings {
                 set_visible (true);
             }
 
-            device_name.set_label ("%s, trusted: %s, paired: %s".printf (device.alias, device.trusted.to_string (), device.paired.to_string ()));
+            device_name.set_label (device.alias);
 
             const string default_icon = "bluetooth-symbolic.symbolic";
             string icon = default_icon;
