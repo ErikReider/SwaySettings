@@ -12,5 +12,6 @@
       <file>Pages/StartupApps/Startup_Apps_Chooser.ui</file>
       <file>Pages/Users/Users.ui</file>
       <file>Pages/Bluetooth/Bluetooth_Device_Row.ui</file>
+      <file>Pages/Bluetooth/Bluez/Bluez_Pair_Dialog.ui</file>
   </gresource>
 </gresources>

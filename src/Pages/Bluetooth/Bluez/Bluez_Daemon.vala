@@ -13,6 +13,9 @@ namespace Bluez {
         public bool discovering { get; private set; }
         public bool discoverable { get; private set; }
 
+        private AgentManager1 ? agent_manager;
+        private Agent1 ? agent;
+
         uint watch_bluez_id = 0;
 
         Rfkill.Rfkill rfkill;
@@ -25,13 +28,8 @@ namespace Bluez {
                 BusType.SYSTEM,
                 "org.bluez",
                 BusNameWatcherFlags.NONE,
-                (connection, name, name_owner) => {
-                init ();
-                bluetooth_bus_state_change (true);
-            },
-                (connection, name) => {
-                bluetooth_bus_state_change (false);
-            });
+                (connection, name, name_owner) => init (),
+                (connection, name) => bluetooth_bus_state_change (false));
 
             this.rfkill = new Rfkill.Rfkill (Linux.RfKillType.BLUETOOTH);
             this.rfkill_blocking = rfkill.blocked;
@@ -116,6 +114,8 @@ namespace Bluez {
                 Device1 device = (Device1) iface;
 
                 this.device_added (device);
+            } else if (iface is AgentManager1) {
+                this.agent_manager = (AgentManager1) iface;
             }
         }
 
@@ -132,6 +132,31 @@ namespace Bluez {
             } else if (iface is Device1) {
                 Device1 device = (Device1) iface;
                 device_removed (device);
+            }
+        }
+
+        public async void register_agent (Gtk.Window window) {
+            if (agent == null) this.agent = new Agent1 (window);
+
+            if (agent_manager != null) {
+                try {
+                    agent_manager.register_agent (Agent1.path, "DisplayYesNo");
+                    agent_manager.request_default_agent (Agent1.path);
+                } catch (Error e) {
+                    stderr.printf ("Agent register error: %s\n", e.message);
+                }
+            }
+        }
+
+        public async void unregister_agent () {
+            if (agent_manager != null) {
+                try {
+                    agent_manager.unregister_agent (Agent1.path);
+                    agent.release ();
+                    agent = null;
+                } catch (Error e) {
+                    stderr.printf ("Agent unregister error: %s\n", e.message);
+                }
             }
         }
 
@@ -288,6 +313,7 @@ namespace Bluez {
             return return_value;
         }
 
+        Type agentmanager1_proxy_type = SwaySettings.Functions.get_proxy_gtype<AgentManager1> ();
         Type device1_proxy_type = SwaySettings.Functions.get_proxy_gtype<Device1> ();
         Type adapter1_proxy_type = SwaySettings.Functions.get_proxy_gtype<Adapter1> ();
         private Type get_proxy_type_func (DBusObjectManagerClient manager,
@@ -301,6 +327,8 @@ namespace Bluez {
                     return device1_proxy_type;
                 case "org.bluez.Adapter1":
                     return adapter1_proxy_type;
+                case "org.bluez.AgentManager1":
+                    return agentmanager1_proxy_type;
                 default:
                     return typeof (DBusProxy);
             }

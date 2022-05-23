@@ -34,6 +34,7 @@ namespace SwaySettings {
             if (this.daemon.powered) {
                 yield this.daemon.set_discovering_state (false);
             }
+            yield this.daemon.unregister_agent ();
         }
 
         public override void on_refresh () {
@@ -347,6 +348,8 @@ namespace SwaySettings {
                 stack.set_visible_child (error_box);
             } else {
                 this.powered_state_change_cb ();
+                this.daemon.register_agent.begin (
+                    (Gtk.Window) this.get_toplevel ());
             }
         }
 
