@@ -60,6 +60,8 @@ namespace SwaySettings {
             switch_widget.valign = Gtk.Align.CENTER;
 
             this.switch_widget = switch_widget;
+
+            this.activatable_widget = this.switch_widget;
         }
 
         public void set_active (bool value) {
