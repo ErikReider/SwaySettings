@@ -23,10 +23,46 @@ namespace SwaySettings {
                 gtk_theme ("Icon Theme", "icon-theme", "icons"));
             pref_group.add (
                 gtk_theme ("Cursor Theme", "cursor-theme", "icons"));
-
+            // Animations
+            pref_group.add (gtk_animations ());
+            // GTK4 color scheme
             pref_group.add (gtk4_color_scheme ());
 
             return pref_group;
+        }
+
+        private Gtk.Widget gtk_animations () {
+            string setting_name = "enable-animations";
+
+            var row = new Hdy.ActionRow ();
+            row.set_title ("Animations");
+
+            SettingsSchema schema = settings.settings_schema;
+            if (!schema.has_key (setting_name)) {
+                row.set_sensitive (false);
+                return row;
+            }
+
+            VariantType type = schema.get_key (setting_name).get_value_type ();
+            if (!type.equal (VariantType.BOOLEAN)) {
+                row.set_sensitive (false);
+                return row;
+            }
+
+            bool settings_value = settings.get_boolean (setting_name);
+            Gtk.Switch widget = new Gtk.Switch () {
+                valign = Gtk.Align.CENTER,
+                halign = Gtk.Align.CENTER,
+            };
+            widget.set_active (settings_value);
+            widget.notify["active"].connect (() => {
+                set_gtk_value (setting_name, widget.active);
+            });
+
+            row.child = widget;
+            row.set_activatable_widget (widget);
+            row.set_activatable (true);
+            return row;
         }
 
         private Hdy.ComboRow gtk4_color_scheme () {
