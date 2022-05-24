@@ -54,9 +54,11 @@ namespace SwaySettings {
     public class Swaync : Page_Scroll {
 
         ConfigModel settings;
+        IPC ipc;
 
         public Swaync (string label, Hdy.Deck deck, IPC ipc) {
-            base (label, deck, ipc);
+            base (label, deck);
+            this.ipc = ipc;
         }
 
         public override Gtk.Widget set_child () {

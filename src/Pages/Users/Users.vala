@@ -10,17 +10,32 @@ namespace SwaySettings {
     private errordomain PathError { INVALID_PATH }
 
     public class Users : Page_Scroll {
-        private unowned Act.UserManager user_manager = Act.UserManager.get_default ();
-        private unowned Act.User current_user;
+        private static unowned Act.UserManager user_manager = Act.UserManager.get_default ();
+        private static unowned Act.User current_user = user_manager.get_user (
+            Environment.get_user_name ());
 
         private Users_Content content;
 
-        public Users (string label, Hdy.Deck deck, IPC ipc) {
-            base (label, deck, ipc);
+        private ulong is_loaded_id = 0;
+        private ulong changed_id = 0;
+
+        public Users (string label, Hdy.Deck deck) {
+            base (label, deck);
+        }
+
+        public override async void on_back (Hdy.Deck deck) {
+            // user_manager.
+            if (is_loaded_id != 0) {
+                current_user.disconnect (is_loaded_id);
+                is_loaded_id = 0;
+            }
+            if (changed_id != 0) {
+                current_user.disconnect (changed_id);
+                changed_id = 0;
+            }
         }
 
         public override Gtk.Widget set_child () {
-            string username = GLib.Environment.get_user_name ();
             content = new Users_Content ();
 
             // Avatar EventBox
@@ -61,11 +76,10 @@ namespace SwaySettings {
                 }
             });
 
-            if (current_user == null || !current_user.is_loaded) {
-                current_user = user_manager.get_user (username);
-                current_user.notify["is-loaded"].connect (set_user_data);
-                current_user.changed.connect (set_user_data);
-            } else {
+            is_loaded_id = current_user.notify["is-loaded"].connect (set_user_data);
+            changed_id = current_user.changed.connect (set_user_data);
+
+            if (current_user.is_loaded) {
                 set_user_data ();
             }
 
@@ -169,25 +183,25 @@ namespace SwaySettings {
                 string path = Path.build_filename (file.get_path (),
                                                    info.get_name ());
                 switch (info.get_file_type ()) {
-                    case FileType.DIRECTORY :
-                        // Limit the search depth
-                        if (depth < max_depth) {
-                            depth++;
-                            get_avatars_in_path (path, formats,
-                                                 depth, max_depth);
-                        }
-                        break;
-                    case FileType.REGULAR:
-                        string suffix = path.slice (
-                            path.last_index_of_char ('.') + 1,
-                            path.length);
-                        if (suffix in formats) {
-                            content.popover_flowbox.add (
-                                new Popover_Image (path, set_user_img));
-                        }
-                        break;
-                    default:
-                        return;
+                        case FileType.DIRECTORY :
+                            // Limit the search depth
+                            if (depth < max_depth) {
+                                depth++;
+                                get_avatars_in_path (path, formats,
+                                                     depth, max_depth);
+                            }
+                            break;
+                        case FileType.REGULAR:
+                            string suffix = path.slice (
+                                path.last_index_of_char ('.') + 1,
+                                path.length);
+                            if (suffix in formats) {
+                                content.popover_flowbox.add (
+                                    new Popover_Image (path, set_user_img));
+                            }
+                            break;
+                        default:
+                            return;
                 }
             });
         }

@@ -17,8 +17,11 @@ namespace SwaySettings {
         private int list_image_height = 144;
         private int list_image_width = 256;
 
+        IPC ipc;
+
         public Background_Page (string page_name, Hdy.Deck deck, IPC ipc) {
-            base (page_name, deck, ipc);
+            base (page_name, deck);
+            this.ipc = ipc;
         }
 
         public override void on_refresh () {

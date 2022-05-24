@@ -4,6 +4,7 @@ swaysettings_sources = [
   'Widgets/OrderListSelector/OrderListSelector.vala',
   'Widgets/KeyboardInputSelector/KeyboardInputSelector.vala',
   'IPC/IPC.vala',
+  'Rfkill/Rfkill.vala',
   'Strings.vala',
   'List_Item/List_Item.vala',
   'Functions/Functions.vala',
@@ -13,6 +14,13 @@ swaysettings_sources = [
   'Item/Item.vala',
   'InputSettings/Input_Settings.vala',
   'Pages/Background/Background_Page.vala',
+  'Pages/Bluetooth/Bluetooth_Page.vala',
+  'Pages/Bluetooth/Bluetooth_Device_Row.vala',
+  'Pages/Bluetooth/Bluez/Bluez_Pair_Dialog.vala',
+  'Pages/Bluetooth/Bluez/Bluez_Daemon.vala',
+  'Pages/Bluetooth/Bluez/Bluez_Adapter.vala',
+  'Pages/Bluetooth/Bluez/Bluez_Device.vala',
+  'Pages/Bluetooth/Bluez/Bluez_Agent.vala',
   'Pages/Themes/Themes_Page.vala',
   'Pages/KeyboardPage/Keyboard_Page.vala',
   'Pages/MousePage/Mouse_Page.vala',
@@ -45,7 +53,10 @@ swaysettings_sources += gnome.compile_resources('swaysettings-resources',
 executable(
   'swaysettings',
   swaysettings_sources,
-  vala_args: '--target-glib=2.50',
+  vala_args: [
+    '--target-glib=2.50',
+    '--pkg=linux'
+  ],
   dependencies: swaysettings_deps,
   install: true,
 )

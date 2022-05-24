@@ -2,7 +2,7 @@ using Gee;
 
 namespace SwaySettings {
     [GtkTemplate (ui = "/org/erikreider/swaysettings/Page/Page.ui")]
-    public abstract class Page : Gtk.Box {
+    public abstract class Page : Gtk.Revealer {
 
         [GtkChild]
         public unowned Hdy.HeaderBar header_bar;
@@ -16,13 +16,14 @@ namespace SwaySettings {
 
         public string label;
 
-        public IPC ipc;
-
         public virtual bool refresh_on_realize { get; default = true; }
 
-        protected Page (string label, Hdy.Deck deck, IPC ipc) {
+        protected Page (string label, Hdy.Deck deck) {
             Object ();
-            this.ipc = ipc;
+
+            this.set_transition_type (Gtk.RevealerTransitionType.CROSSFADE);
+            this.set_transition_duration (200);
+
             this.label = label;
             header_bar.set_title (this.label);
             back_button.clicked.connect (() => {
@@ -32,23 +33,27 @@ namespace SwaySettings {
             if (refresh_on_realize) {
                 this.realize.connect (on_refresh);
             }
+
+            // Begin reveal animation
+            Idle.add (() => {
+                this.reveal_child = true;
+                return Source.REMOVE;
+            });
         }
 
-        public virtual void on_refresh () {
-        }
+        public virtual void on_refresh () {}
 
-        public virtual void on_back (Hdy.Deck deck) {
-        }
+        public virtual async void on_back (Hdy.Deck deck) {}
 
-        public static Gtk.Container get_scroll_widget (Gtk.Widget widget, bool have_margin = true, bool shadow = false,
-                                                       int clamp_max = 600, int clamp_tight = 400) {
-            var scrolled_window = new Gtk.ScrolledWindow (null, null);
-            if (shadow) scrolled_window.shadow_type = Gtk.ShadowType.IN;
-            scrolled_window.expand = true;
-            var clamp = new Hdy.Clamp ();
-            clamp.maximum_size = clamp_max;
-            clamp.tightening_threshold = clamp_tight;
-            clamp.orientation = Gtk.Orientation.HORIZONTAL;
+        public static Hdy.Clamp get_clamped_widget (Gtk.Widget widget,
+                                                    bool have_margin = true,
+                                                    int clamp_max = 600,
+                                                    int clamp_tight = 400) {
+            var clamp = new Hdy.Clamp () {
+                maximum_size = clamp_max,
+                tightening_threshold = clamp_tight,
+                orientation = Gtk.Orientation.HORIZONTAL,
+            };
             if (have_margin) {
                 int margin = 16;
                 clamp.set_margin_top (margin);
@@ -58,7 +63,26 @@ namespace SwaySettings {
             }
 
             clamp.add (widget);
-            scrolled_window.add (clamp);
+            clamp.show ();
+            return clamp;
+        }
+
+        public static Gtk.ScrolledWindow get_scroll_widget (Gtk.Widget widget,
+                                                            bool have_margin = true,
+                                                            bool shadow = false,
+                                                            int clamp_max = 600,
+                                                            int clamp_tight = 400) {
+            var scrolled_window = new Gtk.ScrolledWindow (null, null);
+            if (shadow) scrolled_window.shadow_type = Gtk.ShadowType.IN;
+            scrolled_window.expand = true;
+
+            Gtk.Viewport viewport = new Gtk.Viewport (null, null);
+            scrolled_window.add (viewport);
+            viewport.add (get_clamped_widget (widget,
+                                              have_margin,
+                                              clamp_max,
+                                              clamp_tight));
+
             scrolled_window.show_all ();
             return scrolled_window;
         }
@@ -87,8 +111,8 @@ namespace SwaySettings {
             }
         }
 
-        protected Page_Scroll (string label, Hdy.Deck deck, IPC ipc) {
-            base (label, deck, ipc);
+        protected Page_Scroll (string label, Hdy.Deck deck) {
+            base (label, deck);
         }
 
         public override void on_refresh () {
@@ -115,9 +139,8 @@ namespace SwaySettings {
 
         protected Page_Tabbed (string label,
                                Hdy.Deck deck,
-                               IPC ipc,
                                string no_tabs_text = "Nothing here...") {
-            base (label, deck, ipc);
+            base (label, deck);
 
             stack = new Gtk.Stack ();
             stack.transition_type = Gtk.StackTransitionType.CROSSFADE;
@@ -157,7 +180,7 @@ namespace SwaySettings {
             }
         }
 
-        public override void on_back (Hdy.Deck deck) {
+        public override async void on_back (Hdy.Deck deck) {
             stack.set_visible_child (stack.get_children ().nth_data (0));
         }
 

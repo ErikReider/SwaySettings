@@ -1,6 +1,7 @@
 build
 *.ui~
 *.ui#
+.directory
 
 SwaySettings
 swaysettings-*
