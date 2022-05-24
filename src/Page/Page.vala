@@ -2,7 +2,7 @@ using Gee;
 
 namespace SwaySettings {
     [GtkTemplate (ui = "/org/erikreider/swaysettings/Page/Page.ui")]
-    public abstract class Page : Gtk.Box {
+    public abstract class Page : Gtk.Revealer {
 
         [GtkChild]
         public unowned Hdy.HeaderBar header_bar;
@@ -20,6 +20,10 @@ namespace SwaySettings {
 
         protected Page (string label, Hdy.Deck deck) {
             Object ();
+
+            this.set_transition_type (Gtk.RevealerTransitionType.CROSSFADE);
+            this.set_transition_duration (200);
+
             this.label = label;
             header_bar.set_title (this.label);
             back_button.clicked.connect (() => {
@@ -29,13 +33,17 @@ namespace SwaySettings {
             if (refresh_on_realize) {
                 this.realize.connect (on_refresh);
             }
+
+            // Begin reveal animation
+            Idle.add (() => {
+                this.reveal_child = true;
+                return Source.REMOVE;
+            });
         }
 
-        public virtual void on_refresh () {
-        }
+        public virtual void on_refresh () {}
 
-        public virtual async void on_back (Hdy.Deck deck) {
-        }
+        public virtual async void on_back (Hdy.Deck deck) {}
 
         public static Hdy.Clamp get_clamped_widget (Gtk.Widget widget,
                                                     bool have_margin = true,
@@ -70,10 +78,10 @@ namespace SwaySettings {
 
             Gtk.Viewport viewport = new Gtk.Viewport (null, null);
             scrolled_window.add (viewport);
-            viewport.add(get_clamped_widget (widget,
-                                                     have_margin,
-                                                     clamp_max,
-                                                     clamp_tight));
+            viewport.add (get_clamped_widget (widget,
+                                              have_margin,
+                                              clamp_max,
+                                              clamp_tight));
 
             scrolled_window.show_all ();
             return scrolled_window;

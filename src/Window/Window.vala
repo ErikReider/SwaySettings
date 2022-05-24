@@ -78,9 +78,8 @@ namespace SwaySettings {
                     Gtk.Widget child = page_box.get_children ().first ().data;
                     if (child is Page) {
                         Page page = ((Page) child);
-                        page.on_back.begin (deck, () => {
-                            page.destroy ();
-                        });
+                        page.set_reveal_child (false);
+                        page.on_back.begin (deck);
                     }
                 }
             });
