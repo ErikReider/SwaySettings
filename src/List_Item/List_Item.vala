@@ -1,18 +1,12 @@
 namespace SwaySettings {
-    [GtkTemplate (ui = "/org/erikreider/swaysettings/List_Item/List_Item.ui")]
-    public class List_Item : Hdy.PreferencesRow {
+    public class List_Item : Hdy.ActionRow {
 
         public static unowned int height_req = 70;
 
-        [GtkChild]
-        public unowned Gtk.Label label;
-        [GtkChild]
-        unowned Gtk.Box box;
-
         public List_Item (string title, Gtk.Widget widget, int height = height_req) {
             Object ();
-            label.label = title;
-            box.add (widget);
+            set_title (title);
+            this.child = widget;
             widget.halign = Gtk.Align.FILL;
             widget.hexpand = true;
             this.height_request = height;
