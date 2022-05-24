@@ -120,7 +120,8 @@ namespace SwaySettings {
 
         public Startup_Apps_Item (DesktopAppInfo app_info, on_remove callback) {
             Object ();
-            image.set_from_gicon (app_info.get_icon (), Gtk.IconSize.DND);
+            image.set_pixel_size (48);
+            image.set_from_gicon (app_info.get_icon (), Gtk.IconSize.INVALID);
             title.set_text (app_info.get_display_name ());
             subtitle.set_text (app_info.get_commandline ());
 

@@ -20,8 +20,11 @@ namespace SwaySettings {
         }
 
         public override Gtk.Widget set_child () {
-            var list_box = new Gtk.ListBox ();
-            list_box.selection_mode = Gtk.SelectionMode.NONE;
+            var list_box = new Gtk.ListBox () {
+                selection_mode = Gtk.SelectionMode.NONE,
+                vexpand = false,
+                valign = Gtk.Align.START,
+            };
             list_box.get_style_context ().add_class ("content");
             for (int i = 0; i < mime_types.length; i++) {
                 list_box.add (get_item (mime_types[i]));

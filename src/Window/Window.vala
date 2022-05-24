@@ -108,7 +108,7 @@ namespace SwaySettings {
 
                     SettingsItem ("applications-other", PageType.STARTUP_APPS, "startup-apps"),
                     SettingsItem ("preferences-other", PageType.DEFAULT_APPS, "default-apps"),
-                    SettingsItem ("mail-unread", PageType.SWAYNC, "swaync", !Functions.is_swaync_installed ()),
+                    // SettingsItem ("mail-unread", PageType.SWAYNC, "swaync", !Functions.is_swaync_installed ()),
                 }),
                 SettingsCategory ("Hardware", {
                     SettingsItem ("bluetooth-symbolic", PageType.BLUETOOTH, "bluetooth"),
@@ -139,12 +139,13 @@ namespace SwaySettings {
                 title.set_margin_bottom (2);
                 title.set_margin_end (margin);
 
-                var flow_box = new Gtk.FlowBox ();
-                flow_box.set_homogeneous (true);
-                flow_box.vexpand = false;
-                flow_box.min_children_per_line = 3;
-                flow_box.max_children_per_line = 7;
-                flow_box.selection_mode = Gtk.SelectionMode.NONE;
+                var flow_box = new Gtk.FlowBox () {
+                    homogeneous = true,
+                    vexpand = false,
+                    min_children_per_line = 3,
+                    max_children_per_line = 7,
+                    selection_mode = Gtk.SelectionMode.NONE,
+                };
                 flow_box.child_activated.connect ((child) => {
                     foreach (var c in page_box.get_children ()) {
                         if (c != null) page_box.remove (c);

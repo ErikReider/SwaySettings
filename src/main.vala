@@ -30,7 +30,6 @@ namespace SwaySettings {
             "appearance",
             "startup-apps",
             "default-apps",
-            "swaync",
             "keyboard",
             "mouse",
             "trackpad",
