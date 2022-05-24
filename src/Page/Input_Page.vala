@@ -136,9 +136,16 @@ namespace SwaySettings {
 
                     Input_Types type = Input_Types.parse_string (
                         obj.get_string_member ("type") ?? "");
-                    if (input_type != type) continue;
+                    if (input_type != type || type == Input_Types.NEITHER) continue;
+                    // Skip if the Mouse / Touchpad doesn't have "accel_speed"
+                    // Example would be a keyboard that reports as a mouse
+                    if ((type == Input_Types.POINTER || type == Input_Types.TOUCHPAD) &&
+                        obj.get_member ("libinput") ? .get_object ()
+                        ? .has_member ("accel_speed") == false) {
+                        continue;
+                    }
 
-                    get_device_settings (obj, type);
+                    this.device = get_device_settings (obj, type);
                     return true;
                 }
             }
@@ -146,7 +153,7 @@ namespace SwaySettings {
             return false;
         }
 
-        void get_device_settings (Json.Object ? obj, Input_Types type) {
+        Input_Device get_device_settings (Json.Object ? obj, Input_Types type) {
             Input_Device device = new Input_Device (
                 obj.get_string_member ("identifier"), type);
             switch (type) {
@@ -183,11 +190,12 @@ namespace SwaySettings {
                         double scroll_factor = node.get_double ();
                         device.scroll_factor = (float) scroll_factor;
                     }
+                    print ("DATA: %s\n", device.identifier);
                     break;
                 default : break;
             }
 
-            this.device = device;
+            return device;
         }
 
         void write_new_settings (string str) {
