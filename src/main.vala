@@ -25,17 +25,6 @@ namespace SwaySettings {
             { null }
         };
 
-        private const string[] pages = {
-            "wallpaper",
-            "appearance",
-            "startup-apps",
-            "default-apps",
-            "keyboard",
-            "mouse",
-            "trackpad",
-            "users",
-        };
-
         private static string ? page_value = null;
 
         public static int main (string[] args) {
@@ -43,8 +32,11 @@ namespace SwaySettings {
                 Gtk.init_with_args (ref args, null, entries, null);
 
                 if (list_pages) {
-                    foreach (var page in pages) {
-                        print ("%s\n", page);
+                    EnumClass enumc = (EnumClass) typeof (PageType).class_ref ();
+                    foreach (var enum_value in enumc.values) {
+                        string ? name = ((PageType) enum_value.value).get_name ();
+                        if (name == null) continue;
+                        print ("%s\n", name);
                     }
                     return 0;
                 }
