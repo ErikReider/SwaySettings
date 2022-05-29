@@ -220,10 +220,9 @@ namespace SwaySettings {
                 }
                 dis.close ();
                 if (ref_lines == theme_data) {
-                    print ("SKIPPED: %s\n", settings_path);
+                    debug ("Skipped writing config: %s\n", settings_path);
                     return;
                 }
-                print ("%s\n", theme_data);
 
                 // Write data
                 file.replace_contents (theme_data.data,
