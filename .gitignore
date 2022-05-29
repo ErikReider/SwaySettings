@@ -5,4 +5,4 @@ build
 
 SwaySettings
 swaysettings-*
-
+build-scripts/src*
