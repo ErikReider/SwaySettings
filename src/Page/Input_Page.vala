@@ -190,7 +190,6 @@ namespace SwaySettings {
                         double scroll_factor = node.get_double ();
                         device.scroll_factor = (float) scroll_factor;
                     }
-                    print ("DATA: %s\n", device.identifier);
                     break;
                 default : break;
             }
