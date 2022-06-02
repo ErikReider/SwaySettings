@@ -98,15 +98,15 @@ namespace SwaySettings {
                 int i = ((Hdy.ComboRow) sender).get_selected_index ();
                 if (i < 0 || i >= color_schemes.length) return;
                 string theme = color_schemes[i];
-                set_gtk_value (setting_name, theme);
+                set_gtk_value (setting_name, theme, false);
             });
 
             return combo_row;
         }
 
         private Hdy.ComboRow gtk_theme (string title,
-            string setting_name,
-            string folder_name) {
+                                        string setting_name,
+                                        string folder_name) {
             var combo_row = new Hdy.ComboRow ();
             combo_row.set_title (title);
 
@@ -140,7 +140,7 @@ namespace SwaySettings {
             return combo_row;
         }
 
-        void set_gtk_value (string type, Variant val) {
+        void set_gtk_value (string type, Variant val, bool write_file = true) {
             if (!settings.settings_schema.has_key (type)) return;
 
             var v_type = settings.settings_schema.get_key (type).get_value_type ();
@@ -151,33 +151,33 @@ namespace SwaySettings {
 
             string ? theme_value = null;
             switch (val.get_type_string ()) {
-            case "b":
-                bool value = val.get_boolean ();
-                settings.set_boolean (type, value);
-                theme_value = value.to_string ();
-                break;
-            case "s":
-                string value = val.get_string ();
-                settings.set_string (type, value);
-                theme_value = value;
-                break;
+                case "b":
+                    bool value = val.get_boolean ();
+                    settings.set_boolean (type, value);
+                    theme_value = value.to_string ();
+                    break;
+                case "s":
+                    string value = val.get_string ();
+                    settings.set_string (type, value);
+                    theme_value = value;
+                    break;
             }
-            if (theme_value == null) return;
+            if (theme_value == null || !write_file) return;
 
             string ? looking_for = null;
             switch (type) {
-            case "gtk-theme":
-                looking_for = "gtk-theme-name";
-                break;
-            case "icon-theme":
-                looking_for = "gtk-icon-theme-name";
-                break;
-            case "cursor-theme":
-                looking_for = "gtk-cursor-theme-name";
-                break;
-            case "enable-animations":
-                looking_for = "gtk-enable-animations";
-                break;
+                case "gtk-theme":
+                    looking_for = "gtk-theme-name";
+                    break;
+                case "icon-theme":
+                    looking_for = "gtk-icon-theme-name";
+                    break;
+                case "cursor-theme":
+                    looking_for = "gtk-cursor-theme-name";
+                    break;
+                case "enable-animations":
+                    looking_for = "gtk-enable-animations";
+                    break;
             }
             if (looking_for == null) {
                 stderr.printf ("Set GTK Theme error: Settings key not supported!\n");
@@ -275,21 +275,21 @@ namespace SwaySettings {
                         }
 
                         switch (folder_name) {
-                        case "themes":
-                            var new_path = @"$(folder_path)/gtk-3.";
-                            var file_v3 = File.new_for_path (@"$(new_path)0/gtk.css");
-                            var file_min_ver = File.new_for_path (
-                                new_path + min_ver.to_string () + "/gtk.css");
-                            if (file_v3.query_exists ()
-                                || file_min_ver.query_exists ()) {
-                                themes.add (name);
-                            }
-                            break;
-                        case "icons":
-                            if (get_icons (setting_name, folder_path)) {
-                                themes.add (name);
-                            }
-                            break;
+                            case "themes":
+                                var new_path = @"$(folder_path)/gtk-3.";
+                                var file_v3 = File.new_for_path (@"$(new_path)0/gtk.css");
+                                var file_min_ver = File.new_for_path (
+                                    new_path + min_ver.to_string () + "/gtk.css");
+                                if (file_v3.query_exists ()
+                                    || file_min_ver.query_exists ()) {
+                                    themes.add (name);
+                                }
+                                break;
+                            case "icons":
+                                if (get_icons (setting_name, folder_path)) {
+                                    themes.add (name);
+                                }
+                                break;
                         }
                     }
                 } catch (Error e) {
@@ -305,43 +305,43 @@ namespace SwaySettings {
 
         bool get_icons (string setting_name, string folder_path) throws Error {
             switch (setting_name) {
-            case "cursor-theme":
-                var cursors_file = File.new_for_path (@"$(folder_path)/cursors");
-                FileType file_type = cursors_file.query_file_type (
-                    FileQueryInfoFlags.NOFOLLOW_SYMLINKS);
-                if (file_type == FileType.DIRECTORY) return true;
-                break;
-            case "icon-theme":
-                var theme_file = File.new_for_path (
-                    @"$(folder_path)/index.theme");
-                var file_type = theme_file.query_file_type (0);
-                if (FileType.REGULAR == file_type) {
-                    var dir = File.new_for_path (folder_path);
-                    var enu = dir.enumerate_children (
-                        FileAttribute.STANDARD_NAME,
+                case "cursor-theme":
+                    var cursors_file = File.new_for_path (@"$(folder_path)/cursors");
+                    FileType file_type = cursors_file.query_file_type (
                         FileQueryInfoFlags.NOFOLLOW_SYMLINKS);
-                    FileInfo prop;
-                    while ((prop = enu.next_file ()) != null) {
-                        if (prop.get_file_type () == FileType.DIRECTORY) {
-                            string file_name = prop.get_name ().down ();
-                            // validate ex: 384x384 or 16x16
-                            bool valid_res = false;
-                            string[] name_split = file_name.split ("x");
-                            if (name_split.length == 2) {
-                                valid_res =
-                                    int.parse (name_split[0]) > 0
-                                    && int.parse (name_split[0]) > 0;
-                            }
+                    if (file_type == FileType.DIRECTORY) return true;
+                    break;
+                case "icon-theme":
+                    var theme_file = File.new_for_path (
+                        @"$(folder_path)/index.theme");
+                    var file_type = theme_file.query_file_type (0);
+                    if (FileType.REGULAR == file_type) {
+                        var dir = File.new_for_path (folder_path);
+                        var enu = dir.enumerate_children (
+                            FileAttribute.STANDARD_NAME,
+                            FileQueryInfoFlags.NOFOLLOW_SYMLINKS);
+                        FileInfo prop;
+                        while ((prop = enu.next_file ()) != null) {
+                            if (prop.get_file_type () == FileType.DIRECTORY) {
+                                string file_name = prop.get_name ().down ();
+                                // validate ex: 384x384 or 16x16
+                                bool valid_res = false;
+                                string[] name_split = file_name.split ("x");
+                                if (name_split.length == 2) {
+                                    valid_res =
+                                        int.parse (name_split[0]) > 0
+                                        && int.parse (name_split[0]) > 0;
+                                }
 
-                            if (file_name == "scalable"
-                                || file_name == "symbolic"
-                                || valid_res) {
-                                return true;
+                                if (file_name == "scalable"
+                                    || file_name == "symbolic"
+                                    || valid_res) {
+                                    return true;
+                                }
                             }
                         }
                     }
-                }
-                break;
+                    break;
             }
             return false;
         }
