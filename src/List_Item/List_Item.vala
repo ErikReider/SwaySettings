@@ -1,15 +1,12 @@
 namespace SwaySettings {
     public class List_Item : Hdy.ActionRow {
 
-        public static unowned int height_req = 70;
-
-        public List_Item (string title, Gtk.Widget widget, int height = height_req) {
+        public List_Item (string title, Gtk.Widget widget) {
             Object ();
             set_title (title);
             this.child = widget;
             widget.halign = Gtk.Align.FILL;
             widget.hexpand = true;
-            this.height_request = height;
         }
     }
 
@@ -71,7 +68,7 @@ namespace SwaySettings {
             Object ();
 
             this.set_title (title);
-            this.height_request = List_Item.height_req;
+            // this.height_request = List_Item.height_req;
             this.selectable = false;
 
             int selected_index = 0;

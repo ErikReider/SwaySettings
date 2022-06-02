@@ -34,7 +34,12 @@ namespace SwaySettings {
         }
 
         Gtk.Widget get_item (default_app_data def_app) {
-            var chooser = new Gtk.AppChooserButton (def_app.mime_type);
+            var chooser = new Gtk.AppChooserButton (def_app.mime_type) {
+                vexpand = false,
+                hexpand = false,
+                valign = Gtk.Align.CENTER,
+                halign = Gtk.Align.END,
+            };
             chooser.show_dialog_item = true;
             chooser.show_default_item = true;
             chooser.changed.connect ((combo_box) => {
@@ -42,7 +47,7 @@ namespace SwaySettings {
                 if (selected_app == null) return;
                 set_default_app (def_app, selected_app);
             });
-            return new List_Item (def_app.category_name, chooser, 56);
+            return new List_Item (def_app.category_name, chooser);
         }
 
         void set_default_app (default_app_data def_data, AppInfo selected_app) {
