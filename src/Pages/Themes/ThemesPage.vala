@@ -2,12 +2,18 @@ using Gee;
 
 namespace SwaySettings {
     public class Themes_Page : Page_Scroll {
+        ThemesPageContent content = new ThemesPageContent ();
+
         public Themes_Page (SettingsItem item, Hdy.Deck deck) {
             base (item, deck);
         }
 
+        public override async void on_back (Hdy.Deck deck) {
+            content.on_back ();
+        }
+
         public override Gtk.Widget set_child () {
-            return new ThemesPageContent ();
+            return content;
         }
     }
 
@@ -21,19 +27,19 @@ namespace SwaySettings {
         [GtkChild]
         private unowned Gtk.Box preferences_box;
 
+        private const string DEFAULT_THEME = "Adwaita";
+
         ThemePreviewItem preview_default = new ThemePreviewItem (ThemeStyle.DEFAULT);
         ThemePreviewItem preview_dark = new ThemePreviewItem (ThemeStyle.DARK);
+
+        ulong self_settings_handler = 0;
 
         public ThemesPageContent () {
             // Refresh all of the widgets when a value changes
             // This also gets called when ex gnome-tweaks changes a value
-            settings.changed.connect ((settings, str) => {
-                set_style_from_settings ();
-
-                foreach (var child in preferences_box.get_children ()) {
-                    if (child != null) preferences_box.remove (child);
-                }
-                preferences_box.add (get_preferences ());
+            settings.changed.connect ((s, str) => settings_changed (s, str));
+            self_settings_handler = self_settings.changed.connect ((s, str) => {
+                settings_changed (s, str);
             });
 
             style_box.add (preview_default);
@@ -47,16 +53,80 @@ namespace SwaySettings {
             preview_dark.toggled.connect (style_toggled);
 
             preferences_box.add (get_preferences ());
+
+            sync_gtk_theme ();
+        }
+
+        public void on_back () {
+            if (self_settings_handler != 0) {
+                self_settings.disconnect (self_settings_handler);
+                self_settings_handler = 0;
+            }
+        }
+
+        private void sync_gtk_theme () {
+            string ? theme = get_theme_for_style ();
+            string ? applied_theme = Functions.get_gsetting (
+                settings,
+                "gtk-theme",
+                VariantType.STRING)?.get_string ();
+            if (theme == null || theme.length == 0) {
+                theme = DEFAULT_THEME;
+                set_self_theme (theme);
+            } else if (theme == applied_theme) return;
+
+            set_gtk_value ("gtk-theme", theme);
+        }
+
+        private void set_self_theme (string theme) {
+            ThemeStyle style = get_color_scheme ();
+            string name = style == ThemeStyle.DARK
+                ? "theme-dark" : "theme-light";
+            Functions.set_gsetting (self_settings, name, theme);
+        }
+
+        private string ? get_theme_for_style () {
+            ThemeStyle style = get_color_scheme ();
+            string name = style == ThemeStyle.DARK
+                ? "theme-dark" : "theme-light";
+            return Functions.get_gsetting (self_settings,
+                                           name,
+                                           VariantType.STRING) ? .get_string ();
+        }
+
+        private void settings_changed (Settings settings, string str) {
+            switch (str) {
+                case "color-scheme":
+                    set_style_from_settings ();
+                    break;
+                case "theme-dark":
+                case "theme-light":
+                case "gtk-theme":
+                case "icon-theme":
+                case "cursor-theme":
+                case "enable-animations":
+                    foreach (var child in preferences_box.get_children ()) {
+                        if (child != null) preferences_box.remove (child);
+                    }
+                    preferences_box.add (get_preferences ());
+                    break;
+            }
+        }
+
+        private ThemeStyle get_color_scheme () {
+            string value = settings.get_string ("color-scheme");
+            return ThemeStyle.from_gsettings (value);
         }
 
         private void set_style_from_settings () {
-            string value = settings.get_string ("color-scheme");
-            bool is_dark = ThemeStyle.from_gsettings (value) == ThemeStyle.DARK;
+            bool is_dark = get_color_scheme () == ThemeStyle.DARK;
             ThemePreviewItem previewer = is_dark ? preview_dark : preview_default;
 
             previewer.toggled.disconnect (style_toggled);
             previewer.set_toggled (true);
             previewer.toggled.connect (style_toggled);
+
+            sync_gtk_theme ();
         }
 
         private void style_toggled (ThemeStyle style) {
@@ -145,33 +215,14 @@ namespace SwaySettings {
                 (sender, property) => {
                 string theme = themes.get (((Hdy.ComboRow) sender)
                                             .get_selected_index ());
+                set_self_theme (theme);
                 set_gtk_value (setting_name, theme);
             });
             return combo_row;
         }
 
         void set_gtk_value (string type, Variant val, bool write_file = true) {
-            if (!settings.settings_schema.has_key (type)) return;
-
-            var v_type = settings.settings_schema.get_key (type).get_value_type ();
-            if (!v_type.equal (val.get_type ())) {
-                stderr.printf ("Set GTK Theme error: Set value type not equal to gsettings type\n");
-                return;
-            }
-
-            string ? theme_value = null;
-            switch (val.get_type_string ()) {
-                case "b":
-                    bool value = val.get_boolean ();
-                    settings.set_boolean (type, value);
-                    theme_value = value.to_string ();
-                    break;
-                case "s":
-                    string value = val.get_string ();
-                    settings.set_string (type, value);
-                    theme_value = value;
-                    break;
-            }
+            string ? theme_value = Functions.set_gsetting (settings, type, val);
             if (theme_value == null || !write_file) return;
 
             string ? looking_for = null;

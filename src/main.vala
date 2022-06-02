@@ -1,5 +1,8 @@
 namespace SwaySettings {
+    public static Settings self_settings;
+
     public class Main : Object {
+
         private static string page = "";
         private static bool list_pages = false;
 
@@ -43,6 +46,8 @@ namespace SwaySettings {
                 }
 
                 Hdy.init ();
+
+                self_settings = new Settings ("org.erikreider.swaysettings");
 
                 var app = new Gtk.Application ("org.erikreider.swaysettings",
                                                ApplicationFlags.FLAGS_NONE);
