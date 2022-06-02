@@ -6,7 +6,7 @@ A GUI for configuring your sway desktop
 
 - Set and remove auto start apps
 - Change default apps
-- Change GTK theme (GTK 3 and potentially GTK 2)
+- Change GTK theme settings (GTK theme is set per GTK4 color-scheme, ie dark and light mode)
 - Mouse and trackpad settings
 - Keyboard layout settings
 - Switch Wallpaper (selected wallpaper will be located at .cache/wallpaper)
