@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="swaysettings">
 	<schema id="org.erikreider.swaysettings" path="/org/erikreider/swaysettings/">
+		<key name="theme-dark" type="s">
+			<default>"Adwaita-dark"</default>
+			<summary>Selected Dark GTK Theme</summary>
+			<description>This is the theme to use when color-scheme is set to dark mode</description>
+		</key>
+		<key name="theme-light" type="s">
+			<default>"Adwaita"</default>
+			<summary>Selected Dark GTK Theme</summary>
+			<description>This is the theme to use when color-scheme is set to dark mode</description>
+		</key>
 	</schema>
 </schemalist>
