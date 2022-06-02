@@ -7,8 +7,8 @@ namespace SwaySettings {
 
         ArrayList<DesktopAppInfo> startup_apps;
 
-        public Startup_Apps (string page_label, Hdy.Deck deck) {
-            base (page_label, deck);
+        public Startup_Apps (SettingsItem item, Hdy.Deck deck) {
+            base (item, deck);
         }
 
         public override Gtk.Widget set_child () {

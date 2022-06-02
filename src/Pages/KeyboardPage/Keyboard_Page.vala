@@ -3,8 +3,8 @@ using Gee;
 namespace SwaySettings {
     public class Keyboard_Page : Input_Page {
 
-        public Keyboard_Page (string label, Hdy.Deck deck, IPC ipc) {
-            base (label, deck, ipc);
+        public Keyboard_Page (SettingsItem item, Hdy.Deck deck, IPC ipc) {
+            base (item, deck, ipc);
         }
 
         public override SwaySettings.Input_Types input_type {

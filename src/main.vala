@@ -34,7 +34,8 @@ namespace SwaySettings {
                 if (list_pages) {
                     EnumClass enumc = (EnumClass) typeof (PageType).class_ref ();
                     foreach (var enum_value in enumc.values) {
-                        string ? name = ((PageType) enum_value.value).get_name ();
+                        string ? name = ((PageType) enum_value.value)
+                                         .get_internal_name ();
                         if (name == null) continue;
                         print ("%s\n", name);
                     }

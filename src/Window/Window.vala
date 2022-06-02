@@ -16,6 +16,32 @@ namespace SwaySettings {
         public string ? get_name () {
             switch (this) {
                 case WALLPAPER:
+                    return "Wallpaper";
+                case APPEARANCE:
+                    return "Appearance";
+                case STARTUP_APPS:
+                    return "Startup Apps";
+                case DEFAULT_APPS:
+                    return "Default Apps";
+                case SWAYNC:
+                    return "Sway Notification Center";
+                case BLUETOOTH:
+                    return "Bluetooth";
+                case KEYBOARD:
+                    return "Keyboard";
+                case MOUSE:
+                    return "Mouse";
+                case TRACKPAD:
+                    return "Trackpad";
+                case USERS:
+                    return "Users";
+            }
+            return null;
+        }
+
+        public string ? get_internal_name () {
+            switch (this) {
+                case WALLPAPER:
                     return "wallpaper";
                 case APPEARANCE:
                     return "appearance";
@@ -166,9 +192,9 @@ namespace SwaySettings {
                 });
                 foreach (var settings_item in category.items) {
                     if (settings_item.hidden) continue;
-                    string ? name = settings_item.page_type.get_name ();
+                    string ? name = settings_item.page_type.get_internal_name ();
                     if (name == null) continue;
-                    var item = new Item (name, settings_item.image, settings_item);
+                    var item = new Item (settings_item);
                     this.items += item;
                     flow_box.add (item);
                 }
@@ -185,25 +211,25 @@ namespace SwaySettings {
         public Page ? get_page (SettingsItem item) {
             switch (item.page_type) {
                 case WALLPAPER:
-                    return new Background_Page ("Background", deck, ipc);
+                    return new Background_Page (item, deck, ipc);
                 case APPEARANCE:
-                    return new Themes_Page ("Appearance", deck);
+                    return new Themes_Page (item, deck);
                 case STARTUP_APPS:
-                    return new Startup_Apps ("Startup Applications", deck);
+                    return new Startup_Apps (item, deck);
                 case DEFAULT_APPS:
-                    return new Default_Apps ("Default Applications", deck);
+                    return new Default_Apps (item, deck);
                 case SWAYNC:
-                    return new Swaync ("Sway Notification Center", deck, ipc);
+                    return new Swaync (item, deck, ipc);
                 case BLUETOOTH:
-                    return new Bluetooth_Page ("Bluetooth", deck);
+                    return new Bluetooth_Page (item, deck);
                 case KEYBOARD:
-                    return new Keyboard_Page ("Keyboard", deck, ipc);
+                    return new Keyboard_Page (item, deck, ipc);
                 case MOUSE:
-                    return new Mouse_Page ("Mouse", deck, ipc);
+                    return new Mouse_Page (item, deck, ipc);
                 case TRACKPAD:
-                    return new Trackpad_Page ("Trackpad", deck, ipc);
+                    return new Trackpad_Page (item, deck, ipc);
                 case USERS:
-                    return new Users ("Users", deck);
+                    return new Users (item, deck);
             }
             return null;
         }
@@ -222,17 +248,21 @@ namespace SwaySettings {
     public struct SettingsItem {
         string image;
         bool hidden;
-        string internal_name;
         PageType page_type;
+
+        string internal_name;
+        string name;
 
         SettingsItem (string image,
                       PageType page_type,
                       string internal_name,
                       bool hidden = false) {
             this.image = image;
-            this.internal_name = internal_name;
             this.page_type = page_type;
             this.hidden = hidden;
+
+            this.internal_name = page_type.get_internal_name ();
+            this.name = page_type.get_name ();
         }
     }
 }

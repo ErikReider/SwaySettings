@@ -15,8 +15,8 @@ namespace SwaySettings {
             default_app_data ("File Browser", "inode/directory"),
         };
 
-        public Default_Apps (string page_label, Hdy.Deck deck) {
-            base (page_label, deck);
+        public Default_Apps (SettingsItem item, Hdy.Deck deck) {
+            base (item, deck);
         }
 
         public override Gtk.Widget set_child () {

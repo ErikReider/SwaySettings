@@ -16,18 +16,18 @@ namespace SwaySettings {
         [GtkChild]
         public unowned Gtk.Box content_box;
 
-        public string label;
+        public SettingsItem item;
 
         public virtual bool refresh_on_realize { get; default = true; }
 
-        protected Page (string label, Hdy.Deck deck) {
+        protected Page (SettingsItem item, Hdy.Deck deck) {
             Object ();
 
             revealer.set_transition_type (Gtk.RevealerTransitionType.CROSSFADE);
             revealer.set_transition_duration (200);
 
-            this.label = label;
-            header_bar.set_title (this.label);
+            this.item = item;
+            header_bar.set_title (this.item.name);
             back_button.clicked.connect (() => {
                 deck.navigate (Hdy.NavigationDirection.BACK);
             });
@@ -117,8 +117,8 @@ namespace SwaySettings {
             }
         }
 
-        protected Page_Scroll (string label, Hdy.Deck deck) {
-            base (label, deck);
+        protected Page_Scroll (SettingsItem item, Hdy.Deck deck) {
+            base (item, deck);
         }
 
         public override void on_refresh () {
@@ -143,10 +143,10 @@ namespace SwaySettings {
 
         public Gtk.Stack stack;
 
-        protected Page_Tabbed (string label,
+        protected Page_Tabbed (SettingsItem item,
                                Hdy.Deck deck,
                                string no_tabs_text = "Nothing here...") {
-            base (label, deck);
+            base (item, deck);
 
             stack = new Gtk.Stack ();
             stack.transition_type = Gtk.StackTransitionType.CROSSFADE;

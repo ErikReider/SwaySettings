@@ -56,8 +56,8 @@ namespace SwaySettings {
         ConfigModel settings;
         IPC ipc;
 
-        public Swaync (string label, Hdy.Deck deck, IPC ipc) {
-            base (label, deck);
+        public Swaync (SettingsItem item, Hdy.Deck deck, IPC ipc) {
+            base (item, deck);
             this.ipc = ipc;
         }
 

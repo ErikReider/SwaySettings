@@ -19,8 +19,8 @@ namespace SwaySettings {
         private ulong is_loaded_id = 0;
         private ulong changed_id = 0;
 
-        public Users (string label, Hdy.Deck deck) {
-            base (label, deck);
+        public Users (SettingsItem item, Hdy.Deck deck) {
+            base (item, deck);
         }
 
         public override async void on_back (Hdy.Deck deck) {

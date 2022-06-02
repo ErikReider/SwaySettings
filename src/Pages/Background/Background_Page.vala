@@ -19,8 +19,8 @@ namespace SwaySettings {
 
         IPC ipc;
 
-        public Background_Page (string page_name, Hdy.Deck deck, IPC ipc) {
-            base (page_name, deck);
+        public Background_Page (SettingsItem item, Hdy.Deck deck, IPC ipc) {
+            base (item, deck);
             this.ipc = ipc;
         }
 

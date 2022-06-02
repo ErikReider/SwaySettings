@@ -10,12 +10,15 @@ namespace SwaySettings {
         public unowned Gtk.Label btn_label;
 
 
-        public Item (string text, string icon_name, SettingsItem settings_item) {
+        public Item (SettingsItem settings_item) {
             Object ();
             this.settings_item = settings_item;
 
-            btn_label.set_text (text);
-            if (icon_name != "") btn_image.set_from_icon_name (icon_name, Gtk.IconSize.DIALOG);
+            btn_label.set_text (settings_item.name);
+            if (settings_item.image != "") {
+                btn_image.set_from_icon_name (settings_item.image,
+                                              Gtk.IconSize.DIALOG);
+            }
 
             show_all ();
         }

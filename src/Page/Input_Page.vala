@@ -30,8 +30,8 @@ namespace SwaySettings {
 
         IPC ipc;
 
-        protected Input_Page (string label, Hdy.Deck deck, IPC ipc) {
-            base (label, deck);
+        protected Input_Page (SettingsItem item, Hdy.Deck deck, IPC ipc) {
+            base (item, deck);
             this.ipc = ipc;
         }
 
