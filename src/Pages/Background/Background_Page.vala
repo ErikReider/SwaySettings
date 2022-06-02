@@ -77,6 +77,9 @@ namespace SwaySettings {
                 }
 
                 file.copy (file_dest, GLib.FileCopyFlags.OVERWRITE);
+
+                Functions.generate_thumbnail (dest_path, true);
+
                 ipc.run_command (@"output * bg $(dest_path) fill");
             } catch (Error e) {
                 stderr.printf ("%s\n", e.message);

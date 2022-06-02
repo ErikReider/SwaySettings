@@ -1,6 +1,8 @@
 using Gee;
 
 namespace SwaySettings {
+    private errordomain ThumbnailerError { FAILED; }
+
     public class Functions {
 
         public delegate void Delegate_walk_func (FileInfo file_info, File file);
@@ -120,9 +122,9 @@ namespace SwaySettings {
             return null;
         }
 
-        public static Variant? get_gsetting (Settings settings,
-                                             string name,
-                                             VariantType type) {
+        public static Variant ? get_gsetting (Settings settings,
+                                              string name,
+                                              VariantType type) {
             if (!settings.settings_schema.has_key (name)) return null;
             var v_type = settings.settings_schema.get_key (name).get_value_type ();
             if (!v_type.equal (type)) {
@@ -130,6 +132,35 @@ namespace SwaySettings {
                 return null;
             }
             return settings.get_value (name);
+        }
+
+        public static string ? generate_thumbnail (string p,
+                                                   bool delete_past = false) throws Error {
+            File file = File.new_for_path (p);
+            string path = file.get_uri ();
+            string checksum = Checksum.compute_for_string (ChecksumType.MD5, path, path.length);
+            string checksum_path = "%s/thumbnails/large/%s.png".printf (
+                Environment.get_user_cache_dir (), checksum);
+
+            File sum_file = File.new_for_path (checksum_path);
+            bool exists = sum_file.query_exists ();
+            // Remove the old file
+            if (delete_past && exists) {
+                sum_file.delete ();
+                exists = false;
+            }
+            if (!exists) {
+                string output;
+                string error;
+                bool status = Process.spawn_command_line_sync (
+                    @"gdk-pixbuf-thumbnailer \"$(p)\" \"$(checksum_path)\"",
+                    out output, out error);
+                if (!status || error.length > 0) {
+                    throw new ThumbnailerError.FAILED (error);
+                }
+            }
+
+            return checksum_path;
         }
     }
 }
