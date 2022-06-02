@@ -2,7 +2,7 @@ using Gee;
 
 namespace SwaySettings {
     [GtkTemplate (ui = "/org/erikreider/swaysettings/Page/Page.ui")]
-    public abstract class Page : Gtk.Revealer {
+    public abstract class Page : Gtk.Box {
 
         [GtkChild]
         public unowned Hdy.HeaderBar header_bar;
@@ -11,6 +11,8 @@ namespace SwaySettings {
         [GtkChild]
         public unowned Gtk.ButtonBox button_box;
 
+        [GtkChild]
+        private unowned Gtk.Revealer revealer;
         [GtkChild]
         public unowned Gtk.Box content_box;
 
@@ -21,8 +23,8 @@ namespace SwaySettings {
         protected Page (string label, Hdy.Deck deck) {
             Object ();
 
-            this.set_transition_type (Gtk.RevealerTransitionType.CROSSFADE);
-            this.set_transition_duration (200);
+            revealer.set_transition_type (Gtk.RevealerTransitionType.CROSSFADE);
+            revealer.set_transition_duration (200);
 
             this.label = label;
             header_bar.set_title (this.label);
@@ -36,9 +38,13 @@ namespace SwaySettings {
 
             // Begin reveal animation
             Idle.add (() => {
-                this.reveal_child = true;
+                revealer.reveal_child = true;
                 return Source.REMOVE;
             });
+        }
+
+        public void set_reveal_child(bool value) {
+            revealer.set_reveal_child (value);
         }
 
         public virtual void on_refresh () {}

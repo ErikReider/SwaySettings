@@ -72,14 +72,29 @@ namespace SwaySettings {
             Object (application: app);
             ipc = new IPC ();
 
-            deck.notify["visible-child"].connect (() => {
-                if (deck.visible_child_name == "main_page") {
+            // Only call the page `on_back` method when done transitioning
+            deck.notify.connect ((o, p) => {
+                if (p.name != "transition-running"
+                    && p.name != "visible-child-name") return;
+                if (!deck.transition_running
+                    && deck.visible_child_name == "main_page") {
                     if (page_box.get_children ().is_empty ()) return;
                     Gtk.Widget child = page_box.get_children ().first ().data;
                     if (child is Page) {
                         Page page = ((Page) child);
-                        page.set_reveal_child (false);
                         page.on_back.begin (deck);
+                    }
+                }
+            });
+            deck.notify["visible-child-name"].connect (() => {
+                if (page_box.get_children ().is_empty ()) return;
+                Gtk.Widget child = page_box.get_children ().first ().data;
+                if (child is Page) {
+                    Page page = ((Page) child);
+                    if (deck.visible_child_name == "main_page") {
+                        page.set_reveal_child (false);
+                    } else {
+                        page.set_reveal_child (true);
                     }
                 }
             });
@@ -88,16 +103,8 @@ namespace SwaySettings {
             gesture.set_button (0);
             gesture.set_propagation_phase (Gtk.PropagationPhase.CAPTURE);
             gesture.pressed.connect ((g, n, x, y) => {
-                switch (g.get_current_button ()) {
-                        case 8:
-                            deck.navigate (Hdy.NavigationDirection.BACK);
-                            break;
-                        case 9:
-                            if (page_box.get_children ().length () > 0) {
-                                deck.navigate (Hdy.NavigationDirection.FORWARD);
-                            }
-                            break;
-                }
+                if (g.get_current_button () != 8) return;
+                deck.navigate (Hdy.NavigationDirection.BACK);
             });
 
             SettingsCategory[] items = {
