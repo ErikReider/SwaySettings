@@ -261,8 +261,20 @@ namespace Bluez {
 
             // Set Adapter powered state and wait until their
             // powered state has changed
+            List<Adapter1> adapters = get_adapters ();
+            // Wait until adapters appear after rfkill unblocking.
+            // Thinkpad X1 Carbons bluetotth adapters seems to disappear while
+            // rfkill blocking.
+            if (adapters.length () == 0) {
+                ulong id = 0;
+                id = adapter_added.connect (() => {
+                    this.disconnect (id);
+                    change_bluetooth_state.callback ();
+                });
+                yield;
+                adapters = get_adapters ();
+            }
             uint num_powered = 0;
-            var adapters = get_adapters ();
             foreach (Adapter1 adapter in adapters) {
                 adapter.powered = state;
                 DBusProxy pxy = ((DBusProxy) adapter);

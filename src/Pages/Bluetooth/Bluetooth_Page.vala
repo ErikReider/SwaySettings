@@ -31,7 +31,7 @@ namespace SwaySettings {
 
         public override async void on_back (Hdy.Deck deck) {
             this.freeze_notify ();
-            if (this.daemon.powered) {
+            if (this.daemon.powered || this.daemon.discovering) {
                 yield this.daemon.set_discovering_state (false);
             }
             yield this.daemon.unregister_agent ();
