@@ -1,5 +1,8 @@
 namespace SwaySettings {
+    public static Settings self_settings;
+
     public class Main : Object {
+
         private static string page = "";
         private static bool list_pages = false;
 
@@ -44,6 +47,8 @@ namespace SwaySettings {
 
                 Hdy.init ();
 
+                self_settings = new Settings ("org.erikreider.swaysettings");
+
                 var app = new Gtk.Application ("org.erikreider.swaysettings",
                                                ApplicationFlags.FLAGS_NONE);
                 app.activate.connect (() => {
@@ -65,6 +70,15 @@ namespace SwaySettings {
                 app.register ();
 
                 app.activate_action ("page", page ?? "");
+
+                // Load custom CSS
+                Gtk.CssProvider css_provider = new Gtk.CssProvider ();
+                css_provider.load_from_resource (
+                    "/org/erikreider/swaysettings/style.css");
+                Gtk.StyleContext.add_provider_for_screen (
+                    Gdk.Screen.get_default (),
+                    css_provider,
+                    Gtk.STYLE_PROVIDER_PRIORITY_SETTINGS);
 
                 return app.run (args);
             } catch (Error e) {

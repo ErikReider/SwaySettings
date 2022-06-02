@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
   <gresource prefix="/org/erikreider/swaysettings">
+      <file compressed="true">style.css</file>
+
       <file>Widgets/OrderListSelector/OrderListSelector.ui</file>
       <file>Widgets/KeyboardInputSelector/KeyboardInputSelector.ui</file>
       <file>Widgets/ActionDialog/ActionDialog.ui</file>
@@ -12,5 +14,7 @@
       <file>Pages/Users/Users.ui</file>
       <file>Pages/Bluetooth/Bluetooth_Device_Row.ui</file>
       <file>Pages/Bluetooth/Bluez/Bluez_Pair_Dialog.ui</file>
+      <file>Pages/Themes/ThemesPage.ui</file>
+      <file>Pages/Themes/ThemePreviewItem.ui</file>
   </gresource>
 </gresources>

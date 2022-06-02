@@ -95,5 +95,41 @@ namespace SwaySettings {
             Quark proxy_quark = Quark.from_string ("vala-dbus-proxy-type");
             return ((TypeFunc) (typeof (T).get_qdata (proxy_quark)))();
         }
+
+        public static string ? set_gsetting (Settings settings,
+                                             string name,
+                                             Variant value) {
+            if (!settings.settings_schema.has_key (name)) return null;
+
+            var v_type = settings.settings_schema.get_key (name).get_value_type ();
+            if (!v_type.equal (value.get_type ())) {
+                stderr.printf ("Set GSettings error: Set value type not equal to gsettings type\n");
+                return null;
+            }
+
+            switch (value.get_type_string ()) {
+                case "b":
+                    bool val = value.get_boolean ();
+                    settings.set_boolean (name, val);
+                    return val.to_string ();
+                case "s":
+                    string val = value.get_string ();
+                    settings.set_string (name, val);
+                    return val;
+            }
+            return null;
+        }
+
+        public static Variant? get_gsetting (Settings settings,
+                                             string name,
+                                             VariantType type) {
+            if (!settings.settings_schema.has_key (name)) return null;
+            var v_type = settings.settings_schema.get_key (name).get_value_type ();
+            if (!v_type.equal (type)) {
+                stderr.printf ("Set GSettings error: Set value type not equal to gsettings type\n");
+                return null;
+            }
+            return settings.get_value (name);
+        }
     }
 }
