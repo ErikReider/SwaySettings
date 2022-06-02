@@ -59,7 +59,7 @@ namespace SwaySettings {
         unowned Gtk.Overlay overlay;
 
         [GtkChild]
-        unowned Gtk.DrawingArea drawing_area;
+        unowned Gtk.Image background;
 
         [GtkChild]
         unowned Gtk.Fixed fixed;
@@ -96,7 +96,13 @@ namespace SwaySettings {
                        20,
                        45);
 
-            drawing_area.draw.connect (area_draw);
+            ulong realize_handler = 0;
+            realize_handler = background.draw.connect (() => {
+                background.disconnect (realize_handler);
+                realize_handler = 0;
+                draw_background ();
+                return false;
+            });
 
             box.draw.connect (box_draw);
 
@@ -116,15 +122,34 @@ namespace SwaySettings {
             button.set_group (group);
         }
 
-        private bool area_draw (Cairo.Context cr) {
-            int width = drawing_area.get_allocated_width ();
-            int height = drawing_area.get_allocated_height ();
+        private void draw_background () {
+            int width = background.get_allocated_width ();
+            int height = background.get_allocated_height ();
 
+            Cairo.Surface surface = new Cairo.ImageSurface (
+                Cairo.Format.ARGB32, width, height);
+            Cairo.Context cr = new Cairo.Context (surface);
+            try {
+                string big_path = "%s/wallpaper".printf (Environment.get_user_cache_dir ());
+                string path = Functions.generate_thumbnail (big_path);
+                var pixbuf = new Gdk.Pixbuf.from_file_at_scale (
+                    path, width, height, false);
+                Gdk.cairo_set_source_pixbuf (cr, pixbuf, 0, 0);
+                cr.paint ();
+
+                background.set_from_surface (surface);
+                return;
+            } catch (Error e) {
+                stderr.printf (
+                    "Could not find wallpaper, using greyscale background instead... %s\n",
+                    e.message);
+            }
+            // Use greyscale background if wallpaper is not found...
             cr.rectangle (0, 0, width, height);
             double value = theme_style == ThemeStyle.DARK ? 0.4 : 0.8;
             cr.set_source_rgb (value, value, value);
             cr.fill ();
-            return false;
+            background.set_from_surface (surface);
         }
 
         /**
