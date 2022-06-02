@@ -66,6 +66,15 @@ namespace SwaySettings {
 
                 app.activate_action ("page", page ?? "");
 
+                // Load custom CSS
+                Gtk.CssProvider css_provider = new Gtk.CssProvider ();
+                css_provider.load_from_resource (
+                    "/org/erikreider/swaysettings/style.css");
+                Gtk.StyleContext.add_provider_for_screen (
+                    Gdk.Screen.get_default (),
+                    css_provider,
+                    Gtk.STYLE_PROVIDER_PRIORITY_SETTINGS);
+
                 return app.run (args);
             } catch (Error e) {
                 stderr.printf ("%s\n", e.message);
