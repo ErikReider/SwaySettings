@@ -41,6 +41,7 @@ swaysettings_deps = [
   dependency('granite'),
   dependency('libxml-2.0'),
   dependency('accountsservice'),
+  meson.get_compiler('c').find_library('gtk-layer-shell'),
 ]
 
 sysconfdir = get_option('sysconfdir')
@@ -63,8 +64,22 @@ executable(
 )
 
 executable(
+  'sway-wallpaper',
+  [
+    'Wallpaper/Wallpaper.vala',
+    'Wallpaper/Window.vala',
+  ],
+  vala_args: [
+    '--target-glib=2.50',
+    '--pkg=GtkLayerShell-0.1',
+  ],
+  dependencies: swaysettings_deps,
+  install: true,
+)
+
+executable(
   'sway-autostart',
-  ['auto_start.vala'],
+  ['AutoStart/auto_start.vala'],
   vala_args: '--target-glib=2.50',
   dependencies: swaysettings_deps,
   install: true,
