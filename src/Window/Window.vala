@@ -126,10 +126,9 @@ namespace SwaySettings {
             });
 
             gesture = new Gtk.GestureMultiPress (this);
-            gesture.set_button (0);
+            gesture.set_button (8);
             gesture.set_propagation_phase (Gtk.PropagationPhase.CAPTURE);
             gesture.pressed.connect ((g, n, x, y) => {
-                if (g.get_current_button () != 8) return;
                 deck.navigate (Hdy.NavigationDirection.BACK);
             });
 
