@@ -92,12 +92,10 @@ namespace Wallpaper {
             });
 
             display.monitor_added.connect ((d, mon) => {
-                print ("ADDED\n");
-                init_windows (d);
+                add_window (d, mon);
             });
 
             display.monitor_removed.connect ((d, mon) => {
-                print ("REMOVEd\n");
                 init_windows (d);
             });
         }
@@ -108,14 +106,19 @@ namespace Wallpaper {
             }
         }
 
+        private static void add_window (Gdk.Display display,
+                                        Gdk.Monitor monitor) {
+            Window win = new Window (app, display, monitor, path);
+            win.present ();
+        }
+
         private static void init_windows (Gdk.Display display) {
             close_all_windows ();
 
             for (int i = 0; i < display.get_n_monitors (); i++) {
                 Gdk.Monitor ? mon = display.get_monitor (i);
                 if (mon == null) continue;
-                Window win = new Window (app, display, mon, path);
-                win.present ();
+                add_window (display, mon);
             }
         }
     }
