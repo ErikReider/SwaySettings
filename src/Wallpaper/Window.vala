@@ -66,7 +66,7 @@ namespace Wallpaper {
         /**
          * Sets the wallpaper and transitions between the new and the old wallpaper
          */
-        public void set_wallpaper (string path) {
+        public void set_wallpaper (string? path) {
             unowned Gtk.Image background = showing_image_1 ? image_1 : image_2;
             showing_image_1 = !showing_image_1;
 
@@ -75,7 +75,7 @@ namespace Wallpaper {
         }
 
         /** Draws the wallpaper on the provided Gtk.Image */
-        private void draw_wallpaper (string path, Gtk.Image background) {
+        private void draw_wallpaper (string? path, Gtk.Image background) {
             int width = get_allocated_width ();
             int height = get_allocated_height ();
             int scale = background.scale_factor;
