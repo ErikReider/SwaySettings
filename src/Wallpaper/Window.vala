@@ -1,10 +1,13 @@
 namespace Wallpaper {
     class Window : Gtk.Window {
         Gtk.Stack stack;
-        Gtk.Image image_1;
-        Gtk.Image image_2;
+        Gtk.DrawingArea image_1;
+        Gtk.DrawingArea image_2;
 
-        bool showing_image_1 = true;
+        bool showing_image_1 = false;
+
+        BackgroundInfo ? info;
+        BackgroundInfo ? old_info;
 
         unowned Gdk.Display display;
         unowned Gdk.Monitor monitor;
@@ -12,7 +15,7 @@ namespace Wallpaper {
         public Window (Gtk.Application app,
                        Gdk.Display disp,
                        Gdk.Monitor mon,
-                       string ? path) {
+                       BackgroundInfo ? init_info) {
             Object (application: app);
             this.display = disp;
             this.monitor = mon;
@@ -35,80 +38,124 @@ namespace Wallpaper {
             };
             this.add (stack);
 
-            image_1 = new Gtk.Image () {
-                pixel_size = -1,
+            image_1 = new Gtk.DrawingArea () {
                 valign = Gtk.Align.FILL,
                 halign = Gtk.Align.FILL,
                 expand = true,
+                name = "image1",
             };
             stack.add (image_1);
 
-            image_2 = new Gtk.Image () {
-                pixel_size = -1,
+            image_2 = new Gtk.DrawingArea () {
                 valign = Gtk.Align.FILL,
                 halign = Gtk.Align.FILL,
                 expand = true,
+                name = "image2",
             };
             stack.add (image_2);
 
             show_all ();
 
-            // Init the first image
-            ulong realize_handler = 0;
-            realize_handler = image_1.draw.connect (() => {
-                image_1.disconnect (realize_handler);
-                realize_handler = 0;
-                set_wallpaper (path);
-                return false;
-            });
+            this.image_1.draw.connect ((cr) => on_draw (cr, image_1));
+            this.image_2.draw.connect ((cr) => on_draw (cr, image_2));
+
+            change_wallpaper (init_info);
         }
 
-        /**
-         * Sets the wallpaper and transitions between the new and the old wallpaper
-         */
-        public void set_wallpaper (string? path) {
-            unowned Gtk.Image background = showing_image_1 ? image_1 : image_2;
-            showing_image_1 = !showing_image_1;
+        private bool on_draw (Cairo.Context cr, Gtk.DrawingArea image) {
+            // Draw the new background if widget is transioning in. Else,
+            // draw the old wallpaper
+            unowned Gtk.DrawingArea background = showing_image_1 ? image_1 : image_2;
+            unowned BackgroundInfo ? _info = image == background ? info : old_info;
 
-            draw_wallpaper (path, background);
-            stack.set_visible_child (background);
-        }
-
-        /** Draws the wallpaper on the provided Gtk.Image */
-        private void draw_wallpaper (string? path, Gtk.Image background) {
-            int width = get_allocated_width ();
-            int height = get_allocated_height ();
-            int scale = background.scale_factor;
-
-            try {
-                if (path != null && path.length > 0) {
-                    var pixbuf = new Gdk.Pixbuf.from_file_at_scale (
-                        path,
-                        width * scale,
-                        height * scale,
-                        false);
-                    var surface = Gdk.cairo_surface_create_from_pixbuf (
-                        pixbuf,
-                        scale,
-                        get_window ());
-                    background.set_from_surface (surface);
-                    return;
-                }
-            } catch (Error e) {
-                stderr.printf (
-                    "Could not find wallpaper, using greyscale background instead... %s\n",
-                    e.message);
-            }
+            int buffer_width = monitor.geometry.width;
+            int buffer_height = monitor.geometry.height;
             // Use greyscale background if wallpaper is not found...
-            Cairo.Surface surface = new Cairo.ImageSurface (
-                Cairo.Format.ARGB32, width, height);
-            Cairo.Context cr = new Cairo.Context (surface);
+            if (_info == null) {
+                debug ("Not using surface...\n");
+                Cairo.Surface surface = new Cairo.ImageSurface (
+                    Cairo.Format.ARGB32, buffer_width, buffer_height);
 
-            cr.rectangle (0, 0, width, height);
-            double value = 0.8;
-            cr.set_source_rgb (value, value, value);
-            cr.fill ();
-            background.set_from_surface (surface);
+                cr.rectangle (0, 0, buffer_width, buffer_height);
+                double value = 0.8;
+                cr.set_source_rgb (value, value, value);
+                cr.fill ();
+                cr.set_source_surface (surface, 0, 0);
+                return false;
+            }
+
+            int surface_h = _info.height;
+            int surface_w = _info.width;
+            switch (_info.image_info.scale_mode) {
+                case ScaleModes.COVER:
+                    double window_ratio = (double) buffer_width / buffer_height;
+                    double bg_ratio = surface_w / surface_h;
+
+                    if (window_ratio > bg_ratio) {
+                        double scale = (double) buffer_height / surface_h;
+                        cr.scale (scale, scale);
+                        cr.set_source_surface (
+                            _info.surface,
+                            (double) buffer_width / 2 / scale - surface_w / 2, 0);
+                    } else {
+                        double scale = (double) buffer_width / surface_w;
+                        cr.scale (scale, scale);
+                        cr.set_source_surface (
+                            _info.surface,
+                            0, (double) buffer_height / 2 / scale - surface_h / 2);
+                    }
+                    break;
+                case ScaleModes.FIT:
+                    double window_ratio = (double) buffer_width / buffer_height;
+                    double bg_ratio = surface_w / surface_h;
+
+                    if (window_ratio > bg_ratio) {
+                        double scale = (double) buffer_width / surface_w;
+                        cr.scale (scale, scale);
+                        cr.set_source_surface (
+                            _info.surface,
+                            0,
+                            (double) buffer_height / 2 / scale - surface_h / 2);
+                    } else {
+                        double scale = (double) buffer_height / surface_h;
+                        cr.scale (scale, scale);
+                        cr.set_source_surface (
+                            _info.surface,
+                            (double) buffer_width / 2 / scale - surface_w / 2,
+                            0);
+                    }
+                    break;
+                case ScaleModes.FILL:
+                    cr.scale ((double) buffer_width / surface_w,
+                              (double) buffer_height / surface_h);
+                    cr.set_source_surface (_info.surface, 0, 0);
+                    break;
+                case ScaleModes.CENTER:
+                    cr.set_source_surface (
+                        _info.surface,
+                        (double) buffer_width / 2 - surface_w / 2,
+                        (double) buffer_height / 2 - surface_h / 2);
+                    break;
+            }
+
+            // Sets a faster, less accurate filter when the pattern's reading pixel values
+            cr.get_source ().set_filter (Cairo.Filter.BILINEAR);
+
+            cr.paint ();
+            return false;
+        }
+
+        public void change_wallpaper (BackgroundInfo ? background_info) {
+            if (background_info == null) {
+                this.old_info = null;
+                this.info = null;
+                return;
+            }
+            this.old_info = info;
+            this.info = background_info;
+            unowned Gtk.DrawingArea background = !showing_image_1 ? image_1 : image_2;
+            showing_image_1 = !showing_image_1;
+            stack.set_visible_child (background);
         }
     }
 }

@@ -35,6 +35,9 @@ swaysettings_sources = [
 swaysettings_deps = [
   dependency('gio-2.0', version: '>= 2.50'),
   dependency('gtk+-3.0', version: '>= 3.22'),
+  dependency('gdk-3.0'),
+  dependency('gdk-pixbuf-2.0'),
+  dependency('cairo'),
   dependency('libhandy-1', version: '>= 1.0.0'),
   dependency('json-glib-1.0'),
   dependency('gee-0.8'),

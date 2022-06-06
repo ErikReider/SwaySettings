@@ -1,9 +1,40 @@
 namespace Wallpaper {
     public static Settings self_settings;
 
-    public class Main : Object {
+    public enum ScaleModes {
+        COVER, FILL, FIT, CENTER;
 
+        public static ScaleModes parse_mode (string ? value) {
+            switch (value) {
+                default:
+                case "cover":
+                    return COVER;
+                case "fill":
+                    return FILL;
+                case "fit":
+                    return FIT;
+                case "center":
+                    return CENTER;
+            }
+        }
+    }
+
+    public struct ImageInfo {
+        string ? path;
+        ScaleModes scale_mode;
+    }
+
+    public struct BackgroundInfo {
+        Cairo.Surface surface;
+        int width;
+        int height;
+        ImageInfo image_info;
+    }
+
+    public class Main : Object {
         private static string action_variable_path = "";
+        private static string action_variable_mode = "";
+        private static bool action_variable_list_modes = false;
 
         private const OptionEntry[] entries = {
             {
@@ -13,22 +44,52 @@ namespace Wallpaper {
                 OptionArg.STRING,
                 ref action_variable_path,
                 "Image path",
-                "[PAGE_NAME]"
+                "[IMG_PATH]"
+            },
+            {
+                "mode",
+                'm',
+                OptionFlags.NONE,
+                OptionArg.STRING,
+                ref action_variable_mode,
+                "Image scaling mode",
+                "[IMG_MODE]"
+            },
+            {
+                "list-modes",
+                'l',
+                OptionFlags.NONE,
+                OptionArg.NONE,
+                ref action_variable_list_modes,
+                "List all scaling modes",
+                null
             },
             { null }
         };
 
-        private static string ? path = null;
+        private const string ACTION_NAME = "action";
+
+        private static ImageInfo info;
+        private static BackgroundInfo background_info;
 
         private static Gtk.Application app;
-
-        private const string ACTION_NAME = "path";
 
         private static bool activated = false;
 
         public static int main (string[] args) {
             try {
                 Gtk.init_with_args (ref args, null, entries, null);
+
+                if (action_variable_list_modes) {
+                    print ("Available scaling modes: \n");
+                    string[] modes = {};
+                    EnumClass enumc = (EnumClass) typeof (ScaleModes).class_ref ();
+                    foreach (EnumValue enum_value in enumc.values) {
+                        modes += enum_value.value_nick;
+                    }
+                    print ("  %s\n", string.joinv (", ", modes));
+                    return 0;
+                }
 
                 self_settings = new Settings ("org.erikreider.swaysettings");
 
@@ -40,31 +101,37 @@ namespace Wallpaper {
                     init ();
                 });
 
-                SimpleAction action = new SimpleAction (ACTION_NAME,
-                                                        VariantType.STRING);
+                var action = new SimpleAction (ACTION_NAME, new VariantType ("(si)"));
                 action.activate.connect ((param) => {
-                    if (!param.is_of_type (VariantType.STRING)) {
-                        path = null;
-                        return;
-                    }
-                    path = param.get_string ();
+                    if (param.get_type_string () != "(si)") return;
+                    ImageInfo _i = ImageInfo () {
+                        path = param.get_child_value (0).get_string (),
+                        scale_mode = param.get_child_value (1).get_int32 (),
+                    };
+                    info = _i;
 
+                    background_info = get_background (info);
                     foreach (Gtk.Window w in app.get_windows ()) {
                         if (!(w is Window)) {
                             Gdk.Display ? display = Gdk.Display.get_default ();
                             if (display == null) return;
                             init_windows (display);
+                            app.release ();
                             return;
                         }
                         Window window = (Window) w;
-                        window.set_wallpaper (path);
+                        window.change_wallpaper (background_info);
                     }
                 });
                 app.add_action (action);
+
                 app.register ();
 
                 if (action_variable_path != null) {
-                    app.activate_action (ACTION_NAME, action_variable_path);
+                    ImageInfo info = ImageInfo ();
+                    info.path = action_variable_path;
+                    info.scale_mode = ScaleModes.parse_mode (action_variable_mode);
+                    app.activate_action (ACTION_NAME, info);
                 }
 
                 return app.run (args);
@@ -108,7 +175,7 @@ namespace Wallpaper {
 
         private static void add_window (Gdk.Display display,
                                         Gdk.Monitor monitor) {
-            Window win = new Window (app, display, monitor, path);
+            Window win = new Window (app, display, monitor, background_info);
             win.present ();
         }
 
@@ -119,6 +186,23 @@ namespace Wallpaper {
                 Gdk.Monitor ? mon = display.get_monitor (i);
                 if (mon == null) continue;
                 add_window (display, mon);
+            }
+        }
+
+        private static BackgroundInfo ? get_background (ImageInfo img_info) {
+            if (img_info.path == null) return null;
+            try {
+                var info = BackgroundInfo ();
+                info.image_info = img_info;
+                var pixbuf = new Gdk.Pixbuf.from_file (info.image_info.path);
+                info.surface = Gdk.cairo_surface_create_from_pixbuf (
+                    pixbuf, 1, null);
+                info.width = pixbuf.width;
+                info.height = pixbuf.height;
+                return info;
+            } catch (Error e) {
+                stderr.printf ("Setting wallpaper error: %s\n", e.message);
+                return null;
             }
         }
     }
