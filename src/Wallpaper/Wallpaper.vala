@@ -2,15 +2,15 @@ namespace Wallpaper {
     public static Settings self_settings;
 
     public enum ScaleModes {
-        COVER, FILL, FIT, CENTER;
+        FILL, STRETCH, FIT, CENTER;
 
         public static ScaleModes parse_mode (string ? value) {
             switch (value) {
                 default:
-                case "cover":
-                    return COVER;
                 case "fill":
                     return FILL;
+                case "stretch":
+                    return STRETCH;
                 case "fit":
                     return FIT;
                 case "center":

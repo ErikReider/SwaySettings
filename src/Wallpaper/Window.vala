@@ -68,10 +68,11 @@ namespace Wallpaper {
             unowned Gtk.DrawingArea background = showing_image_1 ? image_1 : image_2;
             unowned BackgroundInfo ? _info = image == background ? info : old_info;
 
-            int buffer_width = monitor.geometry.width;
-            int buffer_height = monitor.geometry.height;
+            int buffer_width = image.get_allocated_width ();
+            int buffer_height = image.get_allocated_height ();
             // Use greyscale background if wallpaper is not found...
             if (_info == null) {
+                cr.save ();
                 debug ("Not using surface...\n");
                 Cairo.Surface surface = new Cairo.ImageSurface (
                     Cairo.Format.ARGB32, buffer_width, buffer_height);
@@ -81,76 +82,98 @@ namespace Wallpaper {
                 cr.set_source_rgb (value, value, value);
                 cr.fill ();
                 cr.set_source_surface (surface, 0, 0);
-                return false;
+                cr.restore ();
+                return true;
             }
 
-            int surface_h = _info.height;
-            int surface_w = _info.width;
+            int height = _info.height;
+            int width = _info.width;
+            cr.save ();
             switch (_info.image_info.scale_mode) {
-                case ScaleModes.COVER:
+                case ScaleModes.FILL:
                     double window_ratio = (double) buffer_width / buffer_height;
-                    double bg_ratio = surface_w / surface_h;
-
-                    if (window_ratio > bg_ratio) {
-                        double scale = (double) buffer_height / surface_h;
-                        cr.scale (scale, scale);
-                        cr.set_source_surface (
-                            _info.surface,
-                            (double) buffer_width / 2 / scale - surface_w / 2, 0);
-                    } else {
-                        double scale = (double) buffer_width / surface_w;
-                        cr.scale (scale, scale);
-                        cr.set_source_surface (
-                            _info.surface,
-                            0, (double) buffer_height / 2 / scale - surface_h / 2);
+                    double bg_ratio = width / height;
+                    if (window_ratio > bg_ratio) { // Taller wallpaper than monitor
+                        double scale = (double) buffer_width / width;
+                        if (scale * height < buffer_height) {
+                            draw_scale_wide (buffer_width, width, buffer_height, height, cr, _info);
+                        } else {
+                            draw_scale_tall (buffer_width, width, buffer_height, height, cr, _info);
+                        }
+                    } else { // Wider wallpaper than monitor
+                        double scale = (double) buffer_height / height;
+                        if (scale * width < buffer_width) {
+                            draw_scale_tall (buffer_width, width, buffer_height, height, cr, _info);
+                        } else {
+                            draw_scale_wide (buffer_width, width, buffer_height, height, cr, _info);
+                        }
                     }
                     break;
                 case ScaleModes.FIT:
                     double window_ratio = (double) buffer_width / buffer_height;
-                    double bg_ratio = surface_w / surface_h;
-
-                    if (window_ratio > bg_ratio) {
-                        double scale = (double) buffer_width / surface_w;
-                        cr.scale (scale, scale);
-                        cr.set_source_surface (
-                            _info.surface,
-                            0,
-                            (double) buffer_height / 2 / scale - surface_h / 2);
-                    } else {
-                        double scale = (double) buffer_height / surface_h;
-                        cr.scale (scale, scale);
-                        cr.set_source_surface (
-                            _info.surface,
-                            (double) buffer_width / 2 / scale - surface_w / 2,
-                            0);
+                    double bg_ratio = width / height;
+                    if (window_ratio > bg_ratio) { // Taller wallpaper than monitor
+                        double scale = (double) buffer_width / width;
+                        if (scale * height < buffer_height) {
+                            draw_scale_tall (buffer_width, width, buffer_height, height, cr, _info);
+                        } else {
+                            draw_scale_wide (buffer_width, width, buffer_height, height, cr, _info);
+                        }
+                    } else { // Wider wallpaper than monitor
+                        double scale = (double) buffer_height / height;
+                        if (scale * width < buffer_width) {
+                            draw_scale_wide (buffer_width, width, buffer_height, height, cr, _info);
+                        } else {
+                            draw_scale_tall (buffer_width, width, buffer_height, height, cr, _info);
+                        }
                     }
                     break;
-                case ScaleModes.FILL:
-                    cr.scale ((double) buffer_width / surface_w,
-                              (double) buffer_height / surface_h);
+                case ScaleModes.STRETCH:
+                    cr.scale ((double) buffer_width / width,
+                              (double) buffer_height / height);
                     cr.set_source_surface (_info.surface, 0, 0);
                     break;
                 case ScaleModes.CENTER:
                     cr.set_source_surface (
                         _info.surface,
-                        (double) buffer_width / 2 - surface_w / 2,
-                        (double) buffer_height / 2 - surface_h / 2);
+                        (double) buffer_width / 2 - width / 2,
+                        (double) buffer_height / 2 - height / 2);
                     break;
             }
-
             // Sets a faster, less accurate filter when the pattern's reading pixel values
             cr.get_source ().set_filter (Cairo.Filter.BILINEAR);
 
             cr.paint ();
-            return false;
+            cr.restore ();
+            return true;
+        }
+
+        private void draw_scale_tall (int buffer_width,
+                                      int width,
+                                      int buffer_height,
+                                      int height,
+                                      Cairo.Context cr,
+                                      BackgroundInfo _info) {
+            double scale = (double) buffer_width / width;
+            cr.scale (scale, scale);
+            cr.set_source_surface (_info.surface,
+                                   0, (double) buffer_height / 2 / scale - height / 2);
+        }
+
+        private void draw_scale_wide (int buffer_width,
+                                      int width,
+                                      int buffer_height,
+                                      int height,
+                                      Cairo.Context cr,
+                                      BackgroundInfo _info) {
+            double scale = (double) buffer_height / height;
+            cr.scale (scale, scale);
+            cr.set_source_surface (
+                _info.surface,
+                (double) buffer_width / 2 / scale - width / 2, 0);
         }
 
         public void change_wallpaper (BackgroundInfo ? background_info) {
-            if (background_info == null) {
-                this.old_info = null;
-                this.info = null;
-                return;
-            }
             this.old_info = info;
             this.info = background_info;
             unowned Gtk.DrawingArea background = !showing_image_1 ? image_1 : image_2;
