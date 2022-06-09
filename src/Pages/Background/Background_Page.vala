@@ -7,62 +7,66 @@ namespace SwaySettings {
         bool thumbnail_valid;
     }
 
-    public class Background_Page : Page {
+    public class Background_Page : Page_Scroll {
+        private ThumbnailImage preview_image;
+        private const int PREVIEW_IMAGE_HEIGHT = 216;
+        private const int PREVIEW_IMAGE_WIDTH = 384;
+        private const int LIST_IMAGE_HEIGHT = 135;
+        private const int LIST_IMAGE_WIDTH = 180;
 
-        private Granite.AsyncImage preview_image;
-        private int preview_image_height = 216;
-        private int preview_image_width = 384;
-        // Parent for all wallpaper categories
-        private Gtk.Box wallpaper_box;
-        private int list_image_height = 144;
-        private int list_image_width = 256;
+        private static Wallpaper current_wallpaper = Wallpaper () {
+            path = Path.build_path (Path.DIR_SEPARATOR_S,
+                                    Environment.get_user_cache_dir (),
+                                    "wallpaper"),
+            thumbnail_path = "",
+            thumbnail_valid = false,
+        };
+
+        private Wallpaper[] wallpapers = get_system_wallpapers ();
 
         IPC ipc;
+
+        public override int clamp_max {
+            get {
+                return 1200;
+            }
+        }
 
         public Background_Page (SettingsItem item, Hdy.Deck deck, IPC ipc) {
             base (item, deck);
             this.ipc = ipc;
         }
 
-        public override void on_refresh () {
-            foreach (var child in content_box.get_children ()) {
-                content_box.remove (child);
-            }
+        public override Gtk.Widget set_child () {
+            Gtk.Box content_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 12);
 
-            preview_image = new Granite.AsyncImage (true, false);
-            preview_image.set_size_request (preview_image_width, preview_image_height);
-            preview_image.halign = Gtk.Align.CENTER;
-            preview_image.valign = Gtk.Align.START;
-            preview_image.get_style_context ().add_class ("frame");
-            int margin = 24;
-            preview_image.set_margin_top (margin - 8);
-            preview_image.set_margin_start (margin);
-            preview_image.set_margin_bottom (margin);
-            preview_image.set_margin_end (margin);
+            preview_image = new ThumbnailImage (current_wallpaper,
+                                                PREVIEW_IMAGE_HEIGHT,
+                                                PREVIEW_IMAGE_WIDTH) {
+                halign = Gtk.Align.CENTER,
+                valign = Gtk.Align.START,
+                expand = false,
+                width_request = PREVIEW_IMAGE_WIDTH,
+                height_request = PREVIEW_IMAGE_HEIGHT,
+            };
             content_box.add (preview_image);
 
-            wallpaper_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
-            wallpaper_box.expand = true;
-            wallpaper_box.get_style_context ().add_class ("view");
+            preview_image.refresh_image ();
 
-            Gtk.FlowBox system_wallpaper_flow_box = new Gtk.FlowBox ();
-            // Adds header and flowbox to wallpaper_box
-            get_wallpaper_container (ref system_wallpaper_flow_box, "System Wallpapers");
+            Gtk.Box wallpaper_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 16);
+            content_box.add (wallpaper_box);
 
-            content_box.add (Page.get_scroll_widget (wallpaper_box, false, true, int.MAX, int.MAX));
+            wallpaper_box.add (get_wallpaper_container ("System Wallpapers"));
 
-            set_preivew_image ();
-            add_wallpapers (get_system_wallpapers (),
-                            ref system_wallpaper_flow_box);
-
-            this.show_all ();
+            content_box.show_all ();
+            return content_box;
         }
 
         private void set_wallpaper (string file_path) {
             if (file_path == null) return;
             try {
                 string dest_path = Path.build_path (
-                    "/",
+                    Path.DIR_SEPARATOR_S,
                     Environment.get_user_cache_dir (),
                     "wallpaper");
 
@@ -80,29 +84,41 @@ namespace SwaySettings {
 
                 Functions.generate_thumbnail (dest_path, true);
 
-                ipc.run_command (@"output * bg $(dest_path) fill");
+                ipc.run_command ("output * bg %s fill".printf (dest_path));
             } catch (Error e) {
                 stderr.printf ("%s\n", e.message);
             }
         }
 
-        void set_preivew_image () {
-            string path = @"$(Environment.get_home_dir())/.cache/wallpaper";
-            File file = File.new_for_path (path);
-            preview_image.set_from_file_async.begin (file,
-                                                     preview_image_width,
-                                                     preview_image_height,
-                                                     true);
-            preview_image.set_size_request (-1, -1);
-        }
+        Hdy.PreferencesGroup get_wallpaper_container (string title) {
+            var group = new Hdy.PreferencesGroup ();
+            group.title = title;
 
-        void get_wallpaper_container (ref Gtk.FlowBox flow_box, string title) {
-            var header = new Gtk.Label (title);
-            Pango.AttrList li = new Pango.AttrList ();
-            li.insert (Pango.attr_weight_new (Pango.Weight.BOLD));
-            li.insert (new Pango.AttrSize (12288));
-            header.set_attributes (li);
-            header.xalign = 0.0f;
+            var row = new Hdy.PreferencesRow () {
+                activatable = false,
+            };
+            group.add (row);
+
+            if (wallpapers.length == 0) {
+                var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 24) {
+                    sensitive = false,
+                    vexpand = true,
+                    valign = Gtk.Align.CENTER,
+                    margin = 16,
+                };
+                var img = new Gtk.Image.from_icon_name (
+                    "image-missing-symbolic",
+                    Gtk.IconSize.INVALID) {
+                    pixel_size = 128,
+                    opacity = 0.5,
+                };
+                box.add (img);
+                box.add (new Gtk.Label ("No wallpapers found..."));
+                row.add (box);
+                return group;
+            }
+
+            Gtk.FlowBox flow_box = new Gtk.FlowBox ();
             flow_box.max_children_per_line = 8;
             flow_box.min_children_per_line = 1;
             flow_box.homogeneous = true;
@@ -110,49 +126,51 @@ namespace SwaySettings {
             flow_box.set_margin_top (4);
             flow_box.set_margin_end (4);
             flow_box.set_margin_bottom (4);
+            row.add (flow_box);
 
-            flow_box.child_activated.connect ((widget) => {
-                ThumbnailImage img = (ThumbnailImage) widget.get_child ();
-                if (img.image_path != null) {
-                    set_wallpaper (img.wp.path);
-                    set_preivew_image ();
-                }
+            add_images.begin (wallpapers, flow_box, () => {
+                flow_box.child_activated.connect ((widget) => {
+                    ThumbnailImage img = (ThumbnailImage) widget.get_child ();
+                    if (img.image_path != null) {
+                        set_wallpaper (img.wallpaper.path);
+                        preview_image.refresh_image ();
+                    }
+                });
             });
-
-            wallpaper_box.add (header);
-            wallpaper_box.add (flow_box);
+            return group;
         }
 
-        void add_wallpapers (ArrayList<Wallpaper ? > wallpapers,
-                             ref Gtk.FlowBox flow_box) {
-            if (wallpapers.size == 0) return;
-            add_images.begin (wallpapers, flow_box);
-        }
-
-        async void add_images (ArrayList<Wallpaper ? > paths, Gtk.FlowBox flow_box) {
+        async void add_images (owned Wallpaper[] paths, Gtk.FlowBox flow_box) {
             bool checked_folder_exists = false;
-            foreach (var path in paths) {
-                var item = new List_Lazy_Image (path, list_image_height, list_image_width, ref checked_folder_exists);
+            foreach (var wp in paths) {
+                var item = new ThumbnailImage.batch (wp,
+                                                     LIST_IMAGE_HEIGHT,
+                                                     LIST_IMAGE_WIDTH,
+                                                     ref checked_folder_exists);
+                // var f_child = new Gtk.FlowBoxChild ();
+                // f_child.add (item);
+                // f_child.get_style_context ().add_class ("background-button");
+
+                // flow_box.add (f_child);
                 flow_box.add (item);
                 Idle.add (add_images.callback);
                 yield;
             }
         }
 
-        ArrayList<Wallpaper ? > get_system_wallpapers () {
-            ArrayList<string> default_paths = new ArrayList<string>.wrap ({
+        private static Wallpaper[] get_system_wallpapers () {
+            string[] default_paths = {
                 "/usr/share/backgrounds",
                 "/usr/share/wallpapers",
                 "/usr/local/share/wallpapers",
                 "/usr/local/share/backgrounds",
-            });
+            };
 
-            ArrayList<Wallpaper ? > wallpaper_paths = new ArrayList<Wallpaper ? >();
-            var supported_formats = new ArrayList<string>.wrap ({ "jpg" });
+            string[] formats = { "jpg" };
+            Gdk.Pixbuf.get_formats ().foreach ((fmt) => formats += fmt.get_name ());
 
-            Gdk.Pixbuf.get_formats ().foreach ((pxfmt) => supported_formats.add (pxfmt.get_name ()));
-
-            for (int i = 0; i < default_paths.size; i++) {
+            Wallpaper[] wallpaper_paths = {};
+            for (int i = 0; i < default_paths.length; i++) {
                 string path = default_paths[i];
                 Functions.walk_through_dir (path, (file_info, file) => {
                     switch (file_info.get_file_type ()) {
@@ -166,31 +184,38 @@ namespace SwaySettings {
                             string suffix = name.slice (
                                 name.last_index_of_char ('.') + 1,
                                 name.length);
-                            if (supported_formats.contains (suffix)) {
-                                Wallpaper wp = Wallpaper ();
-                                wp.path = path + "/" + file_info.get_name ();
-                                try {
-                                    string[] required = {
-                                        FileAttribute.THUMBNAIL_PATH,
-                                        FileAttribute.THUMBNAIL_IS_VALID
-                                    };
-                                    var info = File.new_for_path (wp.path).query_info (
-                                        string.joinv (",", required),
-                                        GLib.FileQueryInfoFlags.NONE);
-                                    string thumb_path = info.get_attribute_as_string (
-                                        FileAttribute.THUMBNAIL_PATH);
-                                    bool thumb_valid = info.get_attribute_boolean (
-                                        FileAttribute.THUMBNAIL_IS_VALID);
-                                    wp.thumbnail_path = thumb_path;
-                                    wp.thumbnail_valid = thumb_valid;
-                                } catch (Error e) {
-                                    print ("Error: %s\n", e.message);
-                                }
-                                wallpaper_paths.add (wp);
+                            if (!(suffix in formats)) return;
+
+                            Wallpaper wp = Wallpaper ();
+                            wp.path = Path.build_path (
+                                Path.DIR_SEPARATOR_S,
+                                path,
+                                file_info.get_name ());
+                            try {
+                                string[] required = {
+                                    FileAttribute.THUMBNAIL_PATH,
+                                    FileAttribute.THUMBNAIL_IS_VALID
+                                };
+                                var info = File.new_for_path (wp.path).query_info (
+                                    string.joinv (",", required),
+                                    GLib.FileQueryInfoFlags.NONE);
+                                string thumb_path = info.get_attribute_as_string (
+                                    FileAttribute.THUMBNAIL_PATH);
+                                bool thumb_valid = info.get_attribute_boolean (
+                                    FileAttribute.THUMBNAIL_IS_VALID);
+                                wp.thumbnail_path = thumb_path;
+                                wp.thumbnail_valid = thumb_valid;
+                            } catch (Error e) {
+                                print ("Error: %s\n", e.message);
+                                wp.thumbnail_valid = false;
                             }
+                            wallpaper_paths += wp;
                             break;
                         case GLib.FileType.DIRECTORY:
-                            default_paths.add (path + "/" + file_info.get_name ());
+                            default_paths += Path.build_path (
+                                Path.DIR_SEPARATOR_S,
+                                path,
+                                file_info.get_name ());
                             break;
                         default:
                             break;
