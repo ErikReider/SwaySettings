@@ -6,11 +6,13 @@ namespace Wallpaper {
 
         bool showing_image_1 = false;
 
-        BackgroundInfo ? info;
-        BackgroundInfo ? old_info;
+        unowned BackgroundInfo ? info;
+        unowned BackgroundInfo ? old_info;
 
         unowned Gdk.Display display;
         unowned Gdk.Monitor monitor;
+
+        public signal void hide_transition_done ();
 
         public Window (Gtk.Application app,
                        Gdk.Display disp,
@@ -44,6 +46,7 @@ namespace Wallpaper {
                 expand = true,
                 name = "image1",
             };
+            image_1.unmap.connect (() => hide_transition_done ());
             stack.add (image_1);
 
             image_2 = new Gtk.DrawingArea () {
@@ -52,6 +55,7 @@ namespace Wallpaper {
                 expand = true,
                 name = "image2",
             };
+            image_2.unmap.connect (() => hide_transition_done ());
             stack.add (image_2);
 
             show_all ();
@@ -59,14 +63,15 @@ namespace Wallpaper {
             this.image_1.draw.connect ((cr) => on_draw (cr, image_1));
             this.image_2.draw.connect ((cr) => on_draw (cr, image_2));
 
-            change_wallpaper (init_info);
+            change_wallpaper (init_info, null);
         }
 
         private bool on_draw (Cairo.Context cr, Gtk.DrawingArea image) {
             // Draw the new background if widget is transioning in. Else,
             // draw the old wallpaper
             unowned Gtk.DrawingArea background = showing_image_1 ? image_1 : image_2;
-            unowned BackgroundInfo ? _info = image == background ? info : old_info;
+            bool is_image1 = image == background;
+            unowned BackgroundInfo ? _info = is_image1 ? info : old_info;
 
             int buffer_width = image.get_allocated_width ();
             int buffer_height = image.get_allocated_height ();
@@ -173,8 +178,9 @@ namespace Wallpaper {
                 (double) buffer_width / 2 / scale - width / 2, 0);
         }
 
-        public void change_wallpaper (BackgroundInfo ? background_info) {
-            this.old_info = info;
+        public void change_wallpaper (BackgroundInfo ? background_info,
+                                      BackgroundInfo ? old_background_info) {
+            this.old_info = old_background_info;
             this.info = background_info;
             unowned Gtk.DrawingArea background = !showing_image_1 ? image_1 : image_2;
             showing_image_1 = !showing_image_1;

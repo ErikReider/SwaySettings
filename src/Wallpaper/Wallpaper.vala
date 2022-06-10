@@ -25,7 +25,7 @@ namespace Wallpaper {
     }
 
     public struct BackgroundInfo {
-        Cairo.Surface surface;
+        Cairo.Surface * surface;
         int width;
         int height;
         ImageInfo image_info;
@@ -69,12 +69,14 @@ namespace Wallpaper {
 
         private const string ACTION_NAME = "action";
 
-        private static ImageInfo info;
-        private static BackgroundInfo background_info;
+        private static BackgroundInfo ? background_info;
+        private static BackgroundInfo ? old_background_info;
 
         private static Gtk.Application app;
 
         private static bool activated = false;
+
+        private static SimpleAction action;
 
         public static int main (string[] args) {
             try {
@@ -101,28 +103,8 @@ namespace Wallpaper {
                     init ();
                 });
 
-                var action = new SimpleAction (ACTION_NAME, new VariantType ("(si)"));
-                action.activate.connect ((param) => {
-                    if (param.get_type_string () != "(si)") return;
-                    ImageInfo _i = ImageInfo () {
-                        path = param.get_child_value (0).get_string (),
-                        scale_mode = param.get_child_value (1).get_int32 (),
-                    };
-                    info = _i;
-
-                    background_info = get_background (info);
-                    foreach (Gtk.Window w in app.get_windows ()) {
-                        if (!(w is Window)) {
-                            Gdk.Display ? display = Gdk.Display.get_default ();
-                            if (display == null) return;
-                            init_windows (display);
-                            app.release ();
-                            return;
-                        }
-                        Window window = (Window) w;
-                        window.change_wallpaper (background_info);
-                    }
-                });
+                action = new SimpleAction (ACTION_NAME, new VariantType ("(si)"));
+                action.activate.connect (action_activated);
                 app.add_action (action);
 
                 app.register ();
@@ -136,9 +118,49 @@ namespace Wallpaper {
 
                 return app.run (args);
             } catch (Error e) {
-                stderr.printf ("%s\n", e.message);
+                stderr.printf ("Application error: %s\n", e.message);
                 return 1;
             }
+        }
+
+        private static async void action_activated (Variant ? param) {
+            if (param == null || param.get_type_string () != "(si)") return;
+
+            action.activate.disconnect (action_activated);
+
+            ImageInfo info = ImageInfo () {
+                path = param.get_child_value (0).get_string (),
+                scale_mode = param.get_child_value (1).get_int32 (),
+            };
+
+            old_background_info = background_info;
+            background_info = get_background (info);
+
+            unowned List<Gtk.Window> windows = app.get_windows ();
+            if (windows.length () > 0) {
+                int signal_count = 0;
+                windows.foreach ((w) => {
+                    Window window = (Window) w;
+                    ulong handler_id = 0;
+                    handler_id = window.hide_transition_done.connect (() => {
+                        window.disconnect (handler_id);
+                        signal_count--;
+                        if (signal_count == 0) {
+                            action_activated.callback ();
+                        }
+                    });
+                    signal_count++;
+                    window.change_wallpaper (background_info, old_background_info);
+                });
+                // Wait until all windows animations are completed
+                yield;
+            }
+            if (old_background_info != null) {
+                delete old_background_info.surface;
+                old_background_info = null;
+            }
+
+            action.activate.connect (action_activated);
         }
 
         private static void init () {
