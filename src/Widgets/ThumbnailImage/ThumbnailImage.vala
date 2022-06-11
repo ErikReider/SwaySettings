@@ -5,7 +5,6 @@ namespace SwaySettings {
         public Wallpaper wallpaper;
         public int width;
         public int height;
-        public bool stretch;
 
         construct {
             this.halign = Gtk.Align.CENTER;
@@ -28,7 +27,6 @@ namespace SwaySettings {
             this.wallpaper = wallpaper;
             this.width = width;
             this.height = height;
-            this.stretch = stretch;
             set_request ();
 
             this.margin = margin;
@@ -46,12 +44,10 @@ namespace SwaySettings {
                                      int height,
                                      int width,
                                      ref bool checked_folder_exists,
-                                     bool stretch = false,
                                      int margin = 8) {
             this.wallpaper = wallpaper;
             this.width = width;
             this.height = height;
-            this.stretch = stretch;
             set_request ();
 
             this.margin = margin;
@@ -86,7 +82,7 @@ namespace SwaySettings {
 
         // Clip the corners to make them rounded
         public override bool draw (Cairo.Context cr) {
-            const double RADIUS = 6;
+            const double RADIUS = 9;
             const double DEGREES = Math.PI / 180.0;
             int width = get_allocated_width ();
             int height = get_allocated_height ();

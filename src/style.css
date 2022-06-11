@@ -9,9 +9,8 @@
 #preview .window {
   border-radius: 6px;
   box-shadow: 0 1px 4px 1px alpha(black, 0.13),
-              0 1px 10px 5px alpha(black, 0.09),
-              0 3px 16px 8px alpha(black, 0.04),
-              0 0 0 1px alpha(black, .05);
+    0 1px 10px 5px alpha(black, 0.09), 0 3px 16px 8px alpha(black, 0.04),
+    0 0 0 1px alpha(black, 0.05);
 }
 
 #preview .window .header-bar {
@@ -20,15 +19,15 @@
   border-top-left-radius: 6px;
 }
 #preview .window .header-bar.dark {
-    box-shadow: inset 0 -1px @borders-dark;
+  box-shadow: inset 0 -1px @borders-dark;
 }
 #preview .window .header-bar.light {
-    box-shadow: inset 0 -1px @borders-light;
+  box-shadow: inset 0 -1px @borders-light;
 }
 
 #preview .window.light {
   background-color: #fafafa;
-  color: alpha(black, .8);
+  color: alpha(black, 0.8);
 }
 
 #preview .window.front.light .header-bar {
@@ -44,7 +43,8 @@
   background-color: #303030;
 }
 
-.preview-button {
+.preview-button,
+.background-flowbox-child {
   background: none;
   border-radius: 9px;
   padding: 3px;
@@ -52,14 +52,17 @@
   outline: none;
 }
 
-.preview-button:checked {
+.preview-button:checked,
+.background-flowbox-child:selected {
   box-shadow: 0 0 0 3px @accent_color;
 }
 
-.preview-button:focus:focus-visible {
-  box-shadow: 0 0 0 3px alpha(@accent_color, .3);
+.preview-button:focus:focus-visible,
+.background-flowbox-child:focus:focus-visible {
+  box-shadow: 0 0 0 3px alpha(@accent_color, 0.3);
 }
 
-.preview-button:checked:focus:focus-visible {
-  box-shadow: 0 0 0 3px @accent_color, 0 0 0 6px alpha(@accent_color, .3);
+.preview-button:checked:focus:focus-visible,
+.background-flowbox-child:selected:focus:focus-visible {
+  box-shadow: 0 0 0 3px @accent_color, 0 0 0 6px alpha(@accent_color, 0.3);
 }

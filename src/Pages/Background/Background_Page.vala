@@ -14,6 +14,8 @@ namespace SwaySettings {
         private const int LIST_IMAGE_HEIGHT = 135;
         private const int LIST_IMAGE_WIDTH = 180;
 
+        private const int SPACING = 16;
+
         private static Wallpaper current_wallpaper = Wallpaper () {
             path = Path.build_path (Path.DIR_SEPARATOR_S,
                                     Environment.get_user_cache_dir (),
@@ -81,6 +83,7 @@ namespace SwaySettings {
                 }
 
                 file.copy (file_dest, GLib.FileCopyFlags.OVERWRITE);
+                Functions.set_gsetting (self_settings, "wallpaper-path", file_path);
 
                 Functions.generate_thumbnail (dest_path, true);
 
@@ -104,7 +107,7 @@ namespace SwaySettings {
                     sensitive = false,
                     vexpand = true,
                     valign = Gtk.Align.CENTER,
-                    margin = 16,
+                    margin = SPACING,
                 };
                 var img = new Gtk.Image.from_icon_name (
                     "image-missing-symbolic",
@@ -118,14 +121,16 @@ namespace SwaySettings {
                 return group;
             }
 
-            Gtk.FlowBox flow_box = new Gtk.FlowBox ();
-            flow_box.max_children_per_line = 8;
-            flow_box.min_children_per_line = 1;
-            flow_box.homogeneous = true;
-            flow_box.set_margin_start (4);
-            flow_box.set_margin_top (4);
-            flow_box.set_margin_end (4);
-            flow_box.set_margin_bottom (4);
+            Gtk.FlowBox flow_box = new Gtk.FlowBox () {
+                max_children_per_line = 8,
+                min_children_per_line = 1,
+                homogeneous = true,
+                margin = SPACING,
+                activate_on_single_click = true,
+                selection_mode = Gtk.SelectionMode.SINGLE,
+                row_spacing = SPACING,
+                column_spacing = SPACING,
+            };
             row.add (flow_box);
 
             add_images.begin (wallpapers, flow_box, () => {
@@ -141,21 +146,31 @@ namespace SwaySettings {
         }
 
         async void add_images (owned Wallpaper[] paths, Gtk.FlowBox flow_box) {
+            Variant ? wallpaper_path = Functions.get_gsetting (self_settings,
+                                                               "wallpaper-path",
+                                                               VariantType.STRING);
+            string ? path = wallpaper_path != null ? wallpaper_path.get_string () : null;
+
             bool checked_folder_exists = false;
             foreach (var wp in paths) {
-                var item = new ThumbnailImage.batch (wp,
-                                                     LIST_IMAGE_HEIGHT,
-                                                     LIST_IMAGE_WIDTH,
-                                                     ref checked_folder_exists);
-                // var f_child = new Gtk.FlowBoxChild ();
-                // f_child.add (item);
-                // f_child.get_style_context ().add_class ("background-button");
+                var item = new ThumbnailImage.batch (
+                    wp,
+                    LIST_IMAGE_HEIGHT, LIST_IMAGE_WIDTH,
+                    ref checked_folder_exists, 0);
+                var f_child = new Gtk.FlowBoxChild () {
+                    valign = Gtk.Align.CENTER,
+                    halign = Gtk.Align.CENTER,
+                };
+                f_child.add (item);
+                f_child.show_all ();
+                f_child.get_style_context ().add_class ("background-flowbox-child");
 
-                // flow_box.add (f_child);
-                flow_box.add (item);
+                flow_box.add (f_child);
+                if (wp.path == path) flow_box.select_child (f_child);
                 Idle.add (add_images.callback);
                 yield;
             }
+            flow_box.select_child (flow_box.get_child_at_index (0));
         }
 
         private static Wallpaper[] get_system_wallpapers () {

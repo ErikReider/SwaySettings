@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="swaysettings">
 	<schema id="org.erikreider.swaysettings" path="/org/erikreider/swaysettings/">
+		<key name="wallpaper-path" type="s">
+			<default>""</default>
+			<summary>Selected Wallpaper Path</summary>
+			<description>This is the path pointing torwards the selected wallpaper</description>
+		</key>
 		<key name="theme-dark" type="s">
 			<default>"Adwaita-dark"</default>
 			<summary>Selected Dark GTK Theme</summary>
