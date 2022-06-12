@@ -170,7 +170,6 @@ namespace SwaySettings {
                 Idle.add (add_images.callback);
                 yield;
             }
-            flow_box.select_child (flow_box.get_child_at_index (0));
         }
 
         private static Wallpaper[] get_system_wallpapers () {
