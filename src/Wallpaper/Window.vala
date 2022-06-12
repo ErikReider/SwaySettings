@@ -9,6 +9,8 @@ namespace Wallpaper {
         unowned BackgroundInfo ? info;
         unowned BackgroundInfo ? old_info;
 
+        Config config;
+
         unowned Gdk.Display display;
         unowned Gdk.Monitor monitor;
 
@@ -17,10 +19,12 @@ namespace Wallpaper {
         public Window (Gtk.Application app,
                        Gdk.Display disp,
                        Gdk.Monitor mon,
+                       Config config,
                        BackgroundInfo ? init_info) {
             Object (application: app);
             this.display = disp;
             this.monitor = mon;
+            this.config = config;
 
             GtkLayerShell.init_for_window (this);
             GtkLayerShell.set_monitor (this, monitor);
@@ -76,15 +80,15 @@ namespace Wallpaper {
             int buffer_width = image.get_allocated_width ();
             int buffer_height = image.get_allocated_height ();
             // Use greyscale background if wallpaper is not found...
-            if (_info == null) {
+            if (_info == null || config.path.length == 0) {
                 cr.save ();
                 debug ("Not using surface...\n");
                 Cairo.Surface surface = new Cairo.ImageSurface (
                     Cairo.Format.ARGB32, buffer_width, buffer_height);
 
                 cr.rectangle (0, 0, buffer_width, buffer_height);
-                double value = 0.8;
-                cr.set_source_rgb (value, value, value);
+                Color color = config.get_color ();
+                cr.set_source_rgb (color.r, color.g, color.b);
                 cr.fill ();
                 cr.set_source_surface (surface, 0, 0);
                 cr.restore ();
@@ -94,7 +98,7 @@ namespace Wallpaper {
             int height = _info.height;
             int width = _info.width;
             cr.save ();
-            switch (_info.image_info.scale_mode) {
+            switch (config.scale_mode) {
                 case ScaleModes.FILL:
                     double window_ratio = (double) buffer_width / buffer_height;
                     double bg_ratio = width / height;
