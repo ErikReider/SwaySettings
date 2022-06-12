@@ -12,6 +12,7 @@ A GUI for configuring your sway desktop
 - Switch Wallpaper (selected wallpaper will be located at .cache/wallpaper)
 - Configure 
 [Sway Notification Center](https://github.com/ErikReider/SwayNotificationCenter)
+- sway-wallpaper (a swaybg replacement) which includes a slick fade transition 😎
 
 ## Install
 
@@ -38,6 +39,10 @@ Add these lines to the end of your main sway config file
 ``` ini
 # Applies all generated settings
 include ~/.config/sway/.generated_settings/*.conf
+
+# Launches sway-wallpaper when setting wallpaper from swaymsg.
+# Without this, swaybg would launch instead...
+swaybg_command sway-wallpaper
 
 # To apply the selected wallpaper
 exec_always swaymsg "output * bg ~/.cache/wallpaper fill"
