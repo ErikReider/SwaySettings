@@ -157,7 +157,7 @@ namespace SwaySettings {
          * Makes it rounded and clips the content.
          */
         private bool box_draw (Cairo.Context cr) {
-            const double radius = 6;
+            const double radius = 9;
             const double degrees = Math.PI / 180.0;
             int width = box.get_allocated_width ();
             int height = box.get_allocated_height ();

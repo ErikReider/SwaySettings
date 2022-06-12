@@ -91,24 +91,4 @@ namespace SwaySettings {
             this.set_selected_index (selected_index);
         }
     }
-
-    public class List_Lazy_Image : Gtk.FlowBoxChild {
-
-        public List_Lazy_Image (Wallpaper wp,
-                                int height,
-                                int width,
-                                ref bool checked_folder_exists) {
-
-            this.valign = Gtk.Align.CENTER;
-            this.halign = Gtk.Align.CENTER;
-            this.set_margin_start (8);
-            this.set_margin_top (8);
-            this.set_margin_end (8);
-            this.set_margin_bottom (8);
-
-            this.add (new ThumbnailImage (wp, height, width, ref checked_folder_exists));
-
-            this.show_all ();
-        }
-    }
 }
