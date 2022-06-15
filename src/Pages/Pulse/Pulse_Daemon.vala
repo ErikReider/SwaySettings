@@ -6,11 +6,12 @@ namespace SwaySettings {
      * Loosely based off of Elementary OS switchboard-plug-sound
      * https://github.com/elementary/switchboard-plug-sound
      */
-    public class PulseClient : Object {
+    public class PulseDaemon : Object {
         private Context context;
         private GLibMainLoop mainloop;
         private bool quitting = false;
 
+        public bool running { get; private set; }
 
         private string default_sink_name { get; private set; }
         private string default_source_name { get; private set; }
@@ -22,7 +23,6 @@ namespace SwaySettings {
         public HashMap<string, PulseDevice> sources { get; private set; }
 
         public HashMap<uint32, PulseSinkInput> active_sinks { get; private set; }
-
 
         construct {
             mainloop = new GLibMainLoop ();
@@ -38,9 +38,9 @@ namespace SwaySettings {
         }
 
         public void close () {
+            quitting = true;
             context.disconnect ();
             context = null;
-            quitting = false;
         }
 
         public signal void change_default_device (PulseDevice device);
@@ -54,20 +54,15 @@ namespace SwaySettings {
         public signal void remove_device (PulseDevice device);
 
         private void get_context () {
-            if (quitting) {
-                close ();
-            } else {
-                quitting = true;
-            }
             var ctx = new Context (mainloop.get_api (), null);
             ctx.set_state_callback ((ctx) => {
+                debug ("Pulse Status: %s\n", ctx.get_state ().to_string());
                 switch (ctx.get_state ()) {
                     case Context.State.CONNECTING:
                     case Context.State.AUTHORIZING:
                     case Context.State.SETTING_NAME:
                         break;
                     case Context.State.READY:
-                        debug ("Pulse is ready\n");
                         ctx.set_subscribe_callback (subscription);
                         ctx.subscribe (Context.SubscriptionMask.SINK_INPUT |
                                        Context.SubscriptionMask.SINK |
@@ -77,9 +72,11 @@ namespace SwaySettings {
                                        Context.SubscriptionMask.SERVER);
                         // Init data
                         ctx.get_server_info (this.get_server_info);
+                        running = true;
                         break;
                     case Context.State.TERMINATED:
                     case Context.State.FAILED:
+                        running = false;
                         if (quitting) {
                             quitting = false;
                             break;
@@ -89,6 +86,7 @@ namespace SwaySettings {
                         get_context ();
                         break;
                     default:
+                        running = false;
                         stderr.printf ("Connection failure: %s\n",
                                        PulseAudio.strerror (ctx.errno ()));
                         break;

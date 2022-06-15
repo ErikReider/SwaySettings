@@ -4,6 +4,7 @@ using Gee;
 namespace SwaySettings {
     public class Pulse_Page : Page_Scroll {
         Pulse_Content content;
+
         public Pulse_Page (SettingsItem item, Hdy.Deck deck) {
             base (item, deck);
         }
@@ -19,7 +20,7 @@ namespace SwaySettings {
     }
 
     [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/Pulse/Pulse_Content.ui")]
-    private class Pulse_Content : Gtk.Box {
+    private class Pulse_Content : Gtk.Stack {
         private enum DeviceColumns {
             COLUMN_KEY,
             COLUMN_DEVICE,
@@ -38,6 +39,11 @@ namespace SwaySettings {
 
         public const string TOGGLE_ICON_MUTED = "audio-volume-muted-symbolic";
         public const string TOGGLE_ICON_UNMUTED = "audio-volume-high-symbolic";
+
+        [GtkChild]
+        unowned Gtk.Box box_pulse;
+        [GtkChild]
+        unowned Gtk.Box box_error;
 
         // Sink
         [GtkChild]
@@ -77,7 +83,7 @@ namespace SwaySettings {
         private PulseDevice ? default_sink = null;
         private PulseDevice ? default_source = null;
 
-        private PulseClient client = new PulseClient ();
+        private PulseDaemon client = new PulseDaemon ();
 
         construct {
             this.client.change_device.connect (device_change);
@@ -89,6 +95,20 @@ namespace SwaySettings {
             this.client.remove_active_sink.connect (active_sink_removed);
 
             this.client.change_default_device.connect (default_device_changed);
+
+            this.client.bind_property ("running", this, "visible-child", BindingFlags.SYNC_CREATE,
+                                       (bind, from_value, ref to_value) => {
+                to_value = box_error;
+                if (!from_value.holds (Type.BOOLEAN)) return false;
+                if (!from_value.get_boolean ()) return true;
+                to_value = box_pulse;
+                return true;
+            });
+
+            this.set_visible_child (client.running ? box_pulse : box_error);
+            this.client.notify["running"].connect (() => {
+                this.set_visible_child (client.running ? box_pulse : box_error);
+            });
 
             // UI signals
             output_mute_toggle.bind_property ("active",
@@ -261,6 +281,7 @@ namespace SwaySettings {
 
             combo.changed.disconnect (profile_combo_box_changed);
             yield this.client.set_bluetooth_card_profile (profile, device);
+
             combo.changed.connect (profile_combo_box_changed);
         }
 
@@ -344,7 +365,6 @@ namespace SwaySettings {
          */
 
         private void device_change (PulseDevice device) {
-            debug ("Changing device %s", device.get_display_name ());
             bool is_input = device.direction == Direction.INPUT;
             Gtk.ListStore list_store =
                 is_input ? source_list_store : sink_list_store;
@@ -399,7 +419,6 @@ namespace SwaySettings {
         }
 
         private void device_added (PulseDevice device) {
-            debug ("Adding device %s", device.get_display_name ());
             bool is_input = device.direction == Direction.INPUT;
             Gtk.ListStore list_store =
                 is_input ? source_list_store : sink_list_store;
@@ -423,7 +442,6 @@ namespace SwaySettings {
 
             Gtk.TreeIter ? iter = find_device_iter (list_store, device);
             if (iter == null) return;
-            debug ("Removing device %s", device.get_display_name ());
             list_store.remove (ref iter);
             if (list_store.iter_n_children (null) == 0) {
                 (is_input ? input_group : output_group).set_sensitive (false);

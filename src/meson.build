@@ -31,7 +31,7 @@ swaysettings_sources = [
   'Pages/Swaync/Swaync.vala',
   'Pages/Users/Users.vala',
   'Pages/Pulse/PulsePage.vala',
-  'Pages/Pulse/Pulse_Client.vala',
+  'Pages/Pulse/Pulse_Daemon.vala',
   'Pages/Pulse/PulseDevice.vala',
   'Pages/Pulse/PulseSinkInput.vala',
 ]

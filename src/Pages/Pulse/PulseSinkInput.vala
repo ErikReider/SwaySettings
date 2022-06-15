@@ -75,9 +75,9 @@ namespace SwaySettings {
 
         public unowned PulseSinkInput sink_input;
 
-        private unowned PulseClient client;
+        private unowned PulseDaemon client;
 
-        public SinkInputRow (PulseSinkInput sink_input, PulseClient client) {
+        public SinkInputRow (PulseSinkInput sink_input, PulseDaemon client) {
             this.client = client;
 
             update (sink_input);
