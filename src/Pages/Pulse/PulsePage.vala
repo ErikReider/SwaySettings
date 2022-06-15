@@ -2,9 +2,9 @@ using PulseAudio;
 using Gee;
 
 namespace SwaySettings {
-    public class Pulse : Page_Scroll {
+    public class Pulse_Page : Page_Scroll {
         Pulse_Content content;
-        public Pulse (SettingsItem item, Hdy.Deck deck) {
+        public Pulse_Page (SettingsItem item, Hdy.Deck deck) {
             base (item, deck);
         }
 
