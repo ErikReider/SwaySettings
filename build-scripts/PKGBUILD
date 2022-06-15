@@ -1,6 +1,6 @@
 # Maintainer: Erik Reider <erik.reider@protonmail.com>
 pkgname=swaysettings-git
-pkgver=0.3.0.r185.c3bb640
+pkgver=0.4.0.r185.c3bb640
 pkgrel=1
 pkgdesc="A gui for setting sway wallpaper, default apps, GTK themes, etc..."
 _pkgfoldername=SwaySettings
@@ -15,7 +15,7 @@ sha256sums=('SKIP')
 
 pkgver() {
   cd $_pkgfoldername
-  printf "0.3.0.r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+  printf "0.4.0.r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
 }
 
 prepare() {
