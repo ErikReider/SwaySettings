@@ -83,10 +83,6 @@ namespace SwaySettings {
                 // Would result in rounded rows in the middle
                 if (parent != null) parent.get_style_context ().changed ();
 
-                if (device.name == "Pro Controller") {
-                    print ("CHANGED %s\n", cgd.print (true));
-                }
-
                 var paired = cgd.lookup_value ("Paired", VariantType.BOOLEAN);
                 if (paired != null) {
                     device.trusted = device.paired;
