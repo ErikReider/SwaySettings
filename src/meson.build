@@ -30,6 +30,10 @@ swaysettings_sources = [
   'Pages/StartupApps/Startup_Apps.vala',
   'Pages/Swaync/Swaync.vala',
   'Pages/Users/Users.vala',
+  'Pages/Pulse/Pulse.vala',
+  'Pages/Pulse/Pulse_Client.vala',
+  'Pages/Pulse/PulseDevice.vala',
+  'Pages/Pulse/PulseSinkInput.vala',
 ]
 
 swaysettings_deps = [
@@ -45,6 +49,8 @@ swaysettings_deps = [
   dependency('libxml-2.0'),
   dependency('accountsservice'),
   meson.get_compiler('c').find_library('gtk-layer-shell'),
+  dependency('libpulse'),
+  dependency('libpulse-mainloop-glib'),
 ]
 
 sysconfdir = get_option('sysconfdir')

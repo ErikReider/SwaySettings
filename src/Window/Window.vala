@@ -7,6 +7,7 @@ namespace SwaySettings {
         STARTUP_APPS,
         DEFAULT_APPS,
         SWAYNC,
+        SOUND,
         BLUETOOTH,
         KEYBOARD,
         MOUSE,
@@ -27,6 +28,8 @@ namespace SwaySettings {
                     return "Sway Notification Center";
                 case BLUETOOTH:
                     return "Bluetooth";
+                case SOUND:
+                    return "Sound";
                 case KEYBOARD:
                     return "Keyboard";
                 case MOUSE:
@@ -53,6 +56,8 @@ namespace SwaySettings {
                     return "swaync";
                 case BLUETOOTH:
                     return "bluetooth";
+                case SOUND:
+                    return "sound";
                 case KEYBOARD:
                     return "keyboard";
                 case MOUSE:
@@ -143,6 +148,7 @@ namespace SwaySettings {
                 }),
                 SettingsCategory ("Hardware", {
                     SettingsItem ("bluetooth-symbolic", PageType.BLUETOOTH, "bluetooth"),
+                    SettingsItem ("audio-speakers-symbolic", PageType.SOUND, "sound"),
                     SettingsItem ("input-keyboard", PageType.KEYBOARD, "keyboard"),
                     SettingsItem ("input-mouse", PageType.MOUSE, "mouse"),
                     SettingsItem ("input-touchpad", PageType.TRACKPAD, "trackpad"),
@@ -221,6 +227,8 @@ namespace SwaySettings {
                     return new Swaync (item, deck, ipc);
                 case BLUETOOTH:
                     return new Bluetooth_Page (item, deck);
+                case SOUND:
+                    return new Pulse (item, deck);
                 case KEYBOARD:
                     return new Keyboard_Page (item, deck, ipc);
                 case MOUSE:
