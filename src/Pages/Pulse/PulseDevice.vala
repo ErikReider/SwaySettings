@@ -129,7 +129,7 @@ namespace SwaySettings {
         public string port_id { get; set; }
         /** All port profiles */
         public string[] port_profiles { get; set; }
-        public PulseCardProfile[] profiles { get; set; }
+        public Array<PulseCardProfile> profiles { get; set; }
         public PulseCardProfile? active_profile { get; set; }
 
         construct {

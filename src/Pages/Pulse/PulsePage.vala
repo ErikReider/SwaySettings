@@ -338,7 +338,7 @@ namespace SwaySettings {
 
             Gtk.TreeIter ? default_profile = null;
             profile_list_store.clear ();
-            foreach (var profile in device.profiles) {
+            foreach (var profile in device.profiles.data) {
                 Gtk.TreeIter iter;
                 profile_list_store.append (out iter);
                 profile_list_store.set (

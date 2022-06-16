@@ -322,12 +322,12 @@ namespace SwaySettings {
                     return a.priority > b.priority ? -1 : 1;
                 });
                 string[] new_profiles = {};
-                PulseCardProfile[] pulse_profiles = {};
+                Array<PulseCardProfile> pulse_profiles = new Array<PulseCardProfile> ();
                 foreach (var profile in profiles) {
                     new_profiles += profile->name;
 
                     var card_profile = new PulseCardProfile (profile);
-                    pulse_profiles += card_profile;
+                    pulse_profiles.append_val (card_profile);
                     if (profile->name == device.card_active_profile) {
                         device.active_profile = card_profile;
                     }
