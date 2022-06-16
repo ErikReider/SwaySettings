@@ -1,5 +1,5 @@
 namespace Bluez {
-    [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/Bluetooth/Bluez/Bluez_Pair_Dialog.ui")]
+    [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/Bluetooth/Bluez/BluezPairDialog.ui")]
     public class PairDialog : Gtk.Dialog {
         [GtkChild]
         unowned Gtk.Box custom_box;

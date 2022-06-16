@@ -102,7 +102,7 @@ namespace SwaySettings {
         }
     }
 
-    [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/StartupApps/Startup_Apps_Item.ui")]
+    [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/StartupApps/StartupAppsItem.ui")]
     class StartupAppsItem : Gtk.ListBoxRow {
 
         [GtkChild]
@@ -129,7 +129,7 @@ namespace SwaySettings {
         }
     }
 
-    [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/StartupApps/Startup_Apps_Chooser.ui")]
+    [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/StartupApps/StartupAppsChooser.ui")]
     class DesktopAppChooser : Hdy.Window {
 
         Gtk.ListStore liststore = new Gtk.ListStore (3,

@@ -19,7 +19,7 @@ namespace SwaySettings {
         }
     }
 
-    [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/Pulse/Pulse_Content.ui")]
+    [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/Pulse/PulseContent.ui")]
     private class PulseContent : Gtk.Stack {
         private enum DeviceColumns {
             COLUMN_KEY,

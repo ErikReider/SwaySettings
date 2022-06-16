@@ -1,5 +1,5 @@
 namespace SwaySettings {
-    [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/Bluetooth/Bluetooth_Device_Row.ui")]
+    [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/Bluetooth/BluetoothDeviceRow.ui")]
     class BluetoothDeviceRow : Gtk.ListBoxRow {
         public enum State {
             UNPAIRED,
