@@ -13,7 +13,7 @@
     <property name="step-increment">1</property>
     <property name="page-increment">10</property>
   </object>
-  <template class="SwaySettingsPulse_Content" parent="GtkStack">
+  <template class="SwaySettingsPulseContent" parent="GtkStack">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
     <property name="transition-type">crossfade</property>

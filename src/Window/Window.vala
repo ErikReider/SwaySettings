@@ -217,25 +217,25 @@ namespace SwaySettings {
         public Page ? get_page (SettingsItem item) {
             switch (item.page_type) {
                 case WALLPAPER:
-                    return new Background_Page (item, deck, ipc);
+                    return new BackgroundPage (item, deck, ipc);
                 case APPEARANCE:
-                    return new Themes_Page (item, deck);
+                    return new ThemesPage (item, deck);
                 case STARTUP_APPS:
-                    return new Startup_Apps (item, deck);
+                    return new StartupApps (item, deck);
                 case DEFAULT_APPS:
-                    return new Default_Apps (item, deck);
+                    return new DefaultApps (item, deck);
                 case SWAYNC:
                     return new Swaync (item, deck, ipc);
                 case BLUETOOTH:
-                    return new Bluetooth_Page (item, deck);
+                    return new BluetoothPage (item, deck);
                 case SOUND:
-                    return new Pulse_Page (item, deck);
+                    return new PulsePage (item, deck);
                 case KEYBOARD:
-                    return new Keyboard_Page (item, deck, ipc);
+                    return new KeyboardPage (item, deck, ipc);
                 case MOUSE:
-                    return new Mouse_Page (item, deck, ipc);
+                    return new MousePage (item, deck, ipc);
                 case TRACKPAD:
-                    return new Trackpad_Page (item, deck, ipc);
+                    return new TrackpadPage (item, deck, ipc);
                 case USERS:
                     return new Users (item, deck);
             }

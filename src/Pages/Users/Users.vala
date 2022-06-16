@@ -9,12 +9,12 @@ namespace SwaySettings {
 
     private errordomain PathError { INVALID_PATH }
 
-    public class Users : Page_Scroll {
+    public class Users : PageScroll {
         private static unowned Act.UserManager user_manager = Act.UserManager.get_default ();
         private static unowned Act.User current_user = user_manager.get_user (
             Environment.get_user_name ());
 
-        private Users_Content content;
+        private UsersContent content;
 
         private ulong is_loaded_id = 0;
         private ulong changed_id = 0;
@@ -36,7 +36,7 @@ namespace SwaySettings {
         }
 
         public override Gtk.Widget set_child () {
-            content = new Users_Content ();
+            content = new UsersContent ();
 
             // Avatar EventBox
             content.avatar_event_box.button_press_event.connect (() => {
@@ -197,7 +197,7 @@ namespace SwaySettings {
                                 path.length);
                             if (suffix in formats) {
                                 content.popover_flowbox.add (
-                                    new Popover_Image (path, set_user_img));
+                                    new PopoverImage (path, set_user_img));
                             }
                             break;
                         default:
@@ -228,7 +228,7 @@ namespace SwaySettings {
     }
 
     [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/Users/Users.ui")]
-    private class Users_Content : Gtk.Box {
+    private class UsersContent : Gtk.Box {
         [GtkChild]
         public unowned Gtk.EventBox avatar_event_box;
         [GtkChild]
@@ -254,10 +254,10 @@ namespace SwaySettings {
         public unowned Gtk.FlowBox popover_flowbox;
     }
 
-    private class Popover_Image : Gtk.EventBox {
+    private class PopoverImage : Gtk.EventBox {
         public delegate void On_click (Image img);
 
-        public Popover_Image (string path, On_click cb) {
+        public PopoverImage (string path, On_click cb) {
             if (path == null || path.length == 0) {
                 this.destroy ();
                 this.dispose ();
@@ -266,8 +266,8 @@ namespace SwaySettings {
 
             Image img = Image ();
 
-            const int size = 64;
-            const int h_size = 32;
+            const int SIZE = 64;
+            const int H_SIZE = 32;
             try {
                 if (path == null || path.length == 0) {
                     throw new PathError.INVALID_PATH ("The image path is invalid!");
@@ -277,13 +277,13 @@ namespace SwaySettings {
                 img.path = path;
                 img.correct_size = w == 96 && h == 96;
 
-                var pixbuf = new Gdk.Pixbuf.from_file_at_size (path, size, size);
+                var pixbuf = new Gdk.Pixbuf.from_file_at_size (path, SIZE, SIZE);
 
-                var surface = new Cairo.ImageSurface (Cairo.Format.ARGB32, size, size);
+                var surface = new Cairo.ImageSurface (Cairo.Format.ARGB32, SIZE, SIZE);
                 var ctx = new Cairo.Context (surface);
                 Gdk.cairo_set_source_pixbuf (ctx, pixbuf, 0, 0);
 
-                ctx.arc (h_size, h_size, h_size, 0, 2 * Math.PI);
+                ctx.arc (H_SIZE, H_SIZE, H_SIZE, 0, 2 * Math.PI);
                 ctx.clip ();
                 ctx.paint ();
                 var img_surf = new Gtk.Image.from_surface (surface);

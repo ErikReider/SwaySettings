@@ -1,6 +1,6 @@
 namespace SwaySettings {
     [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/Bluetooth/Bluetooth_Device_Row.ui")]
-    class Bluetooth_Device_Row : Gtk.ListBoxRow {
+    class BluetoothDeviceRow : Gtk.ListBoxRow {
         public enum State {
             UNPAIRED,
             PAIRING,
@@ -54,9 +54,9 @@ namespace SwaySettings {
         private ulong props_changed_id;
 
         /** Gets called when Device Paired, Trusted or Blocked changes */
-        public signal void on_update (Bluetooth_Device_Row row);
+        public signal void on_update (BluetoothDeviceRow row);
 
-        public Bluetooth_Device_Row (Bluez.Device1 device, Bluez.Adapter1 adapter) {
+        public BluetoothDeviceRow (Bluez.Device1 device, Bluez.Adapter1 adapter) {
             this.device = device;
             this.adapter = adapter;
 
@@ -153,8 +153,8 @@ namespace SwaySettings {
         private void remove_button_clicked_cb () {
             if (!device.paired) return;
 
-            const string title = "<b><big>Remove \"%s\"?</big></b>";
-            const string sub = "If you remove the device, you will have to repair the device to use it.";
+            const string TITLE = "<b><big>Remove \"%s\"?</big></b>";
+            const string SUB = "If you remove the device, you will have to repair the device to use it.";
             var window = (Hdy.ApplicationWindow) this.get_toplevel ();
 
             var dialog = new Gtk.MessageDialog.with_markup (
@@ -162,9 +162,9 @@ namespace SwaySettings {
                 Gtk.DialogFlags.DESTROY_WITH_PARENT,
                 Gtk.MessageType.QUESTION,
                 Gtk.ButtonsType.OK_CANCEL,
-                title,
+                TITLE,
                 device.alias) {
-                secondary_text = sub,
+                secondary_text = SUB,
                 secondary_use_markup = false,
             };
             var result = (Gtk.ResponseType) dialog.run ();
@@ -205,11 +205,11 @@ namespace SwaySettings {
 
             device_name.set_label (device.alias);
 
-            const string default_icon = "bluetooth-symbolic.symbolic";
-            string icon = default_icon;
+            const string DEFAULT_ICON = "bluetooth-symbolic.symbolic";
+            string icon = DEFAULT_ICON;
             if (device.icon != null && device.icon.length > 0) icon = device.icon;
             if (!Gtk.IconTheme.get_default ().has_icon (icon)) {
-                icon = default_icon;
+                icon = DEFAULT_ICON;
             }
             device_image.set_from_icon_name (icon, Gtk.IconSize.INVALID);
             device_image.icon_size = 48;

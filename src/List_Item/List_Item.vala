@@ -1,7 +1,7 @@
 namespace SwaySettings {
-    public class List_Item : Hdy.ActionRow {
+    public class ListItem : Hdy.ActionRow {
 
-        public List_Item (string title, Gtk.Widget widget) {
+        public ListItem (string title, Gtk.Widget widget) {
             Object ();
             set_title (title);
             this.child = widget;
@@ -10,12 +10,12 @@ namespace SwaySettings {
         }
     }
 
-    public class List_Slider : List_Item {
+    public class ListSlider : ListItem {
         Gtk.Scale slider_widget;
 
         public delegate bool on_release_delegate (Gtk.Range range);
 
-        public List_Slider (string title, double value,
+        public ListSlider (string title, double value,
                             double min,
                             double max,
                             double step,
@@ -37,12 +37,12 @@ namespace SwaySettings {
         }
     }
 
-    public class List_Switch : List_Item {
+    public class ListSwitch : ListItem {
         Gtk.Switch switch_widget;
 
         public delegate bool on_state_set (bool state);
 
-        public List_Switch (string title, bool value, on_state_set on_release) {
+        public ListSwitch (string title, bool value, on_state_set on_release) {
             var switch_widget = new Gtk.Switch ();
             switch_widget.set_active (value);
             switch_widget.state_set.connect ((value) => on_release (value));
@@ -60,11 +60,11 @@ namespace SwaySettings {
         }
     }
 
-    public class List_Combo_Enum : Hdy.ComboRow {
+    public class ListComboEnum : Hdy.ComboRow {
 
         public delegate void selected_index (int index);
 
-        public List_Combo_Enum (string title, int index, GLib.Type enum_type, selected_index callback) {
+        public ListComboEnum (string title, int index, GLib.Type enum_type, selected_index callback) {
             Object ();
 
             this.set_title (title);

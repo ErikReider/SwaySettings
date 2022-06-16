@@ -21,8 +21,8 @@ namespace SwaySettings {
     }
 
     class ConfigModel : Object, Json.Serializable {
-        public PositionX positionX { get; set; }
-        public PositionY positionY { get; set; }
+        public PositionX positionX { get; set; } // vala-lint=naming-convention
+        public PositionY positionY { get; set; } // vala-lint=naming-convention
 
         public Json.Node serialize_property (string property_name, GLib.Value value, GLib.ParamSpec pspec) {
             var node = new Json.Node (Json.NodeType.VALUE);
@@ -51,7 +51,7 @@ namespace SwaySettings {
      * Reads the config file from the first found config file in the priority list.
      * Writes the config content to the users .config/swaync/config.json
      */
-    public class Swaync : Page_Scroll {
+    public class Swaync : PageScroll {
 
         ConfigModel settings;
         IPC ipc;
@@ -66,7 +66,7 @@ namespace SwaySettings {
             settings = read_file (config_path);
             write_file ();
 
-            var comboX = new List_Combo_Enum ("Horizontal Position",
+            var combo_x = new ListComboEnum ("Horizontal Position",
                                               settings.positionX,
                                               typeof (PositionX),
                                               (index) => {
@@ -74,7 +74,7 @@ namespace SwaySettings {
                 settings.positionX = profile;
                 write_file ();
             });
-            var comboY = new List_Combo_Enum ("Vertical Position",
+            var combo_y = new ListComboEnum ("Vertical Position",
                                               settings.positionY,
                                               typeof (PositionY),
                                               (index) => {
@@ -85,8 +85,8 @@ namespace SwaySettings {
 
             var list_box = new Gtk.ListBox ();
             list_box.get_style_context ().add_class ("content");
-            list_box.add (comboX);
-            list_box.add (comboY);
+            list_box.add (combo_x);
+            list_box.add (combo_y);
 
             return list_box;
         }

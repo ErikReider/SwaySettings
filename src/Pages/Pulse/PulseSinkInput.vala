@@ -95,8 +95,8 @@ namespace SwaySettings {
             mute_toggle.toggled.connect ((button) => {
                 Gtk.Image img = (Gtk.Image) button.get_child ();
                 string icon = button.active
-                    ? Pulse_Content.TOGGLE_ICON_MUTED
-                    : Pulse_Content.TOGGLE_ICON_UNMUTED;
+                    ? PulseContent.TOGGLE_ICON_MUTED
+                    : PulseContent.TOGGLE_ICON_UNMUTED;
                 img.set_from_icon_name (icon, Gtk.IconSize.BUTTON);
 
                 client.set_sink_input_mute (button.active, sink_input);

@@ -6,7 +6,7 @@ namespace SwaySettings {
         private static string page = "";
         private static bool list_pages = false;
 
-        private const OptionEntry[] entries = {
+        private const OptionEntry[] ENTRIES = {
             {
                 "page",
                 'p',
@@ -32,7 +32,7 @@ namespace SwaySettings {
 
         public static int main (string[] args) {
             try {
-                Gtk.init_with_args (ref args, null, entries, null);
+                Gtk.init_with_args (ref args, null, ENTRIES, null);
 
                 if (list_pages) {
                     EnumClass enumc = (EnumClass) typeof (PageType).class_ref ();

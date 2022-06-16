@@ -7,7 +7,7 @@ namespace SwaySettings {
         bool thumbnail_valid;
     }
 
-    public class Background_Page : Page_Scroll {
+    public class BackgroundPage : PageScroll {
         private ThumbnailImage preview_image;
         private const int PREVIEW_IMAGE_HEIGHT = 216;
         private const int PREVIEW_IMAGE_WIDTH = 384;
@@ -34,7 +34,7 @@ namespace SwaySettings {
             }
         }
 
-        public Background_Page (SettingsItem item, Hdy.Deck deck, IPC ipc) {
+        public BackgroundPage (SettingsItem item, Hdy.Deck deck, IPC ipc) {
             base (item, deck);
             this.ipc = ipc;
         }

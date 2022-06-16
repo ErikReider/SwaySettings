@@ -1,21 +1,21 @@
 using Gee;
 
 namespace SwaySettings {
-    public class Keyboard_Page : Input_Page {
+    public class KeyboardPage : InputPage {
 
-        public Keyboard_Page (SettingsItem item, Hdy.Deck deck, IPC ipc) {
+        public KeyboardPage (SettingsItem item, Hdy.Deck deck, IPC ipc) {
             base (item, deck, ipc);
         }
 
-        public override SwaySettings.Input_Types input_type {
+        public override SwaySettings.InputTypes input_type {
             get {
-                return Input_Types.KEYBOARD;
+                return InputTypes.KEYBOARD;
             }
         }
 
-        public override ArrayList<Input_Page_Section> get_top_sections () {
-            return new ArrayList<Input_Page_Section>.wrap ({
-                new Input_Page_Section (get_keyboard_language (), "Keyboard Layout"),
+        public override ArrayList<InputPageSection> get_top_sections () {
+            return new ArrayList<InputPageSection>.wrap ({
+                new InputPageSection (get_keyboard_language (), "Keyboard Layout"),
             });
         }
     }

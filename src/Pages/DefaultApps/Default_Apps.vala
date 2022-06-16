@@ -1,21 +1,21 @@
 using Gee;
 
 namespace SwaySettings {
-    public class Default_Apps : Page_Scroll {
+    public class DefaultApps : PageScroll {
 
-        public static default_app_data[] mime_types = {
-            default_app_data ("Web Browser", "x-scheme-handler/http",
+        public static DefaultAppData[] mime_types = {
+            DefaultAppData ("Web Browser", "x-scheme-handler/http",
                               { "text/html", "application/xhtml+xml", "x-scheme-handler/https" }),
-            default_app_data ("Mail Client", "x-scheme-handler/mailto"),
-            default_app_data ("Calendar", "text/calendar"),
-            default_app_data ("Music", "audio/x-vorbis+ogg", { "audio/*" }),
-            default_app_data ("Video", "video/x-ogm+ogg", { "video/*" }),
-            default_app_data ("Photos", "image/jpeg", { "image/*" }),
-            default_app_data ("Text Editor", "text/plain"),
-            default_app_data ("File Browser", "inode/directory"),
+            DefaultAppData ("Mail Client", "x-scheme-handler/mailto"),
+            DefaultAppData ("Calendar", "text/calendar"),
+            DefaultAppData ("Music", "audio/x-vorbis+ogg", { "audio/*" }),
+            DefaultAppData ("Video", "video/x-ogm+ogg", { "video/*" }),
+            DefaultAppData ("Photos", "image/jpeg", { "image/*" }),
+            DefaultAppData ("Text Editor", "text/plain"),
+            DefaultAppData ("File Browser", "inode/directory"),
         };
 
-        public Default_Apps (SettingsItem item, Hdy.Deck deck) {
+        public DefaultApps (SettingsItem item, Hdy.Deck deck) {
             base (item, deck);
         }
 
@@ -33,7 +33,7 @@ namespace SwaySettings {
             return list_box;
         }
 
-        Gtk.Widget get_item (default_app_data def_app) {
+        Gtk.Widget get_item (DefaultAppData def_app) {
             var chooser = new Gtk.AppChooserButton (def_app.mime_type) {
                 vexpand = false,
                 hexpand = false,
@@ -47,10 +47,10 @@ namespace SwaySettings {
                 if (selected_app == null) return;
                 set_default_app (def_app, selected_app);
             });
-            return new List_Item (def_app.category_name, chooser);
+            return new ListItem (def_app.category_name, chooser);
         }
 
-        void set_default_app (default_app_data def_data, AppInfo selected_app) {
+        void set_default_app (DefaultAppData def_data, AppInfo selected_app) {
             set_default_for_mime (def_data.mime_type, selected_app);
 
             // Try to set as default for the other extra types
@@ -84,12 +84,12 @@ namespace SwaySettings {
         }
     }
 
-    public struct default_app_data {
+    public struct DefaultAppData {
         string category_name;
         string mime_type;
         string[] extra_types;
 
-        default_app_data (string category_name,
+        DefaultAppData (string category_name,
                           string mime_type,
                           string[] extra_types = {}) {
             this.mime_type = mime_type;

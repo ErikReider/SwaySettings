@@ -56,7 +56,7 @@ namespace SwaySettings {
         private void get_context () {
             var ctx = new Context (mainloop.get_api (), null);
             ctx.set_state_callback ((ctx) => {
-                debug ("Pulse Status: %s\n", ctx.get_state ().to_string());
+                debug ("Pulse Status: %s\n", ctx.get_state ().to_string ());
                 switch (ctx.get_state ()) {
                     case Context.State.CONNECTING:
                     case Context.State.AUTHORIZING:

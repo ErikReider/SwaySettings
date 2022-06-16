@@ -1,13 +1,13 @@
 using Gee;
 
 namespace SwaySettings {
-    public class Startup_Apps : Page_Scroll {
+    public class StartupApps : PageScroll {
 
         Gtk.ListBox list_box;
 
         ArrayList<DesktopAppInfo> startup_apps;
 
-        public Startup_Apps (SettingsItem item, Hdy.Deck deck) {
+        public StartupApps (SettingsItem item, Hdy.Deck deck) {
             base (item, deck);
         }
 
@@ -21,7 +21,7 @@ namespace SwaySettings {
             var add_button = new Gtk.Button.with_label ("Add Application");
             add_button.clicked.connect ((e) => {
                 var window = (SwaySettings.Window)get_toplevel ();
-                new Desktop_App_Chooser (window, (desktop) => {
+                new DesktopAppChooser (window, (desktop) => {
                     add_app_to_startup.begin (desktop.filename, () => {
                         refresh_apps ();
                     });
@@ -36,7 +36,7 @@ namespace SwaySettings {
         void add_apps () {
             startup_apps = get_startup_apps ();
             foreach (var app_info in startup_apps) {
-                list_box.add (new Startup_Apps_Item (app_info, (a_info) => {
+                list_box.add (new StartupAppsItem (app_info, (a_info) => {
                     remove_app_from_startup.begin (
                         a_info.get_filename (),
                         () => refresh_apps ());
@@ -51,7 +51,7 @@ namespace SwaySettings {
         }
 
         ArrayList<DesktopAppInfo> get_startup_apps () {
-            ArrayList<DesktopAppInfo> apps = new ArrayList<DesktopAppInfo>();
+            ArrayList<DesktopAppInfo> apps = new ArrayList<DesktopAppInfo> ();
             string auto_start_path = @"$(Environment.get_user_config_dir())/autostart";
             Functions.walk_through_dir (auto_start_path, (file_info) => {
                 // Implement "X-GNOME-Autostart-enabled" check???
@@ -103,7 +103,7 @@ namespace SwaySettings {
     }
 
     [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/StartupApps/Startup_Apps_Item.ui")]
-    class Startup_Apps_Item : Gtk.ListBoxRow {
+    class StartupAppsItem : Gtk.ListBoxRow {
 
         [GtkChild]
         unowned Gtk.Image image;
@@ -118,7 +118,7 @@ namespace SwaySettings {
 
         public delegate void on_remove (DesktopAppInfo app_info);
 
-        public Startup_Apps_Item (DesktopAppInfo app_info, on_remove callback) {
+        public StartupAppsItem (DesktopAppInfo app_info, on_remove callback) {
             Object ();
             image.set_pixel_size (48);
             image.set_from_gicon (app_info.get_icon (), Gtk.IconSize.INVALID);
@@ -130,7 +130,7 @@ namespace SwaySettings {
     }
 
     [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/StartupApps/Startup_Apps_Chooser.ui")]
-    class Desktop_App_Chooser : Hdy.Window {
+    class DesktopAppChooser : Hdy.Window {
 
         Gtk.ListStore liststore = new Gtk.ListStore (3,
                                                      typeof (string),
@@ -146,11 +146,11 @@ namespace SwaySettings {
         [GtkChild]
         unowned Gtk.Button cancel_button;
 
-        ArrayList<DesktopAppInfo> apps = new ArrayList<DesktopAppInfo>();
+        ArrayList<DesktopAppInfo> apps = new ArrayList<DesktopAppInfo> ();
 
         public delegate void on_selected (DesktopAppInfo app_info);
 
-        public Desktop_App_Chooser (SwaySettings.Window window,
+        public DesktopAppChooser (SwaySettings.Window window,
                                     on_selected callback) {
             Object ();
             this.set_attached_to (window);

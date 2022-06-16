@@ -1,8 +1,8 @@
 namespace SwaySettings {
-    public class Bluetooth_Page : Page {
+    public class BluetoothPage : Page {
 
-        private const string nearby_empty_text = "No devices found";
-        private const string paired_empty_text = "No devices paired";
+        private const string NEARBY_EMPTY_TEXT = "No devices found";
+        private const string PAIRED_EMPTY_TEXT = "No devices paired";
 
         Gtk.Stack stack;
         Gtk.Box error_box;
@@ -25,7 +25,7 @@ namespace SwaySettings {
 
         Bluez.Daemon daemon;
 
-        public Bluetooth_Page (SettingsItem item, Hdy.Deck deck) {
+        public BluetoothPage (SettingsItem item, Hdy.Deck deck) {
             base (item, deck);
         }
 
@@ -181,7 +181,7 @@ namespace SwaySettings {
             placeholder_box.add (placeholder_image);
             // Error Label
             Gtk.Label placeholder_label = new Gtk.Label (
-                is_paired ? paired_empty_text : nearby_empty_text);
+                is_paired ? PAIRED_EMPTY_TEXT : NEARBY_EMPTY_TEXT);
             placeholder_box.add (placeholder_label);
 
             placeholder_box.show_all ();
@@ -213,7 +213,7 @@ namespace SwaySettings {
         }
 
         [CCode (instance_pos = -1)]
-        int list_box_sort_func (Bluetooth_Device_Row a, Bluetooth_Device_Row b) {
+        int list_box_sort_func (BluetoothDeviceRow a, BluetoothDeviceRow b) {
             Bluez.Device1 a_device = a.device;
             Bluez.Device1 b_device = b.device;
 
@@ -276,7 +276,7 @@ namespace SwaySettings {
             var adapter = this.daemon.get_adapter (device.adapter);
             var _device = this.daemon.get_device (
                 ((DBusProxy) device).get_object_path ());
-            var row = new Bluetooth_Device_Row (_device, adapter);
+            var row = new BluetoothDeviceRow (_device, adapter);
             // Watch property changes
             row.on_update.connect (this.device_changed_cb);
             list_box.add (row);
@@ -287,8 +287,8 @@ namespace SwaySettings {
             children.concat (nearby_list_box.get_children ());
 
             foreach (var child in children) {
-                if (child == null || !(child is Bluetooth_Device_Row)) continue;
-                var row = (Bluetooth_Device_Row) child;
+                if (child == null || !(child is BluetoothDeviceRow)) continue;
+                var row = (BluetoothDeviceRow) child;
                 if (row.device == device) {
                     // Remove watch property changes
                     row.before_destroy ();
@@ -298,7 +298,7 @@ namespace SwaySettings {
             }
         }
 
-        void device_changed_cb (Bluetooth_Device_Row row) {
+        void device_changed_cb (BluetoothDeviceRow row) {
             Gtk.Container parent = row.parent;
             bool paired = row.device.paired;
 
@@ -318,7 +318,7 @@ namespace SwaySettings {
 
             if (remove_list_box != null && add_list_box != null) {
                 var adapter = this.daemon.get_adapter (row.device.adapter);
-                var device = new Bluetooth_Device_Row (row.device, adapter);
+                var device = new BluetoothDeviceRow (row.device, adapter);
                 add_list_box.add (device);
                 row.before_destroy ();
                 row.destroy ();

@@ -1,20 +1,20 @@
 using Gee;
 
 namespace SwaySettings {
-    public class Trackpad_Page : Input_Page {
+    public class TrackpadPage : InputPage {
 
-        public Trackpad_Page (SettingsItem item, Hdy.Deck deck, IPC ipc) {
+        public TrackpadPage (SettingsItem item, Hdy.Deck deck, IPC ipc) {
             base (item, deck, ipc);
         }
 
-        public override SwaySettings.Input_Types input_type {
+        public override SwaySettings.InputTypes input_type {
             get {
-                return Input_Types.TOUCHPAD;
+                return InputTypes.TOUCHPAD;
             }
         }
 
-        public override Input_Page_Option get_options () {
-            return new Input_Page_Option (new ArrayList<Gtk.Widget>.wrap ({
+        public override InputPageOption get_options () {
+            return new InputPageOption (new ArrayList<Gtk.Widget>.wrap ({
                 get_state_widget (),
                 get_scroll_factor (),
                 get_natural_scroll (),

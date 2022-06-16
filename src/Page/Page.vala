@@ -43,7 +43,7 @@ namespace SwaySettings {
             });
         }
 
-        public void set_reveal_child(bool value) {
+        public void set_reveal_child (bool value) {
             revealer.set_reveal_child (value);
         }
 
@@ -94,7 +94,7 @@ namespace SwaySettings {
         }
     }
 
-    public abstract class Page_Scroll : Page {
+    public abstract class PageScroll : Page {
 
         public virtual bool have_margin {
             get {
@@ -117,7 +117,7 @@ namespace SwaySettings {
             }
         }
 
-        protected Page_Scroll (SettingsItem item, Hdy.Deck deck) {
+        protected PageScroll (SettingsItem item, Hdy.Deck deck) {
             base (item, deck);
         }
 
@@ -139,11 +139,11 @@ namespace SwaySettings {
         public abstract Gtk.Widget set_child ();
     }
 
-    public abstract class Page_Tabbed : Page {
+    public abstract class PageTabbed : Page {
 
         public Gtk.Stack stack;
 
-        protected Page_Tabbed (SettingsItem item,
+        protected PageTabbed (SettingsItem item,
                                Hdy.Deck deck,
                                string no_tabs_text = "Nothing here...") {
             base (item, deck);
@@ -190,15 +190,15 @@ namespace SwaySettings {
             stack.set_visible_child (stack.get_children ().nth_data (0));
         }
 
-        public abstract Page_Tab[] tabs ();
+        public abstract PageTab[] tabs ();
     }
 
-    public abstract class Page_Tab : Gtk.Box {
+    public abstract class PageTab : Gtk.Box {
         public string tab_name;
 
         public IPC ipc;
 
-        protected Page_Tab (string tab_name, IPC ipc) {
+        protected PageTab (string tab_name, IPC ipc) {
             Object ();
             this.ipc = ipc;
 

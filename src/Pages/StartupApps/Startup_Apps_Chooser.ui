@@ -3,7 +3,7 @@
 <interface>
   <requires lib="gtk+" version="3.24"/>
   <requires lib="libhandy" version="0.0"/>
-  <template class="SwaySettingsDesktop_App_Chooser" parent="HdyWindow">
+  <template class="SwaySettingsDesktopAppChooser" parent="HdyWindow">
     <property name="width-request">400</property>
     <property name="height-request">400</property>
     <property name="can-focus">False</property>

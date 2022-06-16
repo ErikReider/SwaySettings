@@ -1,7 +1,7 @@
 using Gee;
 
 namespace SwaySettings {
-    public enum Input_Types {
+    public enum InputTypes {
         NEITHER,
         POINTER,
         TOUCHPAD,
@@ -21,7 +21,7 @@ namespace SwaySettings {
             }
         }
 
-        public static Input_Types parse_string (string value) {
+        public static InputTypes parse_string (string value) {
             switch (value) {
                 case "pointer":
                     return POINTER;
@@ -38,12 +38,12 @@ namespace SwaySettings {
 
     public class Language : StringType {
         public string name;
-        public string shortDescription;
+        public string short_description;
         public string description;
 
         public bool is_valid () {
             bool n_valid = name != null && name.length > 0;
-            bool sd_valid = shortDescription != null && shortDescription.length > 0;
+            bool sd_valid = short_description != null && short_description.length > 0;
             bool d_valid = description != null && description.length > 0;
             return n_valid && sd_valid && d_valid;
         }
@@ -88,10 +88,10 @@ namespace SwaySettings {
         }
     }
 
-    public enum Accel_Profiles {
+    public enum AccelProfiles {
         ADAPTIVE, FLAT;
 
-        public static Accel_Profiles parse_string (string value) {
+        public static AccelProfiles parse_string (string value) {
             switch (value) {
                 case "flat":
                     return FLAT;
@@ -115,10 +115,10 @@ namespace SwaySettings {
         }
     }
 
-    public enum Scroll_Methods {
+    public enum ScrollMethods {
         TWO_FINGER, NONE, EDGE, ON_BUTTON_DOWN;
 
-        public static Scroll_Methods parse_string (string value) {
+        public static ScrollMethods parse_string (string value) {
             switch (value) {
                 case "edge":
                     return EDGE;
@@ -147,11 +147,11 @@ namespace SwaySettings {
         }
 
         public string get_line () {
-            return @"scroll_method $(parse ())";
+            return "scroll_method %s".printf (parse ());
         }
     }
 
-    public enum Click_Methods {
+    public enum ClickMethods {
         BUTTON_AREAS, CLICKFINGER, NONE;
 
         public string parse () {
@@ -166,7 +166,7 @@ namespace SwaySettings {
             }
         }
 
-        public static Click_Methods parse_string (string value) {
+        public static ClickMethods parse_string (string value) {
             switch (value) {
                 case "clickfinger":
                     return CLICKFINGER;
@@ -183,10 +183,10 @@ namespace SwaySettings {
         }
     }
 
-    public enum Tap_Button_Maps {
+    public enum TapButtonMaps {
         LRM, LMR;
 
-        public static Tap_Button_Maps parse_string (string value) {
+        public static TapButtonMaps parse_string (string value) {
             switch (value) {
                 case "lmr":
                     return LMR;
@@ -243,19 +243,19 @@ namespace SwaySettings {
         }
     }
 
-    public class Input_Device : Object {
-        public Input_Types input_type {
-            get; private set; default = Input_Types.NEITHER;
+    public class InputDevice : Object {
+        public InputTypes input_type {
+            get; private set; default = InputTypes.NEITHER;
         }
-        public Input_Data data;
+        public InputData data;
         public string identifier { get; private set; }
         public float scroll_factor { get; set; default = 1.0f; }
 
-        public Input_Device (string identifier,
-                             Input_Types type) {
+        public InputDevice (string identifier,
+                             InputTypes type) {
             this.identifier = identifier;
             this.input_type = type;
-            this.data = new Input_Data ();
+            this.data = new InputData ();
         }
 
         public string[] get_settings () {
@@ -275,7 +275,7 @@ namespace SwaySettings {
             string[] settings_list = {};
 
             switch (input_type) {
-                case Input_Types.KEYBOARD:
+                case InputTypes.KEYBOARD:
                     // xkb_layout_names
                     string[] array = {};
                     foreach (var lang in data.xkb_layout_names) {
@@ -284,8 +284,8 @@ namespace SwaySettings {
                     string languages = string.joinv (", ", array);
                     settings_list += (@"xkb_layout \"$(languages)\"");
                     break;
-                case Input_Types.POINTER:
-                case Input_Types.TOUCHPAD:
+                case InputTypes.POINTER:
+                case InputTypes.TOUCHPAD:
                     // events
                     settings_list += data.send_events.get_line ();
                     // pointer_accel
@@ -304,7 +304,7 @@ namespace SwaySettings {
                     settings_list +=
                         @"middle_emulation $(data.middle_emulation.parse ())";
 
-                    if (Input_Types.TOUCHPAD == input_type) {
+                    if (InputTypes.TOUCHPAD == input_type) {
                         // scroll_method
                         settings_list += data.scroll_method.get_line ();
                         // dwt
@@ -324,10 +324,10 @@ namespace SwaySettings {
         }
     }
 
-    public class Input_Data : Object, Json.Serializable {
+    public class InputData : Object, Json.Serializable {
         // Pointer and touchpad
-        public Accel_Profiles accel_profile {
-            get; set; default = Accel_Profiles.ADAPTIVE;
+        public AccelProfiles accel_profile {
+            get; set; default = AccelProfiles.ADAPTIVE;
         }
         public Events send_events {
             get; set; default = Events.ENABLED;
@@ -350,18 +350,18 @@ namespace SwaySettings {
         public float accel_speed {
             get; set; default = 0;
         }
-        public Click_Methods click_method {
-            get; set; default = Click_Methods.CLICKFINGER;
+        public ClickMethods click_method {
+            get; set; default = ClickMethods.CLICKFINGER;
         }
-        public Scroll_Methods scroll_method {
-            get; set; default = Scroll_Methods.TWO_FINGER;
+        public ScrollMethods scroll_method {
+            get; set; default = ScrollMethods.TWO_FINGER;
         }
-        public Tap_Button_Maps tap_button_map {
-            get; set; default = Tap_Button_Maps.LRM;
+        public TapButtonMaps tap_button_map {
+            get; set; default = TapButtonMaps.LRM;
         }
 
         // Keyboard
-        public ArrayList<Language> xkb_layout_names = new ArrayList<Language>();
+        public ArrayList<Language> xkb_layout_names = new ArrayList<Language> ();
 
         public override bool deserialize_property (string property_name,
                                                    out Value value,
@@ -394,19 +394,19 @@ namespace SwaySettings {
                     node.set_string (casted.parse ());
                     break;
                 case "SwaySettingsClick_Methods":
-                    Click_Methods casted = (Click_Methods) value.get_enum ();
+                    ClickMethods casted = (ClickMethods) value.get_enum ();
                     node.set_string (casted.parse ());
                     break;
                 case "SwaySettingsScroll_Methods":
-                    Scroll_Methods casted = (Scroll_Methods) value.get_enum ();
+                    ScrollMethods casted = (ScrollMethods) value.get_enum ();
                     node.set_string (casted.parse ());
                     break;
                 case "SwaySettingsTap_Button_Maps":
-                    Tap_Button_Maps casted = (Tap_Button_Maps) value.get_enum ();
+                    TapButtonMaps casted = (TapButtonMaps) value.get_enum ();
                     node.set_string (casted.parse ());
                     break;
                 case "SwaySettingsAccel_Profiles":
-                    Accel_Profiles casted = (Accel_Profiles) value.get_enum ();
+                    AccelProfiles casted = (AccelProfiles) value.get_enum ();
                     node.set_string (casted.parse ());
                     break;
                 case "gchararray":

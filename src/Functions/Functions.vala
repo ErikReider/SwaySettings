@@ -24,18 +24,18 @@ namespace SwaySettings {
         }
 
         public static File check_settings_folder_exists (string file_name) {
-            string basePath = GLib.Environment.get_user_config_dir () + "/sway/.generated_settings";
+            string base_path = GLib.Environment.get_user_config_dir () + "/sway/.generated_settings";
             // Checks if directory exists. Creates one if none
-            if (!GLib.FileUtils.test (basePath, GLib.FileTest.IS_DIR)) {
+            if (!GLib.FileUtils.test (base_path, GLib.FileTest.IS_DIR)) {
                 try {
-                    var file = File.new_for_path (basePath);
+                    var file = File.new_for_path (base_path);
                     file.make_directory ();
                 } catch (Error e) {
                     print ("Error: %s\n", e.message);
                 }
             }
             // Checks if file exists. Creates one if none
-            var file = File.new_for_path (basePath + @"/$(file_name)");
+            var file = File.new_for_path (base_path + @"/$(file_name)");
             if (!file.query_exists ()) {
                 try {
                     file.create (FileCreateFlags.NONE);
@@ -93,7 +93,7 @@ namespace SwaySettings {
         private delegate Type TypeFunc ();
 
         /** https://gitlab.gnome.org/GNOME/vala/-/issues/412 */
-        public static Type get_proxy_gtype<T>() {
+        public static Type get_proxy_gtype<T> () {
             Quark proxy_quark = Quark.from_string ("vala-dbus-proxy-type");
             return ((TypeFunc) (typeof (T).get_qdata (proxy_quark)))();
         }

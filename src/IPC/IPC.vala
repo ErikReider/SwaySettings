@@ -2,7 +2,7 @@ using Gee;
 
 namespace SwaySettings {
 
-    public enum Sway_commands {
+    public enum SwayCommands {
         GET_WORKSPACES = 1,
         SUBSCRIBE = 2,
         GET_OUTPUTS = 3,
@@ -75,7 +75,7 @@ namespace SwaySettings {
             return val.get_data_as_bytes ().get_data ();
         }
 
-        public Json.Node get_reply (Sway_commands cmd) {
+        public Json.Node get_reply (SwayCommands cmd) {
             try {
                 ByteArray np = new ByteArray ();
                 np.append (magic_number);
@@ -89,9 +89,9 @@ namespace SwaySettings {
                 uint8[] buffer = new uint8[buffer_size];
                 socket.receive (buffer);
 
-                Bytes responseBytes = new Bytes.take (buffer);
-                string response = (string) responseBytes.slice (
-                    bytes_to_payload, responseBytes.length).get_data ();
+                Bytes response_bytes = new Bytes.take (buffer);
+                string response = (string) response_bytes.slice (
+                    bytes_to_payload, response_bytes.length).get_data ();
 
                 Json.Parser parser = new Json.Parser ();
                 parser.load_from_data (response);

@@ -2,15 +2,15 @@ using PulseAudio;
 using Gee;
 
 namespace SwaySettings {
-    public class Pulse_Page : Page_Scroll {
-        Pulse_Content content;
+    public class PulsePage : PageScroll {
+        PulseContent content;
 
-        public Pulse_Page (SettingsItem item, Hdy.Deck deck) {
+        public PulsePage (SettingsItem item, Hdy.Deck deck) {
             base (item, deck);
         }
 
         public override Gtk.Widget set_child () {
-            this.content = new Pulse_Content ();
+            this.content = new PulseContent ();
             return this.content;
         }
 
@@ -20,7 +20,7 @@ namespace SwaySettings {
     }
 
     [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/Pulse/Pulse_Content.ui")]
-    private class Pulse_Content : Gtk.Stack {
+    private class PulseContent : Gtk.Stack {
         private enum DeviceColumns {
             COLUMN_KEY,
             COLUMN_DEVICE,
@@ -144,7 +144,7 @@ namespace SwaySettings {
             sink_inputs_group.set_sensitive (false);
         }
 
-        public Pulse_Content () {
+        public PulseContent () {
             var cell_render_icon = new Gtk.CellRendererPixbuf ();
             cell_render_icon.set_padding (8, 0);
             var cell_render_text = new Gtk.CellRendererText ();

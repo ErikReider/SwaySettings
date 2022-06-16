@@ -1,10 +1,10 @@
 using Gee;
 
 namespace SwaySettings {
-    public class Themes_Page : Page_Scroll {
+    public class ThemesPage : PageScroll {
         ThemesPageContent content = new ThemesPageContent ();
 
-        public Themes_Page (SettingsItem item, Hdy.Deck deck) {
+        public ThemesPage (SettingsItem item, Hdy.Deck deck) {
             base (item, deck);
         }
 
@@ -313,7 +313,7 @@ namespace SwaySettings {
             }
             paths += @"$(Environment.get_home_dir ())/.$(folder_name)";
 
-            var themes = new ArrayList<string>();
+            var themes = new ArrayList<string> ();
 
             var min_ver = Gtk.get_minor_version ();
             if (min_ver % 2 != 0) min_ver++;

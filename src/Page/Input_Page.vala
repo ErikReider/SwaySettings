@@ -1,53 +1,53 @@
 using Gee;
 
 namespace SwaySettings {
-    public class Input_Page_Section {
+    public class InputPageSection {
         public string ? title;
         public Gtk.Widget widget;
 
-        public Input_Page_Section (Gtk.Widget widget, string ? title = null) {
+        public InputPageSection (Gtk.Widget widget, string ? title = null) {
             this.widget = widget;
             this.title = title;
         }
     }
 
-    public class Input_Page_Option {
+    public class InputPageOption {
         public string ? title;
         public ArrayList<Gtk.Widget> widgets;
 
-        public Input_Page_Option (ArrayList<Gtk.Widget> widgets,
+        public InputPageOption (ArrayList<Gtk.Widget> widgets,
                                   string ? title = null) {
             this.widgets = widgets;
             this.title = title;
         }
     }
 
-    public abstract class Input_Page : Page_Scroll {
-        Input_Device device;
+    public abstract class InputPage : PageScroll {
+        InputDevice device;
         HashMap<string, Language> languages;
 
-        public abstract Input_Types input_type { get; }
+        public abstract InputTypes input_type { get; }
 
         IPC ipc;
 
-        protected Input_Page (SettingsItem item, Hdy.Deck deck, IPC ipc) {
+        protected InputPage (SettingsItem item, Hdy.Deck deck, IPC ipc) {
             base (item, deck);
             this.ipc = ipc;
         }
 
-        public virtual ArrayList<Input_Page_Section> get_top_sections () {
-            return new ArrayList<Input_Page_Section> ();
+        public virtual ArrayList<InputPageSection> get_top_sections () {
+            return new ArrayList<InputPageSection> ();
         }
 
-        public virtual Input_Page_Option get_options () {
-            return new Input_Page_Option (new ArrayList<Gtk.Widget> ());
+        public virtual InputPageOption get_options () {
+            return new InputPageOption (new ArrayList<Gtk.Widget> ());
         }
 
         public override Gtk.Widget set_child () {
-            if (input_type == Input_Types.KEYBOARD) {
+            if (input_type == InputTypes.KEYBOARD) {
                 languages = get_languages ();
             } else {
-                languages = new HashMap<string, Language>();
+                languages = new HashMap<string, Language> ();
             }
 
             bool has_type = init_input_devices ();
@@ -112,7 +112,7 @@ namespace SwaySettings {
                             lang.name = child.get_content ();
                             break;
                         case "shortDescription":
-                            lang.shortDescription = child.get_content ();
+                            lang.short_description = child.get_content ();
                             break;
                         case "description":
                             lang.description = child.get_content ();
@@ -127,19 +127,19 @@ namespace SwaySettings {
         }
 
         bool init_input_devices () {
-            Json.Node ipc_output = ipc.get_reply (Sway_commands.GET_IMPUTS);
+            Json.Node ipc_output = ipc.get_reply (SwayCommands.GET_IMPUTS);
             if (ipc_output.get_node_type () == Json.NodeType.ARRAY) {
                 foreach (var node in ipc_output.get_array ().get_elements ()) {
                     if (node.get_node_type () != Json.NodeType.OBJECT) continue;
                     unowned Json.Object ? obj = node.get_object ();
                     if (obj == null) continue;
 
-                    Input_Types type = Input_Types.parse_string (
+                    InputTypes type = InputTypes.parse_string (
                         obj.get_string_member ("type") ?? "");
-                    if (input_type != type || type == Input_Types.NEITHER) continue;
+                    if (input_type != type || type == InputTypes.NEITHER) continue;
                     // Skip if the Mouse / Touchpad doesn't have "accel_speed"
                     // Example would be a keyboard that reports as a mouse
-                    if ((type == Input_Types.POINTER || type == Input_Types.TOUCHPAD) &&
+                    if ((type == InputTypes.POINTER || type == InputTypes.TOUCHPAD) &&
                         obj.get_member ("libinput") ? .get_object ()
                         ? .has_member ("accel_speed") == false) {
                         continue;
@@ -149,15 +149,15 @@ namespace SwaySettings {
                     return true;
                 }
             }
-            device = new Input_Device ("", input_type);
+            device = new InputDevice ("", input_type);
             return false;
         }
 
-        Input_Device get_device_settings (Json.Object ? obj, Input_Types type) {
-            Input_Device device = new Input_Device (
+        InputDevice get_device_settings (Json.Object ? obj, InputTypes type) {
+            InputDevice device = new InputDevice (
                 obj.get_string_member ("identifier"), type);
             switch (type) {
-                case Input_Types.KEYBOARD:
+                case InputTypes.KEYBOARD:
                     // xkb_layout_names
                     device.data.xkb_layout_names.clear ();
                     if (obj.has_member ("xkb_layout_names")) {
@@ -174,15 +174,15 @@ namespace SwaySettings {
                         }
                     }
                     break;
-                case Input_Types.POINTER:
-                case Input_Types.TOUCHPAD:
+                case InputTypes.POINTER:
+                case InputTypes.TOUCHPAD:
                     unowned Json.Node ? lib = obj.get_member ("libinput");
                     if (lib == null
                         || lib.get_node_type () != Json.NodeType.OBJECT) {
                         break;
                     }
-                    device.data = (Input_Data) Json.gobject_deserialize (
-                        typeof (Input_Data), lib);
+                    device.data = (InputData) Json.gobject_deserialize (
+                        typeof (InputData), lib);
 
                     // Get scroll factor
                     unowned Json.Node ? node = obj.get_member ("scroll_factor");
@@ -201,14 +201,14 @@ namespace SwaySettings {
             ipc.run_command (str);
             string file_name;
             switch (device.input_type) {
-                case Input_Types.POINTER :
-                    file_name = Strings.settings_folder_input_pointer;
+                case InputTypes.POINTER :
+                    file_name = Strings.SETTINGS_FOLDER_INPUT_POINTER;
                     break;
-                case Input_Types.TOUCHPAD:
-                    file_name = Strings.settings_folder_input_touchpad;
+                case InputTypes.TOUCHPAD:
+                    file_name = Strings.SETTINGS_FOLDER_INPUT_TOUCHPAD;
                     break;
-                case Input_Types.KEYBOARD:
-                    file_name = Strings.settings_folder_input_keyboard;
+                case InputTypes.KEYBOARD:
+                    file_name = Strings.SETTINGS_FOLDER_INPUT_KEYBOARD;
                     break;
                 default:
                     return;
@@ -245,7 +245,7 @@ namespace SwaySettings {
 
         // scroll_factor
         public Gtk.Widget get_scroll_factor () {
-            var row = new List_Slider ("Scroll Factor",
+            var row = new ListSlider ("Scroll Factor",
                                        device.scroll_factor,
                                        0.0, 10, 1,
                                        (slider) => {
@@ -262,7 +262,7 @@ namespace SwaySettings {
 
         // natural_scroll
         public Gtk.Widget get_natural_scroll () {
-            return new List_Switch ("Natural Scrolling",
+            return new ListSwitch ("Natural Scrolling",
                                     device.data.natural_scroll.to_bool (),
                                     (value) => {
                 device.data.natural_scroll = BoolEnum.from_bool (value);
@@ -273,11 +273,11 @@ namespace SwaySettings {
 
         // accel_profile
         public Gtk.Widget get_accel_profile () {
-            return new List_Combo_Enum ("Acceleration Profile",
+            return new ListComboEnum ("Acceleration Profile",
                                         device.data.accel_profile,
-                                        typeof (Accel_Profiles),
+                                        typeof (AccelProfiles),
                                         (index) => {
-                var profile = (Accel_Profiles) index;
+                var profile = (AccelProfiles) index;
                 device.data.accel_profile = profile;
                 write_new_settings (@"input type:$(device.input_type.parse ()) accel_profile $(profile.parse())");
             });
@@ -285,7 +285,7 @@ namespace SwaySettings {
 
         // pointer_accel
         public Gtk.Widget get_pointer_accel () {
-            var row = new List_Slider ("Pointer Acceleration",
+            var row = new ListSlider ("Pointer Acceleration",
                                        device.data.accel_speed,
                                        -1.0, 1.0, 0.1,
                                        (slider) => {
@@ -301,7 +301,7 @@ namespace SwaySettings {
 
         // Disable while typing
         public Gtk.Widget get_dwt () {
-            return new List_Switch ("Disable While Typing",
+            return new ListSwitch ("Disable While Typing",
                                     device.data.dwt.to_bool (),
                                     (value) => {
                 device.data.dwt = BoolEnum.from_bool (value);
@@ -312,7 +312,7 @@ namespace SwaySettings {
 
         // Disable on external mouse
         public Gtk.Widget get_state_widget () {
-            return new List_Combo_Enum ("State",
+            return new ListComboEnum ("State",
                                         device.data.send_events,
                                         typeof (Events),
                                         (index) => {
@@ -324,7 +324,7 @@ namespace SwaySettings {
 
         // Tap to click
         public Gtk.Widget get_tap () {
-            return new List_Switch ("Tap to Click",
+            return new ListSwitch ("Tap to Click",
                                     device.data.tap.to_bool (),
                                     (value) => {
                 device.data.tap = BoolEnum.from_bool (value);
@@ -335,11 +335,11 @@ namespace SwaySettings {
 
         // Click method
         public Gtk.Widget get_click_method () {
-            return new List_Combo_Enum ("Click Method",
+            return new ListComboEnum ("Click Method",
                                         device.data.click_method,
-                                        typeof (Click_Methods),
+                                        typeof (ClickMethods),
                                         (index) => {
-                var profile = (Click_Methods) index;
+                var profile = (ClickMethods) index;
                 device.data.click_method = profile;
                 write_new_settings (@"input type:$(device.input_type.parse ()) click_method $(profile.parse())");
             });

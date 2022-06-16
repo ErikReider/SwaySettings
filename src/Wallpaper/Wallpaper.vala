@@ -30,7 +30,7 @@ namespace Wallpaper {
         public const ScaleModes DEFAULT_MODE = ScaleModes.FILL;
         public const string DEFAULT_COLOR = "#FFFFFF";
 
-        static string DEFAULT_PATH;
+        static string default_path;
 
         string output;
         string path;
@@ -38,10 +38,10 @@ namespace Wallpaper {
         string color;
 
         public Config () {
-            DEFAULT_PATH = Path.build_filename (Environment.get_user_cache_dir (), "wallpaper");
+            default_path = Path.build_filename (Environment.get_user_cache_dir (), "wallpaper");
 
             output = DEFAULT_OUTPUT;
-            path = DEFAULT_PATH;
+            path = default_path;
             scale_mode = DEFAULT_MODE;
             color = DEFAULT_COLOR;
         }
@@ -75,7 +75,7 @@ namespace Wallpaper {
             Config config = Config ();
             foreach (Config cfg in configs) {
                 if (cfg.output != DEFAULT_OUTPUT) config.output = cfg.output;
-                if (cfg.path != DEFAULT_PATH) config.path = cfg.path;
+                if (cfg.path != default_path) config.path = cfg.path;
                 if (cfg.scale_mode != DEFAULT_MODE) config.scale_mode = cfg.scale_mode;
                 if (cfg.color != DEFAULT_COLOR) config.color = cfg.color;
             }
@@ -175,7 +175,7 @@ namespace Wallpaper {
                     if (start == -1) continue;
                     // Add a new list if this is the first iteration
                     if (seperated.length - 1 != start) {
-                        var list = new Array<string>();
+                        var list = new Array<string> ();
                         list.append_val (prog_name);
                         seperated.append_val (list);
                     }
@@ -185,7 +185,7 @@ namespace Wallpaper {
                 }
             } else {
                 // No monitor arg provided. All args should be parsed as default config
-                var list = new Array<string>();
+                var list = new Array<string> ();
                 list.append_val (prog_name);
                 foreach (string arg in args) list.append_val (arg);
                 seperated.append_val (list);

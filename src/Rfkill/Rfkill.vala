@@ -19,8 +19,8 @@ namespace Rfkill {
 
         public Rfkill (RfKillType rfkill_type) {
             this.rfkill_type = rfkill_type;
-            this.devices = new HashTable<uint32, Device>(direct_hash,
-                                                         direct_equal);
+            this.devices = new HashTable<uint32, Device> (direct_hash,
+                                                          direct_equal);
 
             file_descriptor = Posix.open ("/dev/rfkill",
                                           Posix.O_RDWR | Posix.O_NONBLOCK);
