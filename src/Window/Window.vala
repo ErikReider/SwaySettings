@@ -139,22 +139,23 @@ namespace SwaySettings {
 
             SettingsCategory[] items = {
                 SettingsCategory ("Desktop", {
-                    SettingsItem ("preferences-desktop-wallpaper", PageType.WALLPAPER, "wallpaper"),
-                    SettingsItem ("preferences-desktop-theme", PageType.APPEARANCE, "appearance"),
+                    SettingsItem ("preferences-desktop-wallpaper-symbolic",
+                                  PageType.WALLPAPER, "wallpaper"),
+                    SettingsItem ("applications-graphics-symbolic", PageType.APPEARANCE, "appearance"),
 
-                    SettingsItem ("applications-other", PageType.STARTUP_APPS, "startup-apps"),
+                    SettingsItem ("application-x-executable-symbolic", PageType.STARTUP_APPS, "startup-apps"),
                     SettingsItem ("preferences-other", PageType.DEFAULT_APPS, "default-apps"),
                     // SettingsItem ("mail-unread", PageType.SWAYNC, "swaync", !Functions.is_swaync_installed ()),
                 }),
                 SettingsCategory ("Hardware", {
                     SettingsItem ("bluetooth-symbolic", PageType.BLUETOOTH, "bluetooth"),
                     SettingsItem ("audio-speakers-symbolic", PageType.SOUND, "sound"),
-                    SettingsItem ("input-keyboard", PageType.KEYBOARD, "keyboard"),
-                    SettingsItem ("input-mouse", PageType.MOUSE, "mouse"),
-                    SettingsItem ("input-touchpad", PageType.TRACKPAD, "trackpad"),
+                    SettingsItem ("preferences-desktop-keyboard-symbolic", PageType.KEYBOARD, "keyboard"),
+                    SettingsItem ("input-mouse-symbolic", PageType.MOUSE, "mouse"),
+                    SettingsItem ("input-touchpad-symbolic", PageType.TRACKPAD, "trackpad"),
                 }),
                 SettingsCategory ("Administration", {
-                    SettingsItem ("system-users", PageType.USERS, "users"),
+                    SettingsItem ("system-users-symbolic", PageType.USERS, "users"),
                 }),
             };
 
