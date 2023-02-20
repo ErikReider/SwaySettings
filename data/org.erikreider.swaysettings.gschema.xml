@@ -4,17 +4,30 @@
 		<key name="wallpaper-path" type="s">
 			<default>""</default>
 			<summary>Selected Wallpaper Path</summary>
-			<description>This is the path pointing torwards the selected wallpaper</description>
+			<description>
+				This is the path pointing torwards the selected wallpaper
+			</description>
+		</key>
+		<key name="user-wallpapers" type="as">
+			<default>[]</default>
+			<summary>User specified wallpapers</summary>
+			<description>
+				Directories to override the default avatar faces installed by gnome-control-center.
+			</description>
 		</key>
 		<key name="theme-dark" type="s">
 			<default>"Adwaita-dark"</default>
 			<summary>Selected Dark GTK Theme</summary>
-			<description>This is the theme to use when color-scheme is set to dark mode</description>
+			<description>
+				This is the theme to use when color-scheme is set to dark mode
+			</description>
 		</key>
 		<key name="theme-light" type="s">
 			<default>"Adwaita"</default>
 			<summary>Selected Dark GTK Theme</summary>
-			<description>This is the theme to use when color-scheme is set to dark mode</description>
+			<description>
+				This is the theme to use when color-scheme is set to dark mode
+			</description>
 		</key>
 	</schema>
 </schemalist>

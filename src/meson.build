@@ -1,5 +1,6 @@
 swaysettings_sources = [
   'main.vala',
+  'constants.vala',
   'Widgets/ThumbnailImage/ThumbnailImage.vala',
   'Widgets/OrderListSelector/OrderListSelector.vala',
   'Widgets/KeyboardInputSelector/KeyboardInputSelector.vala',

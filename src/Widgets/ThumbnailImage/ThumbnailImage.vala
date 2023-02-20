@@ -5,6 +5,9 @@ namespace SwaySettings {
         public Wallpaper wallpaper;
         public int width;
         public int height;
+        public bool have_remove_button = false;
+
+        public signal void on_remove_click (Wallpaper wp);
 
         construct {
             this.halign = Gtk.Align.CENTER;
@@ -15,21 +18,22 @@ namespace SwaySettings {
                 valign = Gtk.Align.FILL,
                 halign = Gtk.Align.FILL,
             };
-            add (image);
-            show_all ();
         }
 
         public ThumbnailImage (Wallpaper wallpaper,
-            int height,
-            int width,
-            bool stretch = false,
-            int margin = 8) {
+                               int height,
+                               int width,
+                               bool stretch = false,
+                               int margin = 8) {
             this.wallpaper = wallpaper;
             this.width = width;
             this.height = height;
             set_request ();
 
             this.margin = margin;
+
+            add (image);
+            show_all ();
 
             ulong realize_handler = 0;
             realize_handler = image.draw.connect (() => {
@@ -44,13 +48,34 @@ namespace SwaySettings {
                                      int height,
                                      int width,
                                      ref bool checked_folder_exists,
+                                     bool have_remove_button,
                                      int margin = 8) {
             this.wallpaper = wallpaper;
             this.width = width;
             this.height = height;
+            this.have_remove_button = have_remove_button;
             set_request ();
 
             this.margin = margin;
+
+            if (have_remove_button) {
+                var overlay = new Gtk.Overlay ();
+                var button = new Gtk.Button.from_icon_name (
+                    "window-close-symbolic", Gtk.IconSize.BUTTON) {
+                    halign = Gtk.Align.END,
+                    valign = Gtk.Align.START,
+                    relief = Gtk.ReliefStyle.NONE,
+                };
+                button.get_style_context ().add_class ("circular");
+                button.get_style_context ().add_class ("img-remove-button");
+                button.clicked.connect (() => on_remove_click (this.wallpaper));
+                add (overlay);
+                overlay.add (image);
+                overlay.add_overlay (button);
+            } else {
+                add (image);
+            }
+            show_all ();
 
             if (!checked_folder_exists) {
                 check_folder_exist ();
@@ -98,8 +123,7 @@ namespace SwaySettings {
             cr.clip ();
             cr.paint ();
 
-            image.draw (cr);
-            return true;
+            return base.draw (cr);
         }
 
         private void check_folder_exist () {
