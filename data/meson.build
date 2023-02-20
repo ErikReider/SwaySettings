@@ -38,6 +38,12 @@ if compile_schemas.found()
   test('Validate schema file', compile_schemas,
     args: ['--strict', '--dry-run', meson.current_source_dir()]
   )
+
+  if get_option('use-global-gschema') == false
+    run_command(compile_schemas, ['--strict', meson.current_source_dir()])
+  else
+    add_project_arguments('-D', 'USE_GLOBAL_GSCHEMA', language: 'vala')
+  endif
 endif
 
 subdir('icons')

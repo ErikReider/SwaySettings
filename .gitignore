@@ -2,6 +2,7 @@ build
 *.ui~
 *.ui#
 .directory
+gschemas.compiled
 
 SwaySettings
 swaysettings-*
