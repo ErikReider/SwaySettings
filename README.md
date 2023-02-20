@@ -16,24 +16,6 @@ A GUI for configuring your sway desktop
 
 ## Install
 
-### Arch
-
-The package is available on the 
-[AUR](https://aur.archlinux.org/packages/swaysettings-git/) \
-Or:
-
-``` zsh
-makepkg -si
-```
-
-### Other Distros
-
-``` zsh
-meson build
-ninja -C build
-meson install -C build
-```
-
 Add these lines to the end of your main sway config file
 
 ``` ini
@@ -50,4 +32,44 @@ exec_always sway-wallpaper -i ~/.cache/wallpaper -m fill
 # Start all of the non-hidden applications in ~/.config/autostart
 # This executable is included in the swaysettings package
 exec sway-autostart
+```
+
+### Arch
+
+The package is available on the 
+[AUR](https://aur.archlinux.org/packages/swaysettings-git/) \
+Or:
+
+``` zsh
+makepkg -si
+```
+
+### Other Distros
+
+#### Needed Dependencies (Package names on Arch)
+
+- vala
+- meson
+- git
+- gtk3
+- gtk-layer-shell
+- libhandy
+- glib2
+- gobject-introspection
+- libgee
+- json-glib
+- granite
+- libxml2
+- xkeyboard-config
+- accountsservice
+- gtk-layer-shell
+- libpulse
+- bluez
+
+#### Build
+
+``` zsh
+meson build
+ninja -C build
+meson install -C build
 ```
