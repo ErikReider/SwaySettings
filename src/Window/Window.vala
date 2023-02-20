@@ -186,7 +186,7 @@ namespace SwaySettings {
                 };
                 flow_box.child_activated.connect ((child) => {
                     foreach (var c in page_box.get_children ()) {
-                        if (c != null) page_box.remove (c);
+                        if (c != null) c.destroy ();
                     }
                     Item item = (Item) child;
                     if (item == null) return;

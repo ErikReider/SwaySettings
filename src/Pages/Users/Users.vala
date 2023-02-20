@@ -135,13 +135,14 @@ namespace SwaySettings {
             add_button.clicked.connect (() => {
                 var image_chooser = new Gtk.FileChooserNative (
                     "Select Image",
-                    (Gtk.Window)get_toplevel (),
+                    (Gtk.Window) get_toplevel (),
                     Gtk.FileChooserAction.OPEN,
                     "_Open",
                     "_Cancel");
                 // Only show images
                 var filter = new Gtk.FileFilter ();
                 filter.add_mime_type ("image/*");
+                filter.add_pixbuf_formats ();
                 image_chooser.set_filter (filter);
                 // Run and get result
                 int res = image_chooser.run ();
@@ -150,10 +151,13 @@ namespace SwaySettings {
                     if (path != null) {
                         Image img = Image ();
                         int w, h;
-                        Gdk.Pixbuf.get_file_info (path, out w, out h);
-                        img.path = path;
-                        img.correct_size = w == 96 && h == 96;
-                        set_user_img (img);
+                        Gdk.PixbufFormat ? format = Gdk.Pixbuf.get_file_info (
+                            path, out w, out h);
+                        if (format != null) {
+                            img.path = path;
+                            img.correct_size = w == 96 && h == 96;
+                            set_user_img (img);
+                        }
                     }
                 }
                 image_chooser.destroy ();
@@ -183,7 +187,7 @@ namespace SwaySettings {
                 string path = Path.build_filename (file.get_path (),
                                                    info.get_name ());
                 switch (info.get_file_type ()) {
-                        case FileType.DIRECTORY :
+                        case FileType.DIRECTORY:
                             // Limit the search depth
                             if (depth < max_depth) {
                                 depth++;

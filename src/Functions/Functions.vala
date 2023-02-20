@@ -118,6 +118,10 @@ namespace SwaySettings {
                     string val = value.get_string ();
                     settings.set_string (name, val);
                     return val;
+                case "as":
+                    string[] val = value.get_strv ();
+                    settings.set_strv (name, val);
+                    return string.joinv (", ", val);
             }
             return null;
         }
@@ -128,7 +132,10 @@ namespace SwaySettings {
             if (!settings.settings_schema.has_key (name)) return null;
             var v_type = settings.settings_schema.get_key (name).get_value_type ();
             if (!v_type.equal (type)) {
-                stderr.printf ("Set GSettings error: Set value type not equal to gsettings type\n");
+                stderr.printf (
+                    "Set GSettings error:" +
+                    " Set value type \"%s\" not equal to gsettings type \"%s\"\n",
+                    type, v_type);
                 return null;
             }
             return settings.get_value (name);

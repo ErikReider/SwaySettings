@@ -81,14 +81,14 @@ namespace SwaySettings {
         private void set_self_theme (string theme) {
             ThemeStyle style = get_color_scheme ();
             string name = style == ThemeStyle.DARK
-                ? "theme-dark" : "theme-light";
+                ? Constants.SETTINGS_THEME_DARK : Constants.SETTINGS_THEME_LIGHT;
             Functions.set_gsetting (self_settings, name, theme);
         }
 
         private string ? get_theme_for_style () {
             ThemeStyle style = get_color_scheme ();
             string name = style == ThemeStyle.DARK
-                ? "theme-dark" : "theme-light";
+                ? Constants.SETTINGS_THEME_DARK : Constants.SETTINGS_THEME_LIGHT;
             return Functions.get_gsetting (self_settings,
                                            name,
                                            VariantType.STRING) ? .get_string ();
@@ -99,8 +99,8 @@ namespace SwaySettings {
                 case "color-scheme":
                     set_style_from_settings ();
                     break;
-                case "theme-dark":
-                case "theme-light":
+                case Constants.SETTINGS_THEME_DARK:
+                case Constants.SETTINGS_THEME_LIGHT:
                 case "gtk-theme":
                 case "icon-theme":
                 case "cursor-theme":
