@@ -6,6 +6,10 @@
 @define-color borders-light rgba(0, 0, 0, 0.12);
 @define-color borders-dark rgba(255, 255, 255, 0.15);
 
+.thumbnail-image picture {
+  border-radius: 9px;
+}
+
 #preview .window {
   border-radius: 6px;
   box-shadow: 0 1px 4px 1px alpha(black, 0.13),

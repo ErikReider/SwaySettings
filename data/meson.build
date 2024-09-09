@@ -47,3 +47,11 @@ if compile_schemas.found()
 endif
 
 subdir('icons')
+
+gnome = import('gnome')
+
+swaysettings_sources += gnome.compile_resources(
+  'swaysettings-resources',
+  'swaysettings.gresource.xml',
+  c_name: 'sway_settings',
+)

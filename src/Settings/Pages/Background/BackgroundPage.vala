@@ -43,8 +43,8 @@ namespace SwaySettings {
              .disconnect (on_user_wallpapers_change);
         }
 
-        public BackgroundPage (SettingsItem item, Hdy.Deck deck, IPC ipc) {
-            base (item, deck);
+        public BackgroundPage (SettingsItem item, Adw.NavigationPage page, IPC ipc) {
+            base (item, page);
             this.ipc = ipc;
         }
 
@@ -56,28 +56,26 @@ namespace SwaySettings {
                                                 PREVIEW_IMAGE_WIDTH) {
                 halign = Gtk.Align.CENTER,
                 valign = Gtk.Align.START,
-                expand = false,
+                vexpand = false,
+                hexpand = false,
                 width_request = PREVIEW_IMAGE_WIDTH,
                 height_request = PREVIEW_IMAGE_HEIGHT,
             };
-            content_box.add (preview_image);
-
-            preview_image.refresh_image ();
+            content_box.append (preview_image);
 
             Gtk.Box wallpaper_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 16);
-            content_box.add (wallpaper_box);
+            content_box.append (wallpaper_box);
 
             // User Wallpapers
-            Hdy.PreferencesGroup user_wallpapers = get_wallpaper_container (
+            Adw.PreferencesGroup user_wallpapers = get_wallpaper_container (
                 "User Wallpapers", get_user_wallpapers (), out user_flow_box, true);
-            wallpaper_box.add (user_wallpapers);
+            wallpaper_box.append (user_wallpapers);
 
             // System Wallpapers
-            Hdy.PreferencesGroup sys_wallpapers = get_wallpaper_container (
+            Adw.PreferencesGroup sys_wallpapers = get_wallpaper_container (
                 "System Wallpapers", get_system_wallpapers (), out sys_flow_box);
-            wallpaper_box.add (sys_wallpapers);
+            wallpaper_box.append (sys_wallpapers);
 
-            content_box.show_all ();
             return content_box;
         }
 
@@ -88,19 +86,26 @@ namespace SwaySettings {
 
         private void refresh_selected_wallpaper (string selected_path) {
             // string selected_path = preview_image.wallpaper.path;
-            preview_image.refresh_image ();
+            preview_image.refresh_image.begin ();
+            // Change the selected row
             Gtk.FlowBox[] boxes = { user_flow_box, sys_flow_box };
             foreach (Gtk.FlowBox flow_box in boxes) {
                 if (flow_box == null) continue;
                 flow_box.unselect_all ();
-                var children = (List<weak Gtk.FlowBoxChild>) flow_box.get_children ();
-                foreach (Gtk.FlowBoxChild child in children) {
+                unowned Gtk.Widget ? widget = flow_box.get_first_child ();
+                if (widget == null) {
+                    continue;
+                }
+                do {
+                    Gtk.FlowBoxChild child = (Gtk.FlowBoxChild) widget;
                     ThumbnailImage img = (ThumbnailImage) child.get_child ();
                     if (selected_path == img.wallpaper.path) {
                         flow_box.select_child (child);
-                        continue;
+                        break;
                     }
-                }
+
+                    widget = widget.get_next_sibling ();
+                } while (widget != null && widget != flow_box.get_first_child ());
             }
         }
 
@@ -136,33 +141,39 @@ namespace SwaySettings {
         }
 
         private void add_user_wallpaper () {
-            var image_chooser = new Gtk.FileChooserNative (
-                "Select Image",
-                (Gtk.Window) get_toplevel (),
-                Gtk.FileChooserAction.OPEN,
-                "_Open",
-                "_Cancel");
-            // Only show images
+            var image_chooser = new Gtk.FileDialog ();
+            image_chooser.set_title ("Select Image");
+            image_chooser.accept_label = "_Open";
+            // // Only show images
             var filter = new Gtk.FileFilter ();
             filter.add_mime_type ("image/*");
             filter.add_pixbuf_formats ();
-            image_chooser.set_filter (filter);
-            // Run and get result
-            int res = image_chooser.run ();
-            string path = image_chooser.get_filename ();
-            if (res == Gtk.ResponseType.ACCEPT && path != null) {
-                int w, h;
-                Gdk.PixbufFormat ? format = Gdk.Pixbuf.get_file_info (
-                    path, out w, out h);
-                string[] paths = get_user_wallpaper_paths ();
-                if (format != null && !(path in paths)) {
-                    paths += path;
-                    Functions.set_gsetting (self_settings,
-                                            Constants.SETTINGS_USER_WALLPAPERS,
-                                            new Variant.strv (paths));
+            image_chooser.set_default_filter (filter);
+
+            image_chooser.open.begin ((Gtk.Window) get_root (), null, (obj, result) => {
+                if (obj == null) {
+                    return;
                 }
-            }
-            image_chooser.destroy ();
+                Gtk.FileDialog dialog = (Gtk.FileDialog) obj;
+                try {
+                    File file = dialog.open.end (result);
+                    string ? path = file.get_path ();
+                    if (path != null) {
+                        int w, h;
+                        Gdk.PixbufFormat ? format = Gdk.Pixbuf.get_file_info (
+                            path, out w, out h);
+                        string[] paths = get_user_wallpaper_paths ();
+                        if (format != null && !(path in paths)) {
+                            paths += path;
+                            Functions.set_gsetting (self_settings,
+                                                    Constants.SETTINGS_USER_WALLPAPERS,
+                                                    new Variant.strv (paths));
+                        }
+                    }
+                } catch (Error e) {
+                    error (e.message);
+                }
+            });
         }
 
         private void remove_user_wallpaper (Wallpaper wallpaper) {
@@ -180,31 +191,35 @@ namespace SwaySettings {
             }
         }
 
-        Hdy.PreferencesGroup get_wallpaper_container (string title,
+        Adw.PreferencesGroup get_wallpaper_container (string title,
                                                       Wallpaper[] wallpapers,
                                                       out Gtk.FlowBox ? flow_box,
                                                       bool add_button = false) {
-            var group = new Hdy.PreferencesGroup ();
+            var group = new Adw.PreferencesGroup ();
             group.title = title;
 
             // Adds a Add Image Button
             if (add_button) {
-                var add_row = new Hdy.PreferencesRow () {
+                var add_row = new Adw.PreferencesRow () {
                     activatable = false,
                     can_focus = false,
                 };
                 var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 12) {
                     halign = Gtk.Align.CENTER,
-                    margin = SPACING,
+                    margin_top = SPACING,
+                    margin_bottom = SPACING,
+                    margin_start = SPACING,
+                    margin_end = SPACING,
                 };
                 var button = new Gtk.Button.with_label ("Add Wallpaper");
+                button.add_css_class ("pill");
                 button.clicked.connect (this.add_user_wallpaper);
-                box.add (button);
-                add_row.add (box);
+                box.append (button);
+                add_row.set_child (box);
                 group.add (add_row);
             }
 
-            var row = new Hdy.PreferencesRow () {
+            var row = new Adw.PreferencesRow () {
                 activatable = false,
                 can_focus = false,
             };
@@ -215,17 +230,18 @@ namespace SwaySettings {
                     sensitive = false,
                     vexpand = true,
                     valign = Gtk.Align.CENTER,
-                    margin = SPACING,
+                    margin_top = SPACING,
+                    margin_bottom = SPACING,
+                    margin_start = SPACING,
+                    margin_end = SPACING,
                 };
-                var img = new Gtk.Image.from_icon_name (
-                    "image-missing-symbolic",
-                    Gtk.IconSize.INVALID) {
+                var img = new Gtk.Image.from_icon_name ("image-missing-symbolic") {
                     pixel_size = 96,
                     opacity = 0.75,
                 };
-                box.add (img);
-                box.add (new Gtk.Label ("No wallpapers found..."));
-                row.add (box);
+                box.append (img);
+                box.append (new Gtk.Label ("No wallpapers found..."));
+                row.set_child (box);
                 flow_box = null;
                 return group;
             }
@@ -234,7 +250,10 @@ namespace SwaySettings {
                 max_children_per_line = 8,
                 min_children_per_line = 1,
                 homogeneous = true,
-                margin = SPACING,
+                margin_top = SPACING,
+                margin_bottom = SPACING,
+                margin_start = SPACING,
+                margin_end = SPACING,
                 activate_on_single_click = true,
                 selection_mode = Gtk.SelectionMode.SINGLE,
                 row_spacing = SPACING,
@@ -249,7 +268,7 @@ namespace SwaySettings {
                     refresh_selected_wallpaper (img.wallpaper.path);
                 }
             });
-            row.add (flow_box);
+            row.set_child (flow_box);
 
             add_images.begin (wallpapers, flow_box, add_button);
             return group;
@@ -272,17 +291,18 @@ namespace SwaySettings {
                     0);
                 item.on_remove_click.connect (remove_user_wallpaper);
                 var f_child = new Gtk.FlowBoxChild () {
+                    vexpand = true,
+                    hexpand = true,
                     valign = Gtk.Align.CENTER,
                     halign = Gtk.Align.CENTER,
                 };
-                f_child.add (item);
-                f_child.show_all ();
-                f_child.get_style_context ().add_class ("background-flowbox-child");
+                f_child.set_child (item);
+                f_child.add_css_class ("background-flowbox-child");
 
-                flow_box.add (f_child);
+                flow_box.append (f_child);
                 if (wp.path == path) flow_box.select_child (f_child);
-                Idle.add (add_images.callback);
-                yield;
+                // Idle.add (add_images.callback);
+                // yield;
             }
         }
 
@@ -303,6 +323,9 @@ namespace SwaySettings {
                     FileAttribute.THUMBNAIL_IS_VALID);
                 wp.thumbnail_path = thumb_path;
                 wp.thumbnail_valid = thumb_valid;
+                if (thumb_path == null) {
+                    thumb_valid = false;
+                }
             } catch (Error e) {
                 stderr.printf ("Error: %s\n", e.message);
                 wp.thumbnail_valid = false;

@@ -11,7 +11,16 @@ namespace SwaySettings {
             try {
                 var directory = File.new_for_path (path);
                 if (!directory.query_exists ()) return 1;
-                var enumerator = directory.enumerate_children (FileAttribute.STANDARD_NAME, 0);
+
+                string[] attributes = {
+                    FileAttribute.STANDARD_NAME,
+                    FileAttribute.STANDARD_TYPE,
+                    FileAttribute.STANDARD_IS_BACKUP,
+                    FileAttribute.STANDARD_IS_SYMLINK,
+                    FileAttribute.STANDARD_IS_HIDDEN,
+                };
+                var enumerator = directory.enumerate_children (
+                    string.joinv (",", attributes), 0);
                 FileInfo file_prop;
                 while ((file_prop = enumerator.next_file ()) != null) {
                     func (file_prop, directory);
@@ -146,6 +155,7 @@ namespace SwaySettings {
             File file = File.new_for_path (p);
             string path = file.get_uri ();
             string checksum = Checksum.compute_for_string (ChecksumType.MD5, path, path.length);
+            // Only use large thumbnails to match the widget size
             string checksum_path = "%s/thumbnails/large/%s.png".printf (
                 Environment.get_user_cache_dir (), checksum);
 

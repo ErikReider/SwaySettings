@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/org/erikreider/swaysettings">
+      <file compressed="true">style.css</file>
+
+      <!-- <file>ui/Widgets/OrderListSelector/OrderListSelector.ui</file> -->
+      <!-- <file>ui/Widgets/KeyboardInputSelector/KeyboardInputSelector.ui</file> -->
+      <!-- <file>ui/Item/Item.ui</file> -->
+      <file>ui/StartupAppsItem.ui</file>
+      <file>ui/Users.ui</file>
+      <file>ui/UserListItem.ui</file>
+      <!-- <file>ui/Pages/Pulse/PulseContent.ui</file> -->
+      <!-- <file>ui/Pages/Pulse/PulseSinkInput.ui</file> -->
+      <!-- <file>ui/Pages/Bluetooth/BluetoothDeviceRow.ui</file> -->
+      <!-- <file>ui/Pages/Bluetooth/Bluez/BluezPairDialog.ui</file> -->
+      <!-- <file>ui/Pages/Themes/ThemesPage.ui</file> -->
+      <!-- <file>ui/Pages/Themes/ThemePreviewItem.ui</file> -->
+  </gresource>
+</gresources>

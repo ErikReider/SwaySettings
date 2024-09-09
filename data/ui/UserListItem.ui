@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.90.4 -->
+<interface>
+  <requires lib="gtk" version="4.12"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <template class="SwaySettingsUserListItem" parent="GtkListBoxRow">
+    <child>
+      <object class="GtkBox" id="box">
+        <property name="spacing">12</property>
+        <property name="valign">center</property>
+        <child>
+          <object class="AdwAvatar" id="avatar">
+            <property name="size">48</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="hexpand">True</property>
+            <property name="orientation">vertical</property>
+            <property name="valign">center</property>
+            <child>
+              <object class="GtkLabel" id="name_label">
+                <property name="xalign">0.0</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="username_label">
+                <property name="xalign">0.0</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

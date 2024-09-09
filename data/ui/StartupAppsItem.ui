@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.90.4 -->
+<interface>
+  <requires lib="gtk" version="4.12"/>
+  <template class="SwaySettingsStartupAppsItem" parent="GtkListBoxRow">
+    <property name="activatable">False</property>
+    <property name="child">
+      <object class="GtkBox">
+        <child>
+          <object class="GtkBox">
+            <property name="hexpand">True</property>
+            <property name="valign">center</property>
+            <child>
+              <object class="GtkImage" id="image">
+                <property name="icon-name">item-missing-symbolic</property>
+                <property name="margin-bottom">4</property>
+                <property name="margin-end">4</property>
+                <property name="margin-start">4</property>
+                <property name="margin-top">4</property>
+                <property name="pixel-size">96</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox">
+                <property name="hexpand">True</property>
+                <property name="orientation">vertical</property>
+                <property name="valign">center</property>
+                <child>
+                  <object class="GtkLabel" id="title">
+                    <property name="css-classes">title-3</property>
+                    <property name="ellipsize">end</property>
+                    <property name="xalign">0.0</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="subtitle">
+                    <property name="ellipsize">end</property>
+                    <property name="xalign">0.0</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton" id="button">
+            <property name="css-classes">circular</property>
+            <property name="halign">end</property>
+            <property name="icon-name">window-close-symbolic</property>
+            <property name="margin-bottom">8</property>
+            <property name="margin-end">8</property>
+            <property name="margin-start">8</property>
+            <property name="margin-top">8</property>
+            <property name="valign">center</property>
+          </object>
+        </child>
+      </object>
+    </property>
+    <property name="selectable">False</property>
+  </template>
+</interface>
