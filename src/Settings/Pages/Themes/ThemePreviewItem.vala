@@ -44,49 +44,42 @@ namespace SwaySettings {
         }
     }
 
-    [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/Themes/ThemePreviewItem.ui")]
-    public class ThemePreviewItem : Gtk.Box {
-        [GtkChild]
-        unowned Gtk.Label label;
-
-        [GtkChild]
-        unowned Gtk.RadioButton button;
-
-        [GtkChild]
-        unowned Gtk.Box box;
-
-        [GtkChild]
-        unowned Gtk.Overlay overlay;
-
-        [GtkChild]
-        unowned Gtk.Image background;
-
-        [GtkChild]
-        unowned Gtk.Fixed fixed;
+    public class ThemePreviewItem : Gtk.ToggleButton {
+        Gtk.Overlay overlay;
+        Gtk.Picture background;
+        Gtk.Fixed fixed;
 
         const int TINY_WINDOW_HEIGHT = 64;
         const int TINY_WINDOW_WIDTH = 90;
 
-        public SList<Gtk.RadioButton> group {
-            get {
-                return button.get_group ();
-            }
+        const int HEIGHT = 140;
+        const int WIDTH = 180;
+
+        public ThemeStyle theme_style;
+
+        construct {
+            width_request = WIDTH;
+            height_request = HEIGHT;
+            set_has_frame (false);
+
+            overlay = new Gtk.Overlay ();
+            set_child (overlay);
+
+            background = new Gtk.Picture ();
+            overlay.set_child (background);
+
+            fixed = new Gtk.Fixed ();
+            overlay.add_overlay (fixed);
         }
-
-        public bool active {
-            get {
-                return button.get_active ();
-            }
-        }
-
-        ThemeStyle theme_style;
-
-        public signal void toggled (ThemeStyle style);
 
         public ThemePreviewItem (ThemeStyle style) {
             this.theme_style = style;
 
-            this.set_halign (Gtk.Align.CENTER);
+            set_halign (Gtk.Align.CENTER);
+
+            // Rounded corners
+            set_overflow (Gtk.Overflow.HIDDEN);
+            add_css_class ("theme-preview-item");
 
             // Add the fake floating windows
             fixed.put (get_tiny_window (false),
@@ -96,101 +89,37 @@ namespace SwaySettings {
                        20,
                        45);
 
-            ulong realize_handler = 0;
-            realize_handler = background.draw.connect (() => {
-                background.disconnect (realize_handler);
-                realize_handler = 0;
-                draw_background ();
-                return false;
-            });
-
-            box.draw.connect (box_draw);
-
-            label.set_text (theme_style.to_string ());
-
-            button.toggled.connect (() => {
-                if (!button.active) return;
-                toggled (theme_style);
-            });
-        }
-
-        public void set_toggled (bool state) {
-            button.set_active (state);
-        }
-
-        public void set_group (SList<Gtk.RadioButton> ? group) {
-            button.set_group (group);
+            draw_background ();
         }
 
         private void draw_background () {
-            int width = background.get_allocated_width ();
-            int height = background.get_allocated_height ();
-
-            Cairo.Surface surface = new Cairo.ImageSurface (
-                Cairo.Format.ARGB32, width, height);
-            Cairo.Context cr = new Cairo.Context (surface);
             try {
                 string big_path = "%s/wallpaper".printf (Environment.get_user_cache_dir ());
                 string path = Functions.generate_thumbnail (big_path);
                 var pixbuf = new Gdk.Pixbuf.from_file_at_scale (
-                    path, width, height, false);
-                Gdk.cairo_set_source_pixbuf (cr, pixbuf, 0, 0);
-                cr.paint ();
-
-                background.set_from_surface (surface);
+                    path, WIDTH, HEIGHT, false);
+                Gdk.Texture paintable = Gdk.Texture.for_pixbuf (pixbuf);
+                background.set_paintable (paintable);
                 return;
             } catch (Error e) {
                 stderr.printf (
                     "Could not find wallpaper, using greyscale background instead... %s\n",
                     e.message);
             }
-            // Use greyscale background if wallpaper is not found...
-            cr.rectangle (0, 0, width, height);
-            double value = theme_style == ThemeStyle.DARK ? 0.4 : 0.8;
-            cr.set_source_rgb (value, value, value);
-            cr.fill ();
-            background.set_from_surface (surface);
-        }
-
-        /**
-         * Act like the GTK4 overflow property.
-         * Makes it rounded and clips the content.
-         */
-        private bool box_draw (Cairo.Context cr) {
-            const double RADIUS = 9;
-            const double DEGREES = Math.PI / 180.0;
-            int width = box.get_allocated_width ();
-            int height = box.get_allocated_height ();
-
-            cr.new_sub_path ();
-            cr.arc (width - RADIUS, RADIUS, RADIUS, -90 * DEGREES, 0 * DEGREES);
-            cr.arc (width - RADIUS, height - RADIUS, RADIUS, 0 * DEGREES, 90 * DEGREES);
-            cr.arc (RADIUS, height - RADIUS, RADIUS, 90 * DEGREES, 180 * DEGREES);
-            cr.arc (RADIUS, RADIUS, RADIUS, 180 * DEGREES, 270 * DEGREES);
-            cr.close_path ();
-
-            cr.set_source_rgb (0.5, 0.5, 1);
-            cr.clip ();
-
-            overlay.draw (cr);
-            return true;
         }
 
         Gtk.Widget get_tiny_window (bool front) {
             var window = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
-            var style = window.get_style_context ();
-            style.add_class ("window");
-            style.add_class (theme_style.get_preview_class (front));
-            style.add_class (front ? "front" : "back");
+            window.add_css_class ("window");
+            window.add_css_class (theme_style.get_preview_class (front));
+            window.add_css_class (front ? "front" : "back");
 
             var header_bar = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
-            var header_style = header_bar.get_style_context ();
-            header_style.add_class ("header-bar");
-            header_style.add_class (theme_style.get_preview_class (front));
-            window.add (header_bar);
+            header_bar.add_css_class ("header-bar");
+            header_bar.add_css_class (theme_style.get_preview_class (front));
+            window.append (header_bar);
 
             window.set_size_request (TINY_WINDOW_WIDTH, TINY_WINDOW_HEIGHT);
-            window.show_all ();
             return window;
         }
     }

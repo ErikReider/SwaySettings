@@ -223,8 +223,8 @@ namespace SwaySettings {
                     return null;
                 case WALLPAPER:
                     return new BackgroundPage (item, content_page, ipc);
-                // case APPEARANCE:
-                //     return new ThemesPage (item, deck);
+                case APPEARANCE:
+                    return new ThemesPage (item, content_page);
                 case STARTUP_APPS:
                     return new StartupApps (item, content_page);
                 case DEFAULT_APPS:

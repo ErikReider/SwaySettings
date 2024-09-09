@@ -2,39 +2,60 @@ using Gee;
 
 namespace SwaySettings {
     public class ThemesPage : PageScroll {
-        ThemesPageContent content = new ThemesPageContent ();
+        Gtk.Box style_box;
+        Adw.Bin preferences_box;
 
-        public ThemesPage (SettingsItem item, Hdy.Deck deck) {
-            base (item, deck);
-        }
-
-        public override async void on_back (Hdy.Deck deck) {
-            content.on_back ();
-        }
-
-        public override Gtk.Widget set_child () {
-            return content;
-        }
-    }
-
-    [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/Themes/ThemesPage.ui")]
-    private class ThemesPageContent : Gtk.Box {
         private static Settings settings = new Settings ("org.gnome.desktop.interface");
-
-        [GtkChild]
-        private unowned Gtk.Box style_box;
-
-        [GtkChild]
-        private unowned Gtk.Box preferences_box;
 
         private const string DEFAULT_THEME = "Adwaita";
 
-        ThemePreviewItem preview_default = new ThemePreviewItem (ThemeStyle.DEFAULT);
-        ThemePreviewItem preview_dark = new ThemePreviewItem (ThemeStyle.DARK);
+        ThemePreviewItem preview_default;
+        ThemePreviewItem preview_dark;
 
         ulong self_settings_handler = 0;
 
-        public ThemesPageContent () {
+        public ThemesPage (SettingsItem item, Adw.NavigationPage page) {
+            base (item, page);
+        }
+
+        public override async void on_back (Adw.NavigationPage deck) {
+            if (self_settings_handler != 0) {
+                self_settings.disconnect (self_settings_handler);
+                self_settings_handler = 0;
+            }
+        }
+
+        public override Gtk.Widget set_child () {
+            Gtk.Box main_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 32);
+
+            // Style Header
+            Adw.PreferencesGroup group = new Adw.PreferencesGroup ();
+            main_box.append (group);
+            group.set_title ("Style");
+            Adw.PreferencesRow row = new Adw.PreferencesRow () {
+                activatable = false,
+                selectable = false,
+            };
+            group.add (row);
+            Adw.Clamp clamp = new Adw.Clamp () {
+                maximum_size = 600,
+                tightening_threshold = 400,
+                orientation = Gtk.Orientation.HORIZONTAL,
+            };
+            row.set_child (clamp);
+            style_box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 24) {
+                homogeneous = true,
+                margin_top = 16,
+                margin_bottom = 16,
+                margin_start = 16,
+                margin_end = 16,
+            };
+            clamp.set_child (style_box);
+
+            // GTK Options
+            preferences_box = new Adw.Bin ();
+            main_box.append (preferences_box);
+
             // Refresh all of the widgets when a value changes
             // This also gets called when ex gnome-tweaks changes a value
             settings.changed.connect ((s, str) => settings_changed (s, str));
@@ -42,26 +63,33 @@ namespace SwaySettings {
                 settings_changed (s, str);
             });
 
-            style_box.add (preview_default);
+            preview_default = new ThemePreviewItem (ThemeStyle.DEFAULT);
+            preview_dark = new ThemePreviewItem (ThemeStyle.DARK);
+            ThemePreviewItem previews[] = {
+                preview_default, preview_dark
+            };
+            foreach (ThemePreviewItem preview in previews) {
+                Gtk.Box box = new Gtk.Box (Gtk.Orientation.VERTICAL, 8);
+                style_box.append (box);
+
+                box.append (preview);
+
+                Gtk.Label label = new Gtk.Label (preview.theme_style.to_string ());
+                box.append (label);
+            }
             // Links the buttons so that only one button can be active
-            preview_dark.set_group (preview_default.group);
-            style_box.add (preview_dark);
+            preview_dark.set_group (preview_default);
 
             set_style_from_settings ();
 
             preview_default.toggled.connect (style_toggled);
             preview_dark.toggled.connect (style_toggled);
 
-            preferences_box.add (get_preferences ());
+            preferences_box.set_child (get_preferences ());
 
             sync_gtk_theme ();
-        }
 
-        public void on_back () {
-            if (self_settings_handler != 0) {
-                self_settings.disconnect (self_settings_handler);
-                self_settings_handler = 0;
-            }
+            return main_box;
         }
 
         private void sync_gtk_theme () {
@@ -105,10 +133,8 @@ namespace SwaySettings {
                 case "icon-theme":
                 case "cursor-theme":
                 case "enable-animations":
-                    foreach (var child in preferences_box.get_children ()) {
-                        if (child != null) preferences_box.remove (child);
-                    }
-                    preferences_box.add (get_preferences ());
+                    // Replace with new widgets. Too lazy to reload everything
+                    preferences_box.set_child (get_preferences ());
                     break;
             }
         }
@@ -123,22 +149,25 @@ namespace SwaySettings {
             ThemePreviewItem previewer = is_dark ? preview_dark : preview_default;
 
             previewer.toggled.disconnect (style_toggled);
-            previewer.set_toggled (true);
+            previewer.set_active (true);
             previewer.toggled.connect (style_toggled);
 
             sync_gtk_theme ();
         }
 
-        private void style_toggled (ThemeStyle style) {
+        private void style_toggled (Gtk.ToggleButton b) {
+            if (!b.active) return;
+            ThemePreviewItem button = (ThemePreviewItem) b;
+            ThemeStyle style = button.theme_style;
             set_gtk_value ("color-scheme", style.get_gsettings_name (), false);
         }
 
-        private Hdy.PreferencesGroup get_preferences () {
-            Hdy.PreferencesGroup pref_group = new Hdy.PreferencesGroup ();
+        private Adw.PreferencesGroup get_preferences () {
+            Adw.PreferencesGroup pref_group = new Adw.PreferencesGroup ();
             pref_group.set_title ("GTK Options");
 
             pref_group.add (
-                gtk_theme ("Application Theme", "gtk-theme", "themes"));
+                gtk_theme ("GTK3 Theme", "gtk-theme", "themes"));
             pref_group.add (
                 gtk_theme ("Icon Theme", "icon-theme", "icons"));
             pref_group.add (
@@ -146,14 +175,13 @@ namespace SwaySettings {
             // Animations
             pref_group.add (gtk_animations ());
 
-            pref_group.show_all ();
             return pref_group;
         }
 
         private Gtk.Widget gtk_animations () {
             string setting_name = "enable-animations";
 
-            var row = new Hdy.ActionRow ();
+            Adw.SwitchRow row = new Adw.SwitchRow ();
             row.set_title ("Animations");
 
             SettingsSchema schema = settings.settings_schema;
@@ -169,28 +197,22 @@ namespace SwaySettings {
             }
 
             bool settings_value = settings.get_boolean (setting_name);
-            Gtk.Switch widget = new Gtk.Switch () {
-                valign = Gtk.Align.CENTER,
-                halign = Gtk.Align.CENTER,
-            };
-            widget.set_active (settings_value);
-            widget.notify["active"].connect (() => {
-                set_gtk_value (setting_name, widget.active);
+            row.set_active (settings_value);
+            row.notify["active"].connect (() => {
+                set_gtk_value (setting_name, row.active);
             });
 
-            row.child = widget;
-            row.set_activatable_widget (widget);
             row.set_activatable (true);
             return row;
         }
 
-        private Hdy.ComboRow gtk_theme (string title,
+        private Adw.ComboRow gtk_theme (string title,
                                         string setting_name,
                                         string folder_name) {
-            var combo_row = new Hdy.ComboRow ();
+            var combo_row = new Adw.ComboRow ();
             combo_row.set_title (title);
 
-            ListStore liststore = new ListStore (typeof (Hdy.ValueObject));
+            ListStore liststore = new ListStore (typeof(Gtk.StringObject));
             string ? current_theme = get_current_gtk_theme (setting_name);
             ArrayList<string> themes = get_gtk_themes (setting_name,
                                                        folder_name);
@@ -203,18 +225,17 @@ namespace SwaySettings {
             int selected_index = 0;
             for (int i = 0; i < themes.size; i++) {
                 var theme_name = themes[i];
-                liststore.append (new Hdy.ValueObject (theme_name));
+                liststore.append (new Gtk.StringObject (theme_name));
                 if (current_theme == theme_name) selected_index = i;
             }
 
-            combo_row.bind_name_model ((ListModel) liststore, (item) => {
-                return ((Hdy.ValueObject) item).get_string ();
-            });
-            combo_row.set_selected_index (selected_index);
+            combo_row.set_model (liststore);
+            Gtk.PropertyExpression expression = new Gtk.PropertyExpression (typeof(Gtk.StringObject), null, "string");
+            combo_row.set_expression (expression);
+            combo_row.set_selected (selected_index);
             combo_row.notify["selected-index"].connect (
                 (sender, property) => {
-                string theme = themes.get (((Hdy.ComboRow) sender)
-                                            .get_selected_index ());
+                string theme = themes.get ((int)((Adw.ComboRow) sender).get_selected ());
                 set_self_theme (theme);
                 set_gtk_value (setting_name, theme);
             });

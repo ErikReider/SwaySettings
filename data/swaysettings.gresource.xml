@@ -13,7 +13,5 @@
       <!-- <file>ui/Pages/Pulse/PulseSinkInput.ui</file> -->
       <!-- <file>ui/Pages/Bluetooth/BluetoothDeviceRow.ui</file> -->
       <!-- <file>ui/Pages/Bluetooth/Bluez/BluezPairDialog.ui</file> -->
-      <!-- <file>ui/Pages/Themes/ThemesPage.ui</file> -->
-      <!-- <file>ui/Pages/Themes/ThemePreviewItem.ui</file> -->
   </gresource>
 </gresources>
