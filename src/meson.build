@@ -19,4 +19,4 @@ dep_libpulse_mainloop_glib = dependency('libpulse-mainloop-glib')
 
 subdir('Settings')
 # subdir('Wallpaper')
-# subdir('AutoStart')
+subdir('AutoStart')
