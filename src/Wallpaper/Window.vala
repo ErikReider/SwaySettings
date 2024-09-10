@@ -1,30 +1,25 @@
 namespace Wallpaper {
     class Window : Gtk.Window {
-        Gtk.Stack stack;
-        Gtk.DrawingArea image_1;
-        Gtk.DrawingArea image_2;
+        const Gsk.ScalingFilter SCALING_FILTER = Gsk.ScalingFilter.NEAREST;
+        const int TRANSITION_DURATION = 250;
 
-        bool showing_image_1 = false;
-
-        unowned BackgroundInfo ? info;
-        unowned BackgroundInfo ? old_info;
-
-        Config config;
-
-        unowned Gdk.Display display;
-        unowned Gdk.Monitor monitor;
+        private double animation_progress = 1.0;
+        private double animation_progress_inv {
+            get {
+                return (1 - animation_progress);
+            }
+        }
+        private Animation ? animation;
 
         public signal void hide_transition_done ();
 
-        public Window (Gtk.Application app,
-                       Gdk.Display disp,
-                       Gdk.Monitor mon,
-                       Config config,
-                       BackgroundInfo ? init_info) {
+        public Window (Gtk.Application app, Gdk.Monitor monitor) {
             Object (application: app);
-            this.display = disp;
-            this.monitor = mon;
-            this.config = config;
+
+            animation = new Animation (this, TRANSITION_DURATION,
+                           Animation.ease_in_out_cubic,
+                           animation_value_cb,
+                           animation_done_cb);
 
             GtkLayerShell.init_for_window (this);
             GtkLayerShell.set_monitor (this, monitor);
@@ -35,86 +30,61 @@ namespace Wallpaper {
             GtkLayerShell.set_anchor (this, GtkLayerShell.Edge.LEFT, true);
             GtkLayerShell.set_anchor (this, GtkLayerShell.Edge.RIGHT, true);
 
-            stack = new Gtk.Stack () {
-                valign = Gtk.Align.FILL,
-                halign = Gtk.Align.FILL,
-                expand = true,
-                transition_type = Gtk.StackTransitionType.CROSSFADE,
-                transition_duration = 250,
-            };
-            this.add (stack);
-
-            image_1 = new Gtk.DrawingArea () {
-                valign = Gtk.Align.FILL,
-                halign = Gtk.Align.FILL,
-                expand = true,
-                name = "image1",
-            };
-            image_1.unmap.connect (() => hide_transition_done ());
-            stack.add (image_1);
-
-            image_2 = new Gtk.DrawingArea () {
-                valign = Gtk.Align.FILL,
-                halign = Gtk.Align.FILL,
-                expand = true,
-                name = "image2",
-            };
-            image_2.unmap.connect (() => hide_transition_done ());
-            stack.add (image_2);
-
-            show_all ();
-
-            this.image_1.draw.connect ((cr) => on_draw (cr, image_1));
-            this.image_2.draw.connect ((cr) => on_draw (cr, image_2));
-
-            change_wallpaper (init_info, null);
+            change_wallpaper ();
         }
 
-        private bool on_draw (Cairo.Context cr, Gtk.DrawingArea image) {
-            // Draw the new background if widget is transioning in. Else,
-            // draw the old wallpaper
-            unowned Gtk.DrawingArea background = showing_image_1 ? image_1 : image_2;
-            bool is_image1 = image == background;
-            unowned BackgroundInfo ? _info = is_image1 ? info : old_info;
+        public void change_wallpaper () {
+            // Start the transition
+            animate (0);
+        }
 
-            int buffer_width = image.get_allocated_width ();
-            int buffer_height = image.get_allocated_height ();
-            // Use greyscale background if wallpaper is not found...
-            if (_info == null || config.path.length == 0) {
-                cr.save ();
-                debug ("Not using surface...\n");
-                Cairo.Surface surface = new Cairo.ImageSurface (
-                    Cairo.Format.ARGB32, buffer_width, buffer_height);
+        public override void snapshot(Gtk.Snapshot snapshot) {
+            if (animation.is_running) {
+                snapshot.push_cross_fade (animation_progress_inv);
 
-                cr.rectangle (0, 0, buffer_width, buffer_height);
-                Color color = config.get_color ();
-                cr.set_source_rgb (color.r, color.g, color.b);
-                cr.fill ();
-                cr.set_source_surface (surface, 0, 0);
-                cr.restore ();
-                return true;
+                apply_transformed_background (snapshot, old_background_info);
+                snapshot.pop ();
+
+                apply_transformed_background (snapshot, background_info);
+                snapshot.pop ();
+            } else {
+                apply_transformed_background (snapshot, background_info);
+            }
+        }
+
+        void apply_transformed_background (Gtk.Snapshot snapshot, BackgroundInfo info) {
+            int buffer_height = get_height ();
+            int buffer_width = get_width ();
+
+            // Render color instead of texture
+            if (info.texture == null || info.config.path.length == 0) {
+                Gdk.RGBA color = info.config.get_color ();
+                snapshot.append_color (color, { { 0, 0 }, { buffer_width, buffer_height } });
+                return;
             }
 
-            int height = _info.height;
-            int width = _info.width;
-            cr.save ();
-            switch (config.scale_mode) {
+            // Render texture and scale it correctly
+            snapshot.save ();
+
+            int height = info.height;
+            int width = info.width;
+            switch (info.config.scale_mode) {
                 case ScaleModes.FILL:
                     double window_ratio = (double) buffer_width / buffer_height;
                     double bg_ratio = width / height;
                     if (window_ratio > bg_ratio) { // Taller wallpaper than monitor
                         double scale = (double) buffer_width / width;
                         if (scale * height < buffer_height) {
-                            draw_scale_wide (buffer_width, width, buffer_height, height, cr, _info);
+                            draw_scale_wide (buffer_width, width, buffer_height, height, snapshot, info);
                         } else {
-                            draw_scale_tall (buffer_width, width, buffer_height, height, cr, _info);
+                            draw_scale_tall (buffer_width, width, buffer_height, height, snapshot, info);
                         }
                     } else { // Wider wallpaper than monitor
                         double scale = (double) buffer_height / height;
                         if (scale * width < buffer_width) {
-                            draw_scale_tall (buffer_width, width, buffer_height, height, cr, _info);
+                            draw_scale_tall (buffer_width, width, buffer_height, height, snapshot, info);
                         } else {
-                            draw_scale_wide (buffer_width, width, buffer_height, height, cr, _info);
+                            draw_scale_wide (buffer_width, width, buffer_height, height, snapshot, info);
                         }
                     }
                     break;
@@ -124,71 +94,85 @@ namespace Wallpaper {
                     if (window_ratio > bg_ratio) { // Taller wallpaper than monitor
                         double scale = (double) buffer_width / width;
                         if (scale * height < buffer_height) {
-                            draw_scale_tall (buffer_width, width, buffer_height, height, cr, _info);
+                            draw_scale_tall (buffer_width, width, buffer_height, height, snapshot, info);
                         } else {
-                            draw_scale_wide (buffer_width, width, buffer_height, height, cr, _info);
+                            draw_scale_wide (buffer_width, width, buffer_height, height, snapshot, info);
                         }
                     } else { // Wider wallpaper than monitor
                         double scale = (double) buffer_height / height;
                         if (scale * width < buffer_width) {
-                            draw_scale_wide (buffer_width, width, buffer_height, height, cr, _info);
+                            draw_scale_wide (buffer_width, width, buffer_height, height, snapshot, info);
                         } else {
-                            draw_scale_tall (buffer_width, width, buffer_height, height, cr, _info);
+                            draw_scale_tall (buffer_width, width, buffer_height, height, snapshot, info);
                         }
                     }
                     break;
                 case ScaleModes.STRETCH:
-                    cr.scale ((double) buffer_width / width,
-                              (double) buffer_height / height);
-                    cr.set_source_surface (_info.surface, 0, 0);
+                    snapshot.scale((float) buffer_width / width,
+                                   (float) buffer_height / height);
+                    snapshot.append_scaled_texture (info.texture,
+                                                    SCALING_FILTER,
+                                                    { { 0, 0 }, { width, height } });
                     break;
                 case ScaleModes.CENTER:
-                    cr.set_source_surface (
-                        _info.surface,
-                        (double) buffer_width / 2 - width / 2,
-                        (double) buffer_height / 2 - height / 2);
+                    float x = (float) (buffer_width / 2 - width / 2);
+                    float y = (float) (buffer_height / 2 - height / 2);
+                    snapshot.append_scaled_texture (info.texture,
+                                                    SCALING_FILTER,
+                                                    { { x, y }, { width, height } });
                     break;
             }
-            // Sets a faster, less accurate filter when the pattern's reading pixel values
-            cr.get_source ().set_filter (Cairo.Filter.BILINEAR);
-
-            cr.paint ();
-            cr.restore ();
-            return true;
+            snapshot.restore ();
         }
 
         private void draw_scale_tall (int buffer_width,
                                       int width,
                                       int buffer_height,
                                       int height,
-                                      Cairo.Context cr,
-                                      BackgroundInfo _info) {
-            double scale = (double) buffer_width / width;
-            cr.scale (scale, scale);
-            cr.set_source_surface (_info.surface,
-                                   0, (double) buffer_height / 2 / scale - height / 2);
+                                      Gtk.Snapshot snapshot,
+                                      BackgroundInfo info) {
+            float scale = (float) buffer_width / width;
+            snapshot.scale(scale, scale);
+            float x = 0;
+            float y = (float) (buffer_height / 2 / scale - height / 2);
+            snapshot.append_scaled_texture (info.texture,
+                                            SCALING_FILTER,
+                                            { { x, y }, { width, height } });
         }
 
         private void draw_scale_wide (int buffer_width,
                                       int width,
                                       int buffer_height,
                                       int height,
-                                      Cairo.Context cr,
-                                      BackgroundInfo _info) {
-            double scale = (double) buffer_height / height;
-            cr.scale (scale, scale);
-            cr.set_source_surface (
-                _info.surface,
-                (double) buffer_width / 2 / scale - width / 2, 0);
+                                      Gtk.Snapshot snapshot,
+                                      BackgroundInfo info) {
+            float scale = (float) buffer_height / height;
+            snapshot.scale(scale, scale);
+            float x = (float) (buffer_width / 2 / scale - width / 2);
+            float y = 0;
+            snapshot.append_scaled_texture (info.texture,
+                                            SCALING_FILTER,
+                                            { { x, y }, { width, height } });
         }
 
-        public void change_wallpaper (BackgroundInfo ? background_info,
-                                      BackgroundInfo ? old_background_info) {
-            this.old_info = old_background_info;
-            this.info = background_info;
-            unowned Gtk.DrawingArea background = !showing_image_1 ? image_1 : image_2;
-            showing_image_1 = !showing_image_1;
-            stack.set_visible_child (background);
+        void animation_value_cb (double progress) {
+            animation_progress = progress;
+
+            queue_resize ();
+        }
+
+        void animation_done_cb () {
+            animation.dispose ();
+
+            animation_progress = 1;
+
+            queue_allocate ();
+            hide_transition_done ();
+        }
+
+        void animate (double to) {
+            animation.stop ();
+            animation.start (animation_progress, to);
         }
     }
 }
