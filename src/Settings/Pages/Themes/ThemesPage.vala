@@ -173,16 +173,15 @@ namespace SwaySettings {
             pref_group.add (
                 gtk_theme ("Cursor Theme", "cursor-theme", "icons"));
             // Animations
-            pref_group.add (gtk_animations ());
+            pref_group.add (gtk_toggle_row ("Animations", "enable-animations"));
+            pref_group.add (gtk_toggle_row ("Overlay Scrolling", "overlay-scrolling"));
 
             return pref_group;
         }
 
-        private Gtk.Widget gtk_animations () {
-            string setting_name = "enable-animations";
-
+        private Gtk.Widget gtk_toggle_row (string title, string setting_name) {
             Adw.SwitchRow row = new Adw.SwitchRow ();
-            row.set_title ("Animations");
+            row.set_title (title);
 
             SettingsSchema schema = settings.settings_schema;
             if (!schema.has_key (setting_name)) {
@@ -247,6 +246,7 @@ namespace SwaySettings {
             if (theme_value == null || !write_file) return;
 
             string ? looking_for = null;
+            // Can be found through the `gtk-query-settings` command
             switch (type) {
                 case "gtk-theme":
                     looking_for = "gtk-theme-name";
@@ -259,6 +259,9 @@ namespace SwaySettings {
                     break;
                 case "enable-animations":
                     looking_for = "gtk-enable-animations";
+                    break;
+                case "overlay-scrolling":
+                    looking_for = "gtk-overlay-scrolling";
                     break;
             }
             if (looking_for == null) {
