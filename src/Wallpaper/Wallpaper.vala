@@ -82,7 +82,12 @@ namespace Wallpaper {
             Utils.Config config = Utils.Config();
             if (option_path == null && option_color == null) {
                 // Use default wallpaper if no arguments were provided
-                config.path = Utils.Config.default_path;
+                // Try getting GSchema wallpaper before defaulting to file
+                config.path = Utils.get_wallpaper_gschema (self_settings);
+                if (config.path == null) {
+                    debug ("Defaulting to default wallpaper through path");
+                    config.path = Utils.Config.default_path;
+                }
             } else {
                 if (option_path != null) {
                     config.path = option_path;
@@ -90,9 +95,11 @@ namespace Wallpaper {
                 if (option_color != null) {
                     config.color = option_color;
                 }
-                if (option_mode != null) {
-                    config.scale_mode = Utils.ScaleModes.parse_mode (option_mode);
-                }
+            }
+            if (option_mode != null) {
+                config.scale_mode = Utils.ScaleModes.parse_mode (option_mode);
+            } else {
+                config.scale_mode = Utils.get_scale_mode_gschema (self_settings);
             }
 
             return config;
@@ -100,8 +107,29 @@ namespace Wallpaper {
 
         public static int main (string[] args) {
             try {
-                Utils.Config config = begin_parse (args);
                 Gtk.init ();
+
+#if USE_GLOBAL_GSCHEMA
+                // Use the global compiled gschema in /usr/share/glib-2.0/schemas/*
+                self_settings = new Settings ("org.erikreider.swaysettings");
+#else
+                message ("Using local GSchema");
+                // Meant for use in development.
+                // Uses the compiled gschema in SwaySettings/data/
+                // Should never be used in production!
+                string settings_dir = Path.build_path (Path.DIR_SEPARATOR_S,
+                                                       Environment.get_current_dir (),
+                                                       "data");
+                SettingsSchemaSource sss = new SettingsSchemaSource.from_directory (settings_dir, null, false);
+                SettingsSchema schema = sss.lookup ("org.erikreider.swaysettings", false);
+                if (sss.lookup == null) {
+                    error ("ID not found.\n");
+                    return 0;
+                }
+                self_settings = new Settings.full (schema, null, null);
+#endif
+
+                Utils.Config config = begin_parse (args);
 
                 if (option_list_modes) {
                     print ("Available scaling modes: \n");
@@ -113,8 +141,6 @@ namespace Wallpaper {
                     print ("  %s\n", string.joinv (", ", modes));
                     return 0;
                 }
-
-                self_settings = new Settings ("org.erikreider.swaysettings");
 
                 app = new Gtk.Application ("org.erikreider.swaysettings-wallpaper",
                                            ApplicationFlags.FLAGS_NONE);
