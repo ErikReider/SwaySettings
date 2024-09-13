@@ -8,6 +8,13 @@
 				This is the path pointing torwards the selected wallpaper
 			</description>
 		</key>
+		<key name="wallpaper-scaling-mode" type="i">
+			<default>0</default>
+			<summary>Selected Wallpaper Scaling Mode</summary>
+			<description>
+				The scaling mode for the wallpaper. Default is fill.
+			</description>
+		</key>
 		<key name="user-wallpapers" type="as">
 			<default>[]</default>
 			<summary>User specified wallpapers</summary>

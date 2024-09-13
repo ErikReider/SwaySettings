@@ -1,5 +1,6 @@
 namespace SwaySettings {
-    public class ThumbnailImage : Gtk.Box {
+    public class ThumbnailImage : Adw.Bin {
+        private Utils.ScaleModes scaling_mode;
         private Gtk.Picture picture;
         public string ? image_path;
         public Wallpaper wallpaper;
@@ -24,11 +25,13 @@ namespace SwaySettings {
         public ThumbnailImage (Wallpaper wallpaper,
                                int height,
                                int width,
-                               bool stretch = false,
+                               Utils.ScaleModes scaling_mode,
                                int margin = 8) {
             this.wallpaper = wallpaper;
             this.width = width;
             this.height = height;
+            this.scaling_mode = scaling_mode;
+            set_scaling_mode ();
             set_request ();
 
             this.margin_top = margin;
@@ -36,7 +39,7 @@ namespace SwaySettings {
             this.margin_start = margin;
             this.margin_end = margin;
 
-            append (picture);
+            set_child (picture);
 
             refresh_image.begin ();
         }
@@ -44,13 +47,16 @@ namespace SwaySettings {
         public ThumbnailImage.batch (Wallpaper wallpaper,
                                      int height,
                                      int width,
+                                     Utils.ScaleModes scaling_mode,
                                      ref bool checked_folder_exists,
                                      bool have_remove_button,
                                      int margin = 8) {
             this.wallpaper = wallpaper;
             this.width = width;
             this.height = height;
+            this.scaling_mode = scaling_mode;
             this.have_remove_button = have_remove_button;
+            set_scaling_mode ();
             set_request ();
 
             this.margin_top = margin;
@@ -68,11 +74,11 @@ namespace SwaySettings {
                 button.add_css_class ("circular");
                 button.add_css_class ("img-remove-button");
                 button.clicked.connect (() => on_remove_click (this.wallpaper));
-                append (overlay);
+                set_child (overlay);
                 overlay.set_child (picture);
                 overlay.add_overlay (button);
             } else {
-                append (picture);
+                set_child (picture);
             }
 
             if (!checked_folder_exists) {
@@ -81,6 +87,24 @@ namespace SwaySettings {
             }
 
             refresh_image.begin ();
+        }
+
+        private void set_scaling_mode () {
+            switch (scaling_mode) {
+                case Utils.ScaleModes.FILL:
+                    picture.content_fit = Gtk.ContentFit.COVER;
+                    break;
+                case Utils.ScaleModes.STRETCH:
+                    picture.content_fit = Gtk.ContentFit.FILL;
+                    break;
+                case Utils.ScaleModes.FIT:
+                    picture.content_fit = Gtk.ContentFit.CONTAIN;
+                    break;
+                case Utils.ScaleModes.CENTER:
+                    picture.content_fit = Gtk.ContentFit.SCALE_DOWN;
+                    break;
+            }
+
         }
 
         private void set_request () {
@@ -136,7 +160,7 @@ namespace SwaySettings {
         Wallpaper wallpaper;
         int width;
         int height;
-        unowned SourceFunc callback;
+        SourceFunc callback;
 
         public ThumbnailThread(string ? image_path,
                                Wallpaper wallpaper,
@@ -157,7 +181,7 @@ namespace SwaySettings {
                 generate_thumbnail ();
             }
 
-            Idle.add(callback);
+            Idle.add((owned) callback);
         }
 
         private void generate_thumbnail () {

@@ -84,6 +84,7 @@ namespace SwaySettings {
                 // Use the global compiled gschema in /usr/share/glib-2.0/schemas/*
                 self_settings = new Settings ("org.erikreider.swaysettings");
 #else
+                message ("Using local GSchema");
                 // Meant for use in development.
                 // Uses the compiled gschema in SwaySettings/data/
                 // Should never be used in production!

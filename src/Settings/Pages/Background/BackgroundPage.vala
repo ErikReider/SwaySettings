@@ -22,6 +22,8 @@ namespace SwaySettings {
             thumbnail_valid = false,
         };
 
+        private static Utils.ScaleModes scaling_mode = get_scale_mode();
+
         private Gtk.FlowBox ? user_flow_box;
         private Gtk.FlowBox ? sys_flow_box;
 
@@ -34,10 +36,14 @@ namespace SwaySettings {
         construct {
             self_settings.changed[Constants.SETTINGS_USER_WALLPAPERS]
              .connect (on_user_wallpapers_change);
+            self_settings.changed[Constants.SETTINGS_WALLPAPER_SCALING_MODE]
+             .connect (on_user_wallpapers_change);
         }
 
         ~BackgroundPage () {
             self_settings.changed[Constants.SETTINGS_USER_WALLPAPERS]
+             .disconnect (on_user_wallpapers_change);
+            self_settings.changed[Constants.SETTINGS_WALLPAPER_SCALING_MODE]
              .disconnect (on_user_wallpapers_change);
         }
 
@@ -50,7 +56,8 @@ namespace SwaySettings {
 
             preview_image = new ThumbnailImage (current_wallpaper,
                                                 PREVIEW_IMAGE_HEIGHT,
-                                                PREVIEW_IMAGE_WIDTH) {
+                                                PREVIEW_IMAGE_WIDTH,
+                                                scaling_mode) {
                 halign = Gtk.Align.CENTER,
                 valign = Gtk.Align.START,
                 vexpand = false,
@@ -59,6 +66,8 @@ namespace SwaySettings {
                 height_request = PREVIEW_IMAGE_HEIGHT,
             };
             content_box.append (preview_image);
+
+            content_box.append (get_scale_mode_container ());
 
             Gtk.Box wallpaper_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 16);
             content_box.append (wallpaper_box);
@@ -135,7 +144,7 @@ namespace SwaySettings {
                 if (wallpaper_application_registered ()) {
                     Utils.Config config = Utils.Config() {
                         path = file_path,
-                        scale_mode = Utils.ScaleModes.FILL,
+                        scale_mode = scaling_mode,
                     };
                     wallpaper_application.activate_action (Constants.WALLPAPER_ACTION_NAME, config);
                 }
@@ -193,6 +202,44 @@ namespace SwaySettings {
                                         Constants.SETTINGS_USER_WALLPAPERS,
                                         new Variant.strv (wallpapers));
             }
+        }
+
+        Adw.PreferencesGroup get_scale_mode_container () {
+            Utils.ScaleModes[] modes = {
+                Utils.ScaleModes.FILL,
+                Utils.ScaleModes.STRETCH,
+                Utils.ScaleModes.FIT,
+                Utils.ScaleModes.CENTER,
+            };
+
+            Adw.PreferencesGroup pref_group = new Adw.PreferencesGroup ();
+
+            ListStore liststore = new ListStore (typeof(Gtk.StringObject));
+
+            Adw.ComboRow combo_row = new Adw.ComboRow ();
+            pref_group.add (combo_row);
+            combo_row.set_model (liststore);
+            combo_row.set_title ("Scaling Mode");
+
+            Gtk.PropertyExpression expression = new Gtk.PropertyExpression (
+                typeof(Gtk.StringObject), null, "string");
+            combo_row.set_expression (expression);
+
+            combo_row.notify["selected-item"].connect (
+                (sender, property) => {
+                Utils.ScaleModes mode = modes[((int)((Adw.ComboRow) sender).get_selected ())];
+                set_scale_mode (mode);
+            });
+
+            for (int i = 0; i < modes.length; i++) {
+                var mode = modes[i];
+                if (mode == scaling_mode) {
+                    combo_row.set_selected (i);
+                }
+                liststore.append (new Gtk.StringObject (mode.to_title ()));
+            }
+
+            return pref_group;
         }
 
         Adw.PreferencesGroup get_wallpaper_container (string title,
@@ -290,6 +337,7 @@ namespace SwaySettings {
                 var item = new ThumbnailImage.batch (
                     wp,
                     LIST_IMAGE_HEIGHT, LIST_IMAGE_WIDTH,
+                    scaling_mode,
                     ref checked_folder_exists,
                     remove_button,
                     0);
@@ -335,6 +383,32 @@ namespace SwaySettings {
                 wp.thumbnail_valid = false;
             }
             return wp;
+        }
+
+        private static Utils.ScaleModes get_scale_mode () {
+            Variant ? variant = Functions.get_gsetting (
+                self_settings,
+                Constants.SETTINGS_WALLPAPER_SCALING_MODE,
+                VariantType.INT32);
+            if (variant == null
+                || !variant.get_type ().equal (VariantType.INT32)) {
+                return 0;
+            }
+            return (Utils.ScaleModes) variant.get_int32 ();
+        }
+
+        private void set_scale_mode (Utils.ScaleModes mode) {
+            scaling_mode = mode;
+            Functions.set_gsetting (self_settings,
+                Constants.SETTINGS_WALLPAPER_SCALING_MODE,
+                mode);
+            if (wallpaper_application_registered ()) {
+                Utils.Config config = Utils.Config() {
+                    path = current_wallpaper.path,
+                    scale_mode = scaling_mode,
+                };
+                wallpaper_application.activate_action (Constants.WALLPAPER_ACTION_NAME, config);
+            }
         }
 
         private string[] get_user_wallpaper_paths () {

@@ -5,6 +5,10 @@
 @define-color borders-light rgba(0, 0, 0, 0.12);
 @define-color borders-dark rgba(255, 255, 255, 0.15);
 
+.thumbnail-image picture {
+  background-color: black;
+}
+
 .theme-preview-item picture,
 .thumbnail-image picture {
   /* Use smaller inner corner radius bc of outer outlines using 12px */

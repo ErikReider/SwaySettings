@@ -125,7 +125,10 @@ namespace SwaySettings {
         public static string ? set_gsetting (Settings settings,
                                              string name,
                                              Variant value) {
-            if (!settings.settings_schema.has_key (name)) return null;
+            if (!settings.settings_schema.has_key (name)) {
+                stderr.printf ("GSchema key \"%s\" not found!\n", name);
+                return null;
+            }
 
             var v_type = settings.settings_schema.get_key (name).get_value_type ();
             if (!v_type.equal (value.get_type ())) {
@@ -134,6 +137,10 @@ namespace SwaySettings {
             }
 
             switch (value.get_type_string ()) {
+                case "i":
+                    int32 val = value.get_int32 ();
+                    settings.set_int (name, val);
+                    return val.to_string ();
                 case "b":
                     bool val = value.get_boolean ();
                     settings.set_boolean (name, val);

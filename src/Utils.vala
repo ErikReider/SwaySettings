@@ -1,6 +1,37 @@
 namespace Utils {
     public enum ScaleModes {
-        FILL, STRETCH, FIT, CENTER;
+        FILL = 0,
+        STRETCH = 1,
+        FIT = 2,
+        CENTER = 3;
+
+        public string to_string () {
+            switch (this) {
+                default:
+                case FILL:
+                    return "fill";
+                case STRETCH:
+                    return "stretch";
+                case FIT:
+                    return "fit";
+                case CENTER:
+                    return "center";
+            }
+        }
+
+        public string to_title () {
+            switch (this) {
+                default:
+                case FILL:
+                    return "Fill Screen";
+                case STRETCH:
+                    return "Stretch Screen";
+                case FIT:
+                    return "Fit Screen";
+                case CENTER:
+                    return "Center Screen";
+            }
+        }
 
         public static ScaleModes parse_mode (string ? value) {
             switch (value) {
