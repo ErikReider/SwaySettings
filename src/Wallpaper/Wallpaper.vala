@@ -4,72 +4,9 @@ namespace Wallpaper {
     public static BackgroundInfo background_info;
     public static BackgroundInfo old_background_info;
 
-    public enum ScaleModes {
-        FILL, STRETCH, FIT, CENTER;
-
-        public static ScaleModes parse_mode (string ? value) {
-            switch (value) {
-                default:
-                case "fill":
-                    return FILL;
-                case "stretch":
-                    return STRETCH;
-                case "fit":
-                    return FIT;
-                case "center":
-                    return CENTER;
-            }
-        }
-    }
-
-    public struct Config {
-        private const ScaleModes DEFAULT_MODE = ScaleModes.FILL;
-        private const string DEFAULT_COLOR = "#FFFFFF";
-
-        public static string default_path;
-
-        string path;
-        ScaleModes scale_mode;
-        string color;
-
-        public Config () {
-            default_path = Path.build_filename (Environment.get_user_cache_dir (), "wallpaper");
-
-            path = "";
-            scale_mode = DEFAULT_MODE;
-            color = DEFAULT_COLOR;
-        }
-
-        public string to_string () {
-            return string.joinv (" ", { path, scale_mode.to_string (), color });
-        }
-
-        public Gdk.RGBA get_color () {
-            Gdk.RGBA _c = Gdk.RGBA ();
-            var color = this.color;
-            if (color.length != 7 || color[0] != '#') {
-                stderr.printf ("Color not valid! ");
-                stderr.printf ("Using \"#FFFFFF\". ");
-                stderr.printf ("Please use this format: \"#RRGGBB\"\n");
-                color = DEFAULT_COLOR;
-            }
-            // Remove the leading #
-            color = color[1 :];
-
-            int hex_value;
-            bool result = int.try_parse (color, out hex_value, null, 16);
-            if (!result) return _c;
-            _c.alpha = 1.0f;
-            _c.red = ((hex_value >> 16) & 0xFF) / 255.0f;
-            _c.green = ((hex_value >> 8) & 0xFF) / 255.0f;
-            _c.blue = (hex_value & 0xFF) / 255.0f;
-            return _c;
-        }
-    }
-
     public struct BackgroundInfo {
-        public Config config;
-        public Gdk.Texture *texture;
+        public Utils.Config config;
+        public Gdk.Texture texture;
         public int width;
         public int height;
 
@@ -129,9 +66,6 @@ namespace Wallpaper {
             { null }
         };
 
-        private const string ACTION_NAME = "action";
-        private const string ACTION_FORMAT = "(sis)";
-
         private static Gtk.Application app;
 
         private static bool activated = false;
@@ -139,16 +73,16 @@ namespace Wallpaper {
         private static SimpleAction action;
 
         /** Separates each group of monitors and parses them separately */
-        private static Config begin_parse (owned string[] args) throws Error {
+        private static Utils.Config begin_parse (owned string[] args) throws Error {
             OptionContext context = new OptionContext ();
             context.set_help_enabled (true);
             context.add_main_entries (ENTRIES, null);
             context.parse_strv (ref args);
 
-            Config config = Config();
+            Utils.Config config = Utils.Config();
             if (option_path == null && option_color == null) {
                 // Use default wallpaper if no arguments were provided
-                config.path = Config.default_path;
+                config.path = Utils.Config.default_path;
             } else {
                 if (option_path != null) {
                     config.path = option_path;
@@ -157,7 +91,7 @@ namespace Wallpaper {
                     config.color = option_color;
                 }
                 if (option_mode != null) {
-                    config.scale_mode = ScaleModes.parse_mode (option_mode);
+                    config.scale_mode = Utils.ScaleModes.parse_mode (option_mode);
                 }
             }
 
@@ -166,13 +100,13 @@ namespace Wallpaper {
 
         public static int main (string[] args) {
             try {
-                Config config = begin_parse (args);
+                Utils.Config config = begin_parse (args);
                 Gtk.init ();
 
                 if (option_list_modes) {
                     print ("Available scaling modes: \n");
                     string[] modes = {};
-                    EnumClass enumc = (EnumClass) typeof (ScaleModes).class_ref ();
+                    EnumClass enumc = (EnumClass) typeof (Utils.ScaleModes).class_ref ();
                     foreach (EnumValue enum_value in enumc.values) {
                         modes += enum_value.value_nick;
                     }
@@ -190,13 +124,14 @@ namespace Wallpaper {
                     init ();
                 });
 
-                action = new SimpleAction (ACTION_NAME, new VariantType (ACTION_FORMAT));
+                action = new SimpleAction (Constants.WALLPAPER_ACTION_NAME,
+                    new VariantType (Constants.WALLPAPER_ACTION_FORMAT));
                 action.activate.connect (action_activated);
                 app.add_action (action);
 
                 app.register ();
 
-                app.activate_action (ACTION_NAME, config);
+                app.activate_action (Constants.WALLPAPER_ACTION_NAME, config);
 
                 return app.run ();
             } catch (Error e) {
@@ -206,18 +141,12 @@ namespace Wallpaper {
         }
 
         private static async void action_activated (Variant ? param) {
-            if (param == null || param.get_type_string () != ACTION_FORMAT) return;
+            if (param == null || param.get_type_string () != Constants.WALLPAPER_ACTION_FORMAT) return;
 
             action.activate.disconnect (action_activated);
 
-            if (old_background_info.texture != null) {
-                delete old_background_info.texture;
-                old_background_info.width = 0;
-                old_background_info.height = 0;
-                old_background_info.texture = null;
-            }
             old_background_info = background_info;
-            background_info.config = Config () {
+            background_info.config = Utils.Config () {
                 path = param.get_child_value (0).get_string (),
                 scale_mode = param.get_child_value (1).get_int32 (),
                 color = param.get_child_value (2).get_string (),

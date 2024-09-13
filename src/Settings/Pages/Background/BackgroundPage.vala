@@ -25,8 +25,6 @@ namespace SwaySettings {
         private Gtk.FlowBox ? user_flow_box;
         private Gtk.FlowBox ? sys_flow_box;
 
-        IPC ipc;
-
         public override int clamp_max {
             get {
                 return 1200;
@@ -43,9 +41,8 @@ namespace SwaySettings {
              .disconnect (on_user_wallpapers_change);
         }
 
-        public BackgroundPage (SettingsItem item, Adw.NavigationPage page, IPC ipc) {
+        public BackgroundPage (SettingsItem item, Adw.NavigationPage page) {
             base (item, page);
-            this.ipc = ipc;
         }
 
         public override Gtk.Widget set_child () {
@@ -134,7 +131,13 @@ namespace SwaySettings {
 
                 Functions.generate_thumbnail (dest_path, true);
 
-                ipc.run_command ("output * bg %s fill".printf (dest_path));
+                if (wallpaper_application_registered ()) {
+                    Utils.Config config = Utils.Config() {
+                        path = file_path,
+                        scale_mode = Utils.ScaleModes.FILL,
+                    };
+                    wallpaper_application.activate_action (Constants.WALLPAPER_ACTION_NAME, config);
+                }
             } catch (Error e) {
                 stderr.printf ("%s\n", e.message);
             }
@@ -270,11 +273,11 @@ namespace SwaySettings {
             });
             row.set_child (flow_box);
 
-            add_images.begin (wallpapers, flow_box, add_button);
+            add_images (wallpapers, flow_box, add_button);
             return group;
         }
 
-        async void add_images (owned Wallpaper[] paths, Gtk.FlowBox flow_box, bool remove_button) {
+        void add_images (owned Wallpaper[] paths, Gtk.FlowBox flow_box, bool remove_button) {
             Variant ? wallpaper_path = Functions.get_gsetting (
                 self_settings,
                 Constants.SETTINGS_WALLPAPER_PATH,

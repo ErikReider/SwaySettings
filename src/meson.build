@@ -4,7 +4,6 @@ dep_gio_unix = dependency('gio-unix-2.0', version: '>= 2.50')
 dep_gio = dependency('gio-2.0', version: '>= 2.50')
 dep_gtk4 = dependency('gtk4', version: '>= 4.14.0')
 dep_gdk_pixbuf = dependency('gdk-pixbuf-2.0')
-dep_cairo = dependency('cairo')
 dep_libadwaita = dependency('libadwaita-1')
 dep_json_glib = dependency('json-glib-1.0')
 dep_gee = dependency('gee-0.8')
@@ -14,6 +13,11 @@ dep_accountsservice = dependency('accountsservice')
 dep_gtk4_layer_shell = dependency('gtk4-layer-shell-0', version: '>= 1.0.2')
 dep_libpulse = dependency('libpulse')
 dep_libpulse_mainloop_glib = dependency('libpulse-mainloop-glib')
+
+shared_files = files([
+  'Utils.vala',
+  'Constants.vala',
+])
 
 subdir('Settings')
 subdir('Wallpaper')

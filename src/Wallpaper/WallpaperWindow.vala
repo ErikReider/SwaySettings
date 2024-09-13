@@ -69,7 +69,7 @@ namespace Wallpaper {
             int height = info.height;
             int width = info.width;
             switch (info.config.scale_mode) {
-                case ScaleModes.FILL:
+                case Utils.ScaleModes.FILL:
                     double window_ratio = (double) buffer_width / buffer_height;
                     double bg_ratio = width / height;
                     if (window_ratio > bg_ratio) { // Taller wallpaper than monitor
@@ -88,7 +88,7 @@ namespace Wallpaper {
                         }
                     }
                     break;
-                case ScaleModes.FIT:
+                case Utils.ScaleModes.FIT:
                     double window_ratio = (double) buffer_width / buffer_height;
                     double bg_ratio = width / height;
                     if (window_ratio > bg_ratio) { // Taller wallpaper than monitor
@@ -107,14 +107,14 @@ namespace Wallpaper {
                         }
                     }
                     break;
-                case ScaleModes.STRETCH:
+                case Utils.ScaleModes.STRETCH:
                     snapshot.scale((float) buffer_width / width,
                                    (float) buffer_height / height);
                     snapshot.append_scaled_texture (info.texture,
                                                     SCALING_FILTER,
                                                     { { 0, 0 }, { width, height } });
                     break;
-                case ScaleModes.CENTER:
+                case Utils.ScaleModes.CENTER:
                     float x = (float) (buffer_width / 2 - width / 2);
                     float y = (float) (buffer_height / 2 - height / 2);
                     snapshot.append_scaled_texture (info.texture,

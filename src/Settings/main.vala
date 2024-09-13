@@ -1,6 +1,27 @@
 namespace SwaySettings {
     public static Settings self_settings;
     public static UserMgr userMgr;
+    public static Application wallpaper_application;
+
+    public static bool wallpaper_application_registered () {
+        if (wallpaper_application == null) {
+            wallpaper_application = new Application (
+                "org.erikreider.swaysettings-wallpaper",
+                ApplicationFlags.IS_LAUNCHER);
+        }
+
+        if (!wallpaper_application.is_registered) {
+            try {
+                // Register wallpaper application
+                wallpaper_application.register ();
+            } catch (Error e) {
+                debug (e.message);
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     public class Main {
         private static string page = "";
@@ -55,6 +76,8 @@ namespace SwaySettings {
             Adw.init ();
 
             userMgr = new UserMgr ();
+
+            wallpaper_application_registered ();
 
             try {
 #if USE_GLOBAL_GSCHEMA

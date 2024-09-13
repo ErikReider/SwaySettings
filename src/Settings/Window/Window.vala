@@ -222,7 +222,7 @@ namespace SwaySettings {
                 default:
                     return null;
                 case WALLPAPER:
-                    return new BackgroundPage (item, content_page, ipc);
+                    return new BackgroundPage (item, content_page);
                 case APPEARANCE:
                     return new ThemesPage (item, content_page);
                 case STARTUP_APPS:

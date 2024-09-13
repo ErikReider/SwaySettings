@@ -1,9 +1,9 @@
 executable(
   'sway-wallpaper',
-  [
+  files([
     'Wallpaper.vala',
-    'Window.vala',
-  ],
+    'WallpaperWindow.vala',
+  ]) + shared_files,
   vala_args: [
     '--target-glib=2.50'
   ],

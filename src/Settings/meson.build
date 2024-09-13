@@ -1,6 +1,5 @@
 swaysettings_sources += files([
   'main.vala',
-  'constants.vala',
   'Widgets/ThumbnailImage/ThumbnailImage.vala',
   # 'Widgets/OrderListSelector/OrderListSelector.vala',
   # 'Widgets/KeyboardInputSelector/KeyboardInputSelector.vala',
@@ -21,7 +20,7 @@ subdir('Pages')
 
 executable(
   'swaysettings',
-  swaysettings_sources,
+  swaysettings_sources + shared_files,
   vala_args: ['--target-glib=2.50', '--pkg=linux'],
   dependencies: [
     dep_glib,
