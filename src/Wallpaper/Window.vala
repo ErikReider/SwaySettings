@@ -2,6 +2,7 @@ namespace Wallpaper {
     class Window : Gtk.Window {
         const Gsk.ScalingFilter SCALING_FILTER = Gsk.ScalingFilter.NEAREST;
         const int TRANSITION_DURATION = 250;
+        const int BLUR_RADIUS = 100;
 
         private double animation_progress = 1.0;
         private double animation_progress_inv {
@@ -43,7 +44,9 @@ namespace Wallpaper {
                 apply_transformed_background (snapshot, old_background_info);
                 snapshot.pop ();
 
+                snapshot.push_blur (animation_progress * BLUR_RADIUS);
                 apply_transformed_background (snapshot, background_info);
+                snapshot.pop ();
                 snapshot.pop ();
             } else {
                 apply_transformed_background (snapshot, background_info);
