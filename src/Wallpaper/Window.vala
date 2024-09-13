@@ -11,8 +11,6 @@ namespace Wallpaper {
         }
         private Animation ? animation;
 
-        public signal void hide_transition_done ();
-
         public Window (Gtk.Application app, Gdk.Monitor monitor) {
             Object (application: app);
 
@@ -167,7 +165,6 @@ namespace Wallpaper {
             animation_progress = 1;
 
             queue_allocate ();
-            hide_transition_done ();
         }
 
         void animate (double to) {

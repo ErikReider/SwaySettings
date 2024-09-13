@@ -210,6 +210,12 @@ namespace Wallpaper {
 
             action.activate.disconnect (action_activated);
 
+            if (old_background_info.texture != null) {
+                delete old_background_info.texture;
+                old_background_info.width = 0;
+                old_background_info.height = 0;
+                old_background_info.texture = null;
+            }
             old_background_info = background_info;
             background_info.config = Config () {
                 path = param.get_child_value (0).get_string (),
@@ -229,30 +235,12 @@ namespace Wallpaper {
                 }
             }
 
-            unowned List<Gtk.Window> windows = app.get_windows ();
-            if (windows.length () > 0) {
-                uint signal_count = windows.length ();
-                windows.foreach ((w) => {
-                    Window window = (Window) w;
-                    ulong handler_id = 0;
-                    handler_id = window.hide_transition_done.connect (() => {
-                        window.disconnect (handler_id);
-                        signal_count--;
-                        if (signal_count == 0) {
-                            action_activated.callback ();
-                        }
-                    });
-                    window.change_wallpaper ();
-                });
-                // Wait until all windows animations are completed
-                yield;
-            }
-            if (old_background_info.texture != null) {
-                delete old_background_info.texture;
-                old_background_info.width = 0;
-                old_background_info.height = 0;
-                old_background_info.texture = null;
-            }
+            debug ("Old background: %s\n", old_background_info.to_string ());
+            debug ("New background: %s\n", background_info.to_string ());
+
+            app.get_windows ().foreach ((w) => {
+                ((Window) w).change_wallpaper ();
+            });
 
             action.activate.connect (action_activated);
         }
