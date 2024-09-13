@@ -23,7 +23,7 @@ Add these lines to the end of your main sway config file
 include ~/.config/sway/.generated_settings/*.conf
 
 # To apply the selected wallpaper
-exec_always sway-wallpaper -i ~/.cache/wallpaper -m fill
+exec sway-wallpaper
 
 # Start all of the non-hidden applications in ~/.config/autostart
 # This executable is included in the swaysettings package

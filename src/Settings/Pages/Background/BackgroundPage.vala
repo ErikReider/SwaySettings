@@ -16,8 +16,8 @@ namespace SwaySettings {
 
         private static Wallpaper current_wallpaper = Wallpaper () {
             path = Path.build_path (Path.DIR_SEPARATOR_S,
-                                    Environment.get_user_cache_dir (),
-                                    "wallpaper"),
+                                    Environment.get_user_config_dir (),
+                                    "swaysettings-wallpaper"),
             thumbnail_path = "",
             thumbnail_valid = false,
         };
@@ -111,8 +111,8 @@ namespace SwaySettings {
             try {
                 string dest_path = Path.build_path (
                     Path.DIR_SEPARATOR_S,
-                    Environment.get_user_cache_dir (),
-                    "wallpaper");
+                    Environment.get_user_config_dir (),
+                    "swaysettings-wallpaper");
 
                 File file = File.new_for_path (file_path);
                 File file_dest = File.new_for_path (dest_path);

@@ -28,7 +28,8 @@ namespace Utils {
         string color;
 
         public Config () {
-            default_path = Path.build_filename (Environment.get_user_cache_dir (), "wallpaper");
+            default_path = Path.build_filename (Environment.get_user_config_dir (),
+                "swaysettings-wallpaper");
 
             path = "";
             scale_mode = DEFAULT_MODE;
