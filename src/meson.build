@@ -15,8 +15,10 @@ dep_libpulse = dependency('libpulse')
 dep_libpulse_mainloop_glib = dependency('libpulse-mainloop-glib')
 
 shared_files = files([
-  'Utils.vala',
   'Constants.vala',
+  'Functions.vala',
+  'Strings.vala',
+  'Utils.vala',
 ])
 
 subdir('Settings')

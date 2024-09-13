@@ -12,6 +12,7 @@ executable(
     dep_gdk_pixbuf,
     dep_libadwaita,
     dep_gtk4_layer_shell,
+    dep_gee,
   ],
   install: true,
 )

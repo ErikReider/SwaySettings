@@ -94,4 +94,25 @@ namespace Utils {
         }
     }
 
+    public static Utils.ScaleModes get_scale_mode_gschema (Settings settings) {
+        Variant ? variant = SwaySettings.Functions.get_gsetting (settings,
+            Constants.SETTINGS_WALLPAPER_SCALING_MODE,
+            VariantType.INT32);
+        if (variant == null
+            || !variant.get_type ().equal (VariantType.INT32)) {
+            return 0;
+        }
+        return (Utils.ScaleModes) variant.get_int32 ();
+    }
+
+    public static string ? get_wallpaper_gschema (Settings settings) {
+        Variant ? variant = SwaySettings.Functions.get_gsetting (settings,
+            Constants.SETTINGS_WALLPAPER_PATH,
+            VariantType.STRING);
+        if (variant == null
+            || !variant.get_type ().equal (VariantType.STRING)) {
+            return null;
+        }
+        return variant.get_string ();
+    }
 }
