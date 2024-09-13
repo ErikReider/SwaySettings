@@ -1,7 +1,6 @@
 executable(
   'sway-wallpaper',
   [
-    'Animation.vala',
     'Wallpaper.vala',
     'Window.vala',
   ],

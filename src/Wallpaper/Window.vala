@@ -1,7 +1,7 @@
 namespace Wallpaper {
     class Window : Gtk.Window {
         const Gsk.ScalingFilter SCALING_FILTER = Gsk.ScalingFilter.NEAREST;
-        const int TRANSITION_DURATION = 250;
+        const int TRANSITION_DURATION = 500;
         const int BLUR_RADIUS = 100;
 
         private double animation_progress = 1.0;
@@ -10,15 +10,13 @@ namespace Wallpaper {
                 return (1 - animation_progress);
             }
         }
-        private Animation ? animation;
+        private Adw.TimedAnimation ? animation;
 
         public Window (Gtk.Application app, Gdk.Monitor monitor) {
             Object (application: app);
 
-            animation = new Animation (this, TRANSITION_DURATION,
-                           Animation.ease_in_out_cubic,
-                           animation_value_cb,
-                           animation_done_cb);
+            Adw.CallbackAnimationTarget target = new Adw.CallbackAnimationTarget (animation_value_cb);
+            animation = new Adw.TimedAnimation (this, 1.0, 0.0, TRANSITION_DURATION, target);
 
             GtkLayerShell.init_for_window (this);
             GtkLayerShell.set_monitor (this, monitor);
@@ -34,11 +32,12 @@ namespace Wallpaper {
 
         public void change_wallpaper () {
             // Start the transition
-            animate (0);
+            animation.set_value_to (0);
+            animation.play ();
         }
 
         public override void snapshot(Gtk.Snapshot snapshot) {
-            if (animation.is_running) {
+            if (animation.state == Adw.AnimationState.PLAYING) {
                 snapshot.push_cross_fade (animation_progress_inv);
 
                 apply_transformed_background (snapshot, old_background_info);
@@ -159,20 +158,7 @@ namespace Wallpaper {
         void animation_value_cb (double progress) {
             animation_progress = progress;
 
-            queue_resize ();
-        }
-
-        void animation_done_cb () {
-            animation.dispose ();
-
-            animation_progress = 1;
-
-            queue_allocate ();
-        }
-
-        void animate (double to) {
-            animation.stop ();
-            animation.start (animation_progress, to);
+            queue_draw ();
         }
     }
 }
