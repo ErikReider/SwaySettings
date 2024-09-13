@@ -232,7 +232,7 @@ namespace SwaySettings {
             Gtk.PropertyExpression expression = new Gtk.PropertyExpression (typeof(Gtk.StringObject), null, "string");
             combo_row.set_expression (expression);
             combo_row.set_selected (selected_index);
-            combo_row.notify["selected-index"].connect (
+            combo_row.notify["selected-item"].connect (
                 (sender, property) => {
                 string theme = themes.get ((int)((Adw.ComboRow) sender).get_selected ());
                 set_self_theme (theme);

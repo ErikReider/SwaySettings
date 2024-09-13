@@ -94,13 +94,14 @@ namespace SwaySettings {
                     continue;
                 }
                 do {
-                    Gtk.FlowBoxChild child = (Gtk.FlowBoxChild) widget;
-                    ThumbnailImage img = (ThumbnailImage) child.get_child ();
-                    if (selected_path == img.wallpaper.path) {
-                        flow_box.select_child (child);
-                        break;
+                    if (widget is Gtk.FlowBoxChild) {
+                        Gtk.FlowBoxChild child = (Gtk.FlowBoxChild) widget;
+                        ThumbnailImage img = (ThumbnailImage) child.get_child ();
+                        if (selected_path == img.wallpaper.path) {
+                            flow_box.select_child (child);
+                            break;
+                        }
                     }
-
                     widget = widget.get_next_sibling ();
                 } while (widget != null && widget != flow_box.get_first_child ());
             }
@@ -174,7 +175,7 @@ namespace SwaySettings {
                         }
                     }
                 } catch (Error e) {
-                    error (e.message);
+                    debug (e.message);
                 }
             });
         }

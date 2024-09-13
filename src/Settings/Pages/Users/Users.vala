@@ -157,7 +157,7 @@ namespace SwaySettings {
                             }
                         }
                     } catch (Error e) {
-                        error (e.message);
+                        debug (e.message);
                     }
                 });
             });
