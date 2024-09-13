@@ -3,7 +3,22 @@ using Gee;
 namespace SwaySettings {
     private errordomain ThumbnailerError { FAILED; }
 
+    public delegate bool BoolFunc<G> (G data);
+
     public class Functions {
+
+        public static void iter_listbox_children<G> (Gtk.ListBox listbox, BoolFunc<G> func) {
+            unowned Gtk.Widget ? widget = listbox.get_first_child ();
+            if (widget == null) {
+                return;
+            }
+            do {
+                if (func(widget)) {
+                    return;
+                }
+                widget = widget.get_next_sibling ();
+            } while (widget != null && widget != listbox.get_first_child ());
+        }
 
         public delegate void Delegate_walk_func (FileInfo file_info, File file);
 

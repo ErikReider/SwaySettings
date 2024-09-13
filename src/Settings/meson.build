@@ -4,7 +4,7 @@ swaysettings_sources += files([
   # 'Widgets/OrderListSelector/OrderListSelector.vala',
   # 'Widgets/KeyboardInputSelector/KeyboardInputSelector.vala',
   'IPC/IPC.vala',
-  # 'Rfkill/Rfkill.vala',
+  'Rfkill/Rfkill.vala',
   # 'Strings.vala',
   'ListItem/ListItem.vala',
   'Functions/Functions.vala',

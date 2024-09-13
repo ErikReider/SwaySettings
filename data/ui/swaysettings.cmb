@@ -4,7 +4,8 @@
   <ui>
 	(1,1,None,"Users.ui",None,None,None,None,None,None,None),
 	(2,1,None,"UserListItem.ui",None,None,None,None,None,None,None),
-	(4,1,None,"StartupAppsItem.ui",None,None,None,None,None,None,None)
+	(4,1,None,"StartupAppsItem.ui",None,None,None,None,None,None,None),
+	(5,1,None,"BluetoothDeviceRow.ui",None,None,None,None,None,None,None)
   </ui>
   <ui_library>
 	(1,"gtk","4.14",None),
@@ -43,7 +44,18 @@
 	(4,5,"GtkImage","image",3,None,None,None,None,None,None),
 	(4,6,"GtkBox",None,3,None,None,None,1,None,None),
 	(4,7,"GtkLabel","title",6,None,None,None,None,None,None),
-	(4,8,"GtkLabel","subtitle",6,None,None,None,1,None,None)
+	(4,8,"GtkLabel","subtitle",6,None,None,None,1,None,None),
+	(5,1,"GtkListBoxRow","SwaySettingsBluetoothDeviceRow",None,None,None,None,-1,None,None),
+	(5,2,"GtkBox",None,1,None,None,None,-1,None,None),
+	(5,3,"GtkImage","device_image",2,None,None,None,-1,None,None),
+	(5,4,"GtkBox",None,2,None,None,None,-1,None,None),
+	(5,5,"GtkBox",None,2,None,None,None,-1,None,None),
+	(5,6,"GtkLabel","device_name",4,None,None,None,-1,None,None),
+	(5,7,"GtkBox",None,4,None,None,None,1,None,None),
+	(5,8,"GtkLabel","status_label",7,None,None,None,None,None,None),
+	(5,9,"GtkSpinner","status_spinner",7,None,None,None,1,None,None),
+	(5,10,"GtkButton","connect_button",5,None,None,None,1,None,None),
+	(5,11,"GtkButton","remove_button",5,None,None,None,None,None,None)
   </object>
   <object_property>
 	(1,4,"GtkBox","spacing","12",None,None,None,None,None,None,None,None,None),
@@ -116,6 +128,29 @@
 	(4,7,"GtkLabel","xalign","0.0",None,None,None,None,None,None,None,None,None),
 	(4,7,"GtkWidget","css-classes","title-3",None,None,None,None,None,None,None,None,None),
 	(4,8,"GtkLabel","ellipsize","end",None,None,None,None,None,None,None,None,None),
-	(4,8,"GtkLabel","xalign","0.0",None,None,None,None,None,None,None,None,None)
+	(4,8,"GtkLabel","xalign","0.0",None,None,None,None,None,None,None,None,None),
+	(5,1,"GtkListBoxRow","activatable","False",None,None,None,None,None,None,None,None,None),
+	(5,1,"GtkListBoxRow","child",None,None,None,None,None,2,None,None,None,None),
+	(5,1,"GtkListBoxRow","selectable","False",None,None,None,None,None,None,None,None,None),
+	(5,2,"GtkBox","spacing","8",None,None,None,None,None,None,None,None,None),
+	(5,2,"GtkWidget","margin-bottom","8",None,None,None,None,None,None,None,None,None),
+	(5,2,"GtkWidget","margin-end","8",None,None,None,None,None,None,None,None,None),
+	(5,2,"GtkWidget","margin-start","8",None,None,None,None,None,None,None,None,None),
+	(5,2,"GtkWidget","margin-top","8",None,None,None,None,None,None,None,None,None),
+	(5,3,"GtkImage","icon-name","bluetooth-symbolic",None,None,None,None,None,None,None,None,None),
+	(5,3,"GtkImage","pixel-size","48",None,None,None,None,None,None,None,None,None),
+	(5,3,"GtkWidget","valign","center",None,None,None,None,None,None,None,None,None),
+	(5,4,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
+	(5,4,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
+	(5,5,"GtkBox","spacing","8",None,None,None,None,None,None,None,None,None),
+	(5,6,"GtkLabel","ellipsize","end",None,None,None,None,None,None,None,None,None),
+	(5,6,"GtkLabel","xalign","0.0",None,None,None,None,None,None,None,None,None),
+	(5,6,"GtkWidget","vexpand","True",None,None,None,None,None,None,None,None,None),
+	(5,8,"GtkLabel","xalign","0.0",None,None,None,None,None,None,None,None,None),
+	(5,10,"GtkWidget","valign","center",None,None,None,None,None,None,None,None,None),
+	(5,11,"GtkButton","has-frame","False",None,None,None,None,None,None,None,None,None),
+	(5,11,"GtkButton","icon-name","user-trash-symbolic",None,None,None,None,None,None,None,None,None),
+	(5,11,"GtkWidget","tooltip-text","Remove device",None,None,None,None,None,None,None,None,None),
+	(5,11,"GtkWidget","valign","center",None,None,None,None,None,None,None,None,None)
   </object_property>
 </cambalache-project>

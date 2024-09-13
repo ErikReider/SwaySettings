@@ -11,7 +11,7 @@
       <file>ui/UserListItem.ui</file>
       <!-- <file>ui/Pages/Pulse/PulseContent.ui</file> -->
       <!-- <file>ui/Pages/Pulse/PulseSinkInput.ui</file> -->
-      <!-- <file>ui/Pages/Bluetooth/BluetoothDeviceRow.ui</file> -->
+      <file>ui/BluetoothDeviceRow.ui</file>
       <!-- <file>ui/Pages/Bluetooth/Bluez/BluezPairDialog.ui</file> -->
   </gresource>
 </gresources>
