@@ -37,6 +37,15 @@ namespace Wallpaper {
         }
 
         public override void snapshot(Gtk.Snapshot snapshot) {
+            // Render a black base wallpaper
+            Gdk.RGBA bg_color = Gdk.RGBA () {
+                red = 0.0f,
+                green = 0.0f,
+                blue = 0.0f,
+                alpha = 1.0f,
+            };
+
+            snapshot.append_color (bg_color, { { 0, 0 }, { get_width(), get_height() } });
             if (animation.state == Adw.AnimationState.PLAYING) {
                 snapshot.push_cross_fade (animation_progress_inv);
 
