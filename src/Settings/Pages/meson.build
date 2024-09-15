@@ -17,8 +17,8 @@ swaysettings_sources += files([
   'StartupApps/StartupApps.vala',
   # 'Swaync/Swaync.vala',
   'Users/Users.vala',
-  # 'Pulse/PulsePage.vala',
-  # 'Pulse/PulseDaemon.vala',
-  # 'Pulse/PulseDevice.vala',
-  # 'Pulse/PulseSinkInput.vala',
+  'Pulse/PulsePage.vala',
+  'Pulse/PulseDaemon.vala',
+  'Pulse/PulseDevice.vala',
+  'Pulse/PulseSinkInput.vala',
 ])

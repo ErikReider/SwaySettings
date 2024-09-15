@@ -237,8 +237,8 @@ namespace SwaySettings {
                 //     return new Swaync (item, deck, ipc);
                 case BLUETOOTH:
                     return new BluetoothPage (item, content_page);
-                // case SOUND:
-                //     return new PulsePage (item, deck);
+                case SOUND:
+                    return new PulsePage (item, content_page);
                 // case KEYBOARD:
                 //     return new KeyboardPage (item, deck, ipc);
                 // case MOUSE:

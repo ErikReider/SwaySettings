@@ -1,0 +1,89 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $SwaySettingsSinkInputRow: ListBoxRow {
+  activatable: true;
+  selectable: true;
+
+  Box {
+    orientation: vertical;
+
+    Box {
+      orientation: horizontal;
+      spacing: 8;
+      margin-top: 8;
+      margin-start: 8;
+      margin-end: 8;
+
+      Image icon {
+        icon-name: "application-x-executable-symbolic.symbolic";
+        use-fallback: true;
+        pixel-size: 48;
+      }
+
+      Box {
+        orientation: vertical;
+        valign: center;
+        hexpand: true;
+
+        Label title {
+          hexpand: true;
+          justify: left;
+          ellipsize: end;
+          wrap: true;
+          wrap-mode: word;
+          xalign: 0.0;
+          label: "title";
+
+          styles [
+            "title-3"
+          ]
+        }
+
+        Label media_name {
+          hexpand: true;
+          justify: left;
+          ellipsize: end;
+          wrap: true;
+          wrap-mode: word;
+          xalign: 0.0;
+          label: "media_name";
+        }
+      }
+    }
+
+    Box {
+      margin-bottom: 8;
+      margin-start: 8;
+      margin-end: 8;
+
+      Label output_value {
+        width-chars: 3;
+      }
+
+      Scale scale {
+        orientation: horizontal;
+        hexpand: true;
+        digits: 0;
+
+        styles [
+          "pulse-scale"
+        ]
+
+        adjustment: Adjustment adjustment {
+          page-increment: 10.0;
+          step-increment: 1.0;
+          value: 0;
+          lower: 0;
+          upper: 100.0;
+        };
+      }
+
+      ToggleButton mute_toggle {
+        icon-name: "audio-volume-high-symbolic";
+        halign: center;
+        valign: center;
+      }
+    }
+  }
+}

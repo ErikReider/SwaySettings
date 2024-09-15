@@ -34,6 +34,7 @@ executable(
     dep_accountsservice,
     dep_libpulse,
     dep_libpulse_mainloop_glib,
+    dep_math,
   ],
   install: true,
 )
