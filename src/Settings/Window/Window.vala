@@ -136,6 +136,10 @@ namespace SwaySettings {
             sidebar_listbox.row_activated.connect ((row) => {
                 if (row == null) return;
                 SettingsItem settings_item = ((ISidebarListItem) row).settings_item;
+                if (current_page_name == settings_item.internal_name) {
+                    debug ("Ignoring change to same page...");
+                    return;
+                }
                 current_page_name = settings_item.internal_name;
                 Page ? page = get_page (settings_item);
                 if (page != null) {
