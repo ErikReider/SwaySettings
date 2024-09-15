@@ -1,0 +1,55 @@
+using Gtk 4.0;
+
+template $SwaySettingsBluetoothDeviceRow: ListBoxRow {
+  activatable: false;
+
+  child: Box {
+    margin-bottom: 8;
+    margin-end: 8;
+    margin-start: 8;
+    margin-top: 8;
+    spacing: 8;
+
+    Image device_image {
+      icon-name: 'bluetooth-symbolic';
+      pixel-size: 48;
+      valign: center;
+    }
+
+    Box {
+      hexpand: true;
+      orientation: vertical;
+
+      Label device_name {
+        ellipsize: end;
+        vexpand: true;
+        xalign: 0.0;
+      }
+
+      Box {
+        Label status_label {
+          xalign: 0.0;
+        }
+
+        Spinner status_spinner {}
+      }
+    }
+
+    Box {
+      spacing: 8;
+
+      Button remove_button {
+        has-frame: false;
+        icon-name: 'user-trash-symbolic';
+        tooltip-text: 'Remove device';
+        valign: center;
+      }
+
+      Button connect_button {
+        valign: center;
+      }
+    }
+  };
+
+  selectable: false;
+}

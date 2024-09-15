@@ -1,0 +1,94 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $SwaySettingsUsersContent: Adw.Bin {
+  ScrolledWindow {
+    Viewport {
+      Box {
+        halign: center;
+        spacing: 12;
+        valign: start;
+
+        Adw.Avatar avatar {
+          show-initials: true;
+          size: 144;
+          valign: center;
+
+          Popover popover {
+            ScrolledWindow {
+              hscrollbar-policy: never;
+              min-content-height: 196;
+              propagate-natural-width: true;
+
+              Viewport {
+                FlowBox popover_flowbox {
+                  homogeneous: true;
+                  max-children-per-line: 5;
+                  min-children-per-line: 4;
+                  selection-mode: none;
+                }
+              }
+            }
+          }
+        }
+
+        Box {
+          orientation: vertical;
+          spacing: 4;
+          valign: center;
+
+          Box {
+            spacing: 8;
+
+            Stack title_stack {
+              transition-type: crossfade;
+
+              StackPage {
+                child: Label title {
+                  label: 'Name';
+                  xalign: 0.0;
+
+                  styles [
+                    "title-1",
+                  ]
+                };
+
+                name: 'title';
+              }
+
+              StackPage {
+                child: Entry title_entry {
+                  input-purpose: name;
+                  placeholder-text: 'Name';
+                };
+
+                name: 'entry';
+              }
+            }
+
+            ToggleButton title_button {
+              accessible-role: toggle_button;
+              halign: center;
+              icon-name: 'document-edit-symbolic';
+              valign: center;
+
+              styles [
+                "circular",
+              ]
+            }
+          }
+
+          Label subtitle {
+            label: 'Subtitle';
+            xalign: 0.0;
+          }
+
+          Label subtitle2 {
+            label: 'Subtitle2';
+            xalign: 0.0;
+          }
+        }
+      }
+    }
+  }
+}

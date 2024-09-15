@@ -50,8 +50,22 @@ subdir('icons')
 
 gnome = import('gnome')
 
+# GResources
+blueprints = custom_target('blueprints',
+  input: files(run_command('find', '.', '-name', '*.blp').stdout().strip().split('\n')),
+  output: '.',
+  command: [
+    find_program('blueprint-compiler', required: true),
+    'batch-compile',
+    '@OUTPUT@', '@CURRENT_SOURCE_DIR@', '@INPUT@'
+  ],
+  build_always_stale: true,
+  build_by_default: true,
+)
+
 swaysettings_sources += gnome.compile_resources(
   'swaysettings-resources',
   'swaysettings.gresource.xml',
+  dependencies: [ blueprints ],
   c_name: 'sway_settings',
 )
