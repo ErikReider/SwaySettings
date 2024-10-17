@@ -107,3 +107,18 @@
   /* https://gitlab.gnome.org/GNOME/gtk/-/issues/5171 */
   transform: translate(0, 6px);
 }
+
+.storage-row {
+  margin: 10px 0;
+}
+
+.storage-row-usage {
+  margin-top: 4px;
+  border-radius: 6px;
+}
+
+.storage-row-usage progress,
+.storage-row-usage trough {
+  border-radius: 0px;
+  min-height: 24px;
+}

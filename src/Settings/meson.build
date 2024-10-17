@@ -1,5 +1,6 @@
 swaysettings_sources += files([
   'main.vala',
+  'Widgets/StorageRow/StorageRow.vala',
   'Widgets/ThumbnailImage/ThumbnailImage.vala',
   # 'Widgets/OrderListSelector/OrderListSelector.vala',
   # 'Widgets/KeyboardInputSelector/KeyboardInputSelector.vala',
@@ -32,6 +33,8 @@ executable(
     dep_granite7,
     dep_libxml,
     dep_accountsservice,
+    dep_udisks2,
+    dep_libgtop,
     dep_libpulse,
     dep_libpulse_mainloop_glib,
     dep_math,

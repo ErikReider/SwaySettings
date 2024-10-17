@@ -3,6 +3,7 @@ using Gee;
 namespace SwaySettings {
     public enum PageType {
         USERS,
+        ABOUT_PC,
         WALLPAPER,
         APPEARANCE,
         STARTUP_APPS,
@@ -12,13 +13,14 @@ namespace SwaySettings {
         BLUETOOTH,
         KEYBOARD,
         MOUSE,
-        TRACKPAD,
-        SYSTEM;
+        TRACKPAD;
 
         public string ? get_name () {
             switch (this) {
                 case USERS:
                     return "Users";
+                case ABOUT_PC:
+                    return "About This PC";
                 case WALLPAPER:
                     return "Wallpaper";
                 case APPEARANCE:
@@ -39,8 +41,6 @@ namespace SwaySettings {
                     return "Mouse";
                 case TRACKPAD:
                     return "Trackpad";
-                case SYSTEM:
-                    return "About this PC";
             }
             return null;
         }
@@ -49,6 +49,8 @@ namespace SwaySettings {
             switch (this) {
                 case USERS:
                     return "users";
+                case ABOUT_PC:
+                    return "about";
                 case WALLPAPER:
                     return "wallpaper";
                 case APPEARANCE:
@@ -69,8 +71,6 @@ namespace SwaySettings {
                     return "mouse";
                 case TRACKPAD:
                     return "trackpad";
-                case SYSTEM:
-                    return "about";
             }
             return null;
         }
@@ -96,7 +96,7 @@ namespace SwaySettings {
                 SettingsItem ("system-users-symbolic", PageType.USERS),
             }),
             SettingsCategory ("Hardware", {
-                SettingsItem ("computer-symbolic", PageType.SYSTEM),
+                SettingsItem ("computer-symbolic", PageType.ABOUT_PC),
                 SettingsItem ("bluetooth-symbolic", PageType.BLUETOOTH),
                 SettingsItem ("audio-speakers-symbolic", PageType.SOUND),
             }),
@@ -145,6 +145,7 @@ namespace SwaySettings {
                 if (page != null) {
                     Page prev_page = (Page) content_toolbarview.get_content ();
                     if (prev_page != null) {
+                        // TODO: Yield?
                         prev_page.on_back.begin (content_page);
                     }
                     split_view.set_show_content (true);
@@ -213,7 +214,7 @@ namespace SwaySettings {
                         this.sidebar_items += item;
                         sidebar_listbox.append (item);
                         // Start in the System page
-                        if (settings_item.page_type == PageType.SYSTEM) {
+                        if (settings_item.page_type == PageType.ABOUT_PC) {
                             sidebar_listbox.select_row (item);
                         }
                     }
@@ -225,6 +226,8 @@ namespace SwaySettings {
             switch (item.page_type) {
                 default:
                     return null;
+                case ABOUT_PC:
+                    return new AboutPC (item, content_page);
                 case WALLPAPER:
                     return new BackgroundPage (item, content_page);
                 case APPEARANCE:
