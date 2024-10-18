@@ -1,61 +1,32 @@
 using Gee;
 
 namespace SwaySettings {
-    [GtkTemplate (ui = "/org/erikreider/swaysettings/Page/Page.ui")]
-    public abstract class Page : Gtk.Box {
-
-        [GtkChild]
-        public unowned Hdy.HeaderBar header_bar;
-        [GtkChild]
-        public unowned Gtk.Button back_button;
-        [GtkChild]
-        public unowned Gtk.ButtonBox button_box;
-
-        [GtkChild]
-        private unowned Gtk.Revealer revealer;
-        [GtkChild]
-        public unowned Gtk.Box content_box;
-
+    public abstract class Page : Adw.Bin {
         public SettingsItem item;
 
         public virtual bool refresh_on_realize { get; default = true; }
 
-        protected Page (SettingsItem item, Hdy.Deck deck) {
-            Object ();
-
-            revealer.set_transition_type (Gtk.RevealerTransitionType.CROSSFADE);
-            revealer.set_transition_duration (200);
-
+        protected Page (SettingsItem item, Adw.NavigationPage page) {
             this.item = item;
-            header_bar.set_title (this.item.name);
-            back_button.clicked.connect (() => {
-                deck.navigate (Hdy.NavigationDirection.BACK);
-            });
 
             if (refresh_on_realize) {
                 this.realize.connect (on_refresh);
             }
-
-            // Begin reveal animation
-            Idle.add (() => {
-                revealer.reveal_child = true;
-                return Source.REMOVE;
-            });
         }
 
-        public void set_reveal_child (bool value) {
-            revealer.set_reveal_child (value);
-        }
+        // public void set_reveal_child (bool value) {
+        //     revealer.set_reveal_child (value);
+        // }
 
         public virtual void on_refresh () {}
 
-        public virtual async void on_back (Hdy.Deck deck) {}
+        public virtual async void on_back (Adw.NavigationPage page) {}
 
-        public static Hdy.Clamp get_clamped_widget (Gtk.Widget widget,
+        public static Adw.Clamp get_clamped_widget (Gtk.Widget widget,
                                                     bool have_margin = true,
                                                     int clamp_max = 600,
                                                     int clamp_tight = 400) {
-            var clamp = new Hdy.Clamp () {
+            var clamp = new Adw.Clamp () {
                 maximum_size = clamp_max,
                 tightening_threshold = clamp_tight,
                 orientation = Gtk.Orientation.HORIZONTAL,
@@ -68,28 +39,24 @@ namespace SwaySettings {
                 clamp.set_margin_end (margin);
             }
 
-            clamp.add (widget);
+            clamp.set_child (widget);
             clamp.show ();
             return clamp;
         }
 
         public static Gtk.ScrolledWindow get_scroll_widget (Gtk.Widget widget,
                                                             bool have_margin = true,
-                                                            bool shadow = false,
                                                             int clamp_max = 600,
                                                             int clamp_tight = 400) {
-            var scrolled_window = new Gtk.ScrolledWindow (null, null);
-            if (shadow) scrolled_window.shadow_type = Gtk.ShadowType.IN;
-            scrolled_window.expand = true;
+            var scrolled_window = new Gtk.ScrolledWindow ();
+            scrolled_window.set_hexpand (true);
+            scrolled_window.set_vexpand (true);
 
-            Gtk.Viewport viewport = new Gtk.Viewport (null, null);
-            scrolled_window.add (viewport);
-            viewport.add (get_clamped_widget (widget,
+            scrolled_window.set_child (get_clamped_widget (widget,
                                               have_margin,
                                               clamp_max,
                                               clamp_tight));
 
-            scrolled_window.show_all ();
             return scrolled_window;
         }
     }
@@ -117,26 +84,19 @@ namespace SwaySettings {
             }
         }
 
-        protected PageScroll (SettingsItem item, Hdy.Deck deck) {
-            base (item, deck);
+        protected PageScroll (SettingsItem item, Adw.NavigationPage page) {
+            base (item, page);
         }
 
         public override void on_refresh () {
-            foreach (var child in button_box.get_children ()) {
-                button_box.remove (child);
-            }
-            foreach (var child in content_box.get_children ()) {
-                content_box.remove (child);
-            }
-            content_box.add (get_scroll_widget (
-                                 set_child (),
-                                 have_margin,
-                                 shadow,
-                                 clamp_max,
-                                 clamp_tight));
+            base.set_child (get_scroll_widget (
+                           set_child (),
+                           have_margin,
+                           clamp_max,
+                           clamp_tight));
         }
 
-        public abstract Gtk.Widget set_child ();
+        public new abstract Gtk.Widget set_child ();
     }
 
     public abstract class PageTabbed : Page {
@@ -144,9 +104,9 @@ namespace SwaySettings {
         public Gtk.Stack stack;
 
         protected PageTabbed (SettingsItem item,
-                               Hdy.Deck deck,
-                               string no_tabs_text = "Nothing here...") {
-            base (item, deck);
+                              Adw.NavigationPage page,
+                              string no_tabs_text = "Nothing here...") {
+            base (item, page);
 
             stack = new Gtk.Stack ();
             stack.transition_type = Gtk.StackTransitionType.CROSSFADE;
@@ -167,27 +127,24 @@ namespace SwaySettings {
             // stack.set_margin_bottom (margin);
             // stack.set_margin_end (margin);
 
-            content_box.add (stack_switcher);
-            content_box.add (stack);
-            content_box.show_all ();
+            Gtk.Box content_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
+            set_child (content_box);
+            content_box.append (stack_switcher);
+            content_box.append (stack);
+
 
             var all_tabs = tabs ();
             if (all_tabs.length < 1) {
-                stack.add (new Gtk.Label (no_tabs_text));
-                stack.show_all ();
+                stack.add_named (new Gtk.Label (no_tabs_text), no_tabs_text);
             } else {
                 foreach (var tab in all_tabs) {
                     stack.add_titled (tab, tab.tab_name, tab.tab_name);
                 }
                 if (all_tabs.length == 1) {
                     stack_switcher.visible = false;
-                    header_bar.set_title (stack.visible_child_name);
+                    page.set_title (stack.visible_child_name);
                 }
             }
-        }
-
-        public override async void on_back (Hdy.Deck deck) {
-            stack.set_visible_child (stack.get_children ().nth_data (0));
         }
 
         public abstract PageTab[] tabs ();
@@ -201,13 +158,12 @@ namespace SwaySettings {
         protected PageTab (string tab_name, IPC ipc) {
             Object ();
             this.ipc = ipc;
-
-            this.orientation = Gtk.Orientation.VERTICAL;
-            this.spacing = 0;
-            this.expand = true;
-
             this.tab_name = tab_name;
-            this.show_all ();
+
+            orientation = Gtk.Orientation.VERTICAL;
+            spacing = 0;
+            hexpand = true;
+            vexpand = true;
         }
     }
 }

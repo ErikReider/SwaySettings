@@ -1,0 +1,74 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $SwaySettingsStorageRow: Gtk.ListBoxRow {
+  selectable: false;
+  activatable: false;
+
+  styles [
+    "storage-row"
+  ]
+
+  child: Gtk.Box {
+    spacing: 12;
+    orientation: horizontal;
+
+    Gtk.Box {
+      orientation: vertical;
+      spacing: 4;
+      valign: center;
+
+      Gtk.Image icon {
+        valign: center;
+        pixel-size: 64;
+        use-fallback: true;
+      }
+
+      Gtk.Label type_label {}
+    }
+
+    Gtk.Box {
+      orientation: vertical;
+      hexpand: true;
+      valign: center;
+
+      Gtk.Box {
+        orientation: horizontal;
+        spacing: 6;
+        hexpand: true;
+
+        Gtk.Box {
+          orientation: vertical;
+          hexpand: true;
+
+          Gtk.Label name_label {
+            ellipsize: end;
+            xalign: 0.0;
+
+            styles [
+              "heading"
+            ]
+          }
+
+          Gtk.Label size_label {
+            xalign: 0.0;
+          }
+        }
+
+        Gtk.Button browse_button {
+          label: "Browse";
+          halign: end;
+          valign: center;
+        }
+      }
+
+      Gtk.ProgressBar usage_bar {
+        overflow: hidden;
+
+        styles [
+          "storage-row-usage"
+        ]
+      }
+    }
+  };
+}

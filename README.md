@@ -22,12 +22,8 @@ Add these lines to the end of your main sway config file
 # Applies all generated settings
 include ~/.config/sway/.generated_settings/*.conf
 
-# Launches sway-wallpaper when setting wallpaper from swaymsg.
-# Without this, swaybg would launch instead...
-swaybg_command sway-wallpaper
-
 # To apply the selected wallpaper
-exec_always sway-wallpaper -i ~/.cache/wallpaper -m fill
+exec sway-wallpaper
 
 # Start all of the non-hidden applications in ~/.config/autostart
 # This executable is included in the swaysettings package

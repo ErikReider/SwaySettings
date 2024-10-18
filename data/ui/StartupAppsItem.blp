@@ -1,0 +1,57 @@
+using Gtk 4.0;
+
+template $SwaySettingsStartupAppsItem: ListBoxRow {
+  activatable: false;
+
+  child: Box {
+    Box {
+      hexpand: true;
+      valign: center;
+
+      Image image {
+        icon-name: 'item-missing-symbolic';
+        margin-bottom: 4;
+        margin-end: 4;
+        margin-start: 4;
+        margin-top: 4;
+        pixel-size: 96;
+      }
+
+      Box {
+        hexpand: true;
+        orientation: vertical;
+        valign: center;
+
+        Label title {
+          ellipsize: end;
+          xalign: 0.0;
+
+          styles [
+            "title-3",
+          ]
+        }
+
+        Label subtitle {
+          ellipsize: end;
+          xalign: 0.0;
+        }
+      }
+    }
+
+    Button button {
+      halign: end;
+      icon-name: 'window-close-symbolic';
+      margin-bottom: 8;
+      margin-end: 8;
+      margin-start: 8;
+      margin-top: 8;
+      valign: center;
+
+      styles [
+        "circular",
+      ]
+    }
+  };
+
+  selectable: false;
+}

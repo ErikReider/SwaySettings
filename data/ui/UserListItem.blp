@@ -1,0 +1,27 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $SwaySettingsUserListItem: ListBoxRow {
+  Box box {
+    spacing: 12;
+    valign: center;
+
+    Adw.Avatar avatar {
+      size: 48;
+    }
+
+    Box {
+      hexpand: true;
+      orientation: vertical;
+      valign: center;
+
+      Label name_label {
+        xalign: 0.0;
+      }
+
+      Label username_label {
+        xalign: 0.0;
+      }
+    }
+  }
+}

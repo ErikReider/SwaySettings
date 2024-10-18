@@ -1,0 +1,58 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $SwaySettingsAboutPCContent: Adw.Bin {
+  child: Gtk.Box {
+    orientation: vertical;
+    spacing: 32;
+    halign: center;
+
+    Gtk.Box {
+      orientation: horizontal;
+      spacing: 32;
+      valign: center;
+
+      Gtk.Image os_image {
+        pixel-size: 128;
+      }
+
+      Gtk.Box {
+        orientation: vertical;
+
+        Label os_name_label {
+          xalign: 0.0;
+
+          styles [
+            "title-1"
+          ]
+        }
+
+        Label os_version_label {
+          xalign: 0.0;
+        }
+
+        Label kernel_label {
+          xalign: 0.0;
+        }
+
+        Label cpu_label {
+          xalign: 0.0;
+        }
+
+        Label mem_label {
+          xalign: 0.0;
+        }
+
+        Label graphics_label {
+          xalign: 0.0;
+        }
+      }
+    }
+
+    Gtk.ListBox storage_list_box {
+      styles [
+        "background"
+      ]
+    }
+  };
+}

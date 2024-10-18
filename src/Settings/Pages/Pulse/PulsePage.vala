@@ -5,8 +5,8 @@ namespace SwaySettings {
     public class PulsePage : PageScroll {
         PulseContent content;
 
-        public PulsePage (SettingsItem item, Hdy.Deck deck) {
-            base (item, deck);
+        public PulsePage (SettingsItem item, Adw.NavigationPage page) {
+            base (item, page);
         }
 
         public override Gtk.Widget set_child () {
@@ -14,13 +14,13 @@ namespace SwaySettings {
             return this.content;
         }
 
-        public override async void on_back (Hdy.Deck deck) {
+        public override async void on_back (Adw.NavigationPage page) {
             yield this.content.on_back ();
         }
     }
 
-    [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/Pulse/PulseContent.ui")]
-    private class PulseContent : Gtk.Stack {
+    [GtkTemplate (ui = "/org/erikreider/swaysettings/ui/PulseContent.ui")]
+    private class PulseContent : Adw.Bin {
         private enum DeviceColumns {
             COLUMN_KEY,
             COLUMN_DEVICE,
@@ -41,13 +41,18 @@ namespace SwaySettings {
         public const string TOGGLE_ICON_UNMUTED = "audio-volume-high-symbolic";
 
         [GtkChild]
-        unowned Gtk.Box box_pulse;
+        unowned Gtk.Stack stack;
+
         [GtkChild]
-        unowned Gtk.Box box_error;
+        unowned Gtk.Box pulse_page;
+        [GtkChild]
+        unowned Gtk.Box error_page;
 
         // Sink
         [GtkChild]
-        unowned Hdy.PreferencesGroup output_group;
+        unowned Adw.PreferencesGroup output_group;
+        [GtkChild]
+        unowned Gtk.Label output_value;
         [GtkChild]
         unowned Gtk.Scale output_slider;
         [GtkChild]
@@ -58,14 +63,16 @@ namespace SwaySettings {
 
         // Bluetooth Profile ComboBox
         [GtkChild]
-        unowned Hdy.ActionRow output_profile_row;
+        unowned Adw.ActionRow output_profile_row;
         [GtkChild]
         unowned Gtk.ComboBox profile_combo_box;
         Gtk.ListStore profile_list_store;
 
         // Source
         [GtkChild]
-        unowned Hdy.PreferencesGroup input_group;
+        unowned Adw.PreferencesGroup input_group;
+        [GtkChild]
+        unowned Gtk.Label input_value;
         [GtkChild]
         unowned Gtk.Scale input_slider;
         [GtkChild]
@@ -78,7 +85,7 @@ namespace SwaySettings {
         [GtkChild]
         public unowned Gtk.ListBox levels_listbox;
         [GtkChild]
-        public unowned Hdy.PreferencesGroup sink_inputs_group;
+        public unowned Adw.PreferencesGroup sink_inputs_group;
 
         private PulseDevice ? default_sink = null;
         private PulseDevice ? default_source = null;
@@ -96,18 +103,19 @@ namespace SwaySettings {
 
             this.client.change_default_device.connect (default_device_changed);
 
-            this.client.bind_property ("running", this, "visible-child", BindingFlags.SYNC_CREATE,
+            this.client.bind_property ("running", stack, "visible-child",
+                                       BindingFlags.SYNC_CREATE,
                                        (bind, from_value, ref to_value) => {
-                to_value = box_error;
+                to_value = error_page;
                 if (!from_value.holds (Type.BOOLEAN)) return false;
                 if (!from_value.get_boolean ()) return true;
-                to_value = box_pulse;
+                to_value = pulse_page;
                 return true;
             });
 
-            this.set_visible_child (client.running ? box_pulse : box_error);
+            stack.set_visible_child (client.running ? pulse_page : error_page);
             this.client.notify["running"].connect (() => {
-                this.set_visible_child (client.running ? box_pulse : box_error);
+                stack.set_visible_child ((client.running ? pulse_page : error_page));
             });
 
             // UI signals
@@ -129,11 +137,13 @@ namespace SwaySettings {
             input_combo_box.changed.connect (combo_box_changed);
 
             output_slider.value_changed.connect (() => {
+                output_value.label = "%.0lf".printf(Math.round (output_slider.get_value ()));
                 this.client.set_device_volume (
                     default_sink,
                     (float) output_slider.get_value ());
             });
             input_slider.value_changed.connect (() => {
+                input_value.label = "%.0lf".printf(Math.round (input_slider.get_value ()));
                 this.client.set_device_volume (
                     default_source,
                     (float) input_slider.get_value ());
@@ -185,7 +195,7 @@ namespace SwaySettings {
                                              "text", ProfileColumns.COLUMN_NAME);
 
             // Sink slider and mute toggle button
-            output_slider.add_mark (25, Gtk.PositionType.TOP, null);
+            output_slider.add_mark (25, Gtk.PositionType.LEFT, null);
             output_slider.add_mark (50, Gtk.PositionType.TOP, null);
             output_slider.add_mark (75, Gtk.PositionType.TOP, null);
 
@@ -218,9 +228,9 @@ namespace SwaySettings {
 
             // Active sink inputs
             foreach (var item in this.client.active_sinks.values) {
-                levels_listbox.add (new SinkInputRow (item, client));
+                levels_listbox.append (new SinkInputRow (item, client));
             }
-            if (levels_listbox.get_children ().length () > 0) {
+            if (client.active_sinks.values.size > 0) {
                 sink_inputs_group.set_sensitive (true);
             }
             levels_listbox.set_sort_func (this.active_sinks_list_store_sort);
@@ -244,9 +254,8 @@ namespace SwaySettings {
         }
 
         private void mute_toggle_cb (Gtk.ToggleButton button) {
-            Gtk.Image img = (Gtk.Image) button.get_child ();
             string icon = button.active ? TOGGLE_ICON_MUTED : TOGGLE_ICON_UNMUTED;
-            img.set_from_icon_name (icon, Gtk.IconSize.BUTTON);
+            button.set_icon_name (icon);
         }
 
         private async void combo_box_changed (Gtk.ComboBox combo) {
@@ -478,33 +487,37 @@ namespace SwaySettings {
 
         /** Updates the correct `SinkInputRow` with new information */
         private void active_sink_change (PulseSinkInput sink) {
-            foreach (var row in levels_listbox.get_children ()) {
-                if (row == null) continue;
+            Functions.iter_listbox_children<Gtk.Widget> (levels_listbox, (row) => {
+                if (row == null || !(row is SinkInputRow)) return false;
                 var s = (SinkInputRow) row;
                 if (s.sink_input.cmp (sink)) {
                     s.update (sink);
-                    break;
+                    return true;
                 }
-            }
+                return false;
+            });
         }
 
         /** Adds a new `SinkInputRow` */
         private void active_sink_added (PulseSinkInput sink) {
-            levels_listbox.add (new SinkInputRow (sink, client));
+            levels_listbox.append (new SinkInputRow (sink, client));
             sink_inputs_group.set_sensitive (true);
         }
 
         /** Removes the correct `SinkInputRow` */
         private void active_sink_removed (PulseSinkInput sink) {
-            foreach (var row in levels_listbox.get_children ()) {
-                if (row == null) continue;
+            int count = 0;
+            Functions.iter_listbox_children<Gtk.Widget> (levels_listbox, (row) => {
+                if (row == null || !(row is SinkInputRow)) return false;
                 var s = (SinkInputRow) row;
+                count++;
                 if (s.sink_input.cmp (sink)) {
                     levels_listbox.remove (row);
-                    break;
+                    return true;
                 }
-            }
-            if (levels_listbox.get_children ().length () == 0) {
+                return false;
+            });
+            if (count == 0) {
                 sink_inputs_group.set_sensitive (false);
             }
         }

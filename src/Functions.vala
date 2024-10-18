@@ -3,7 +3,22 @@ using Gee;
 namespace SwaySettings {
     private errordomain ThumbnailerError { FAILED; }
 
+    public delegate bool BoolFunc<G> (G data);
+
     public class Functions {
+
+        public static void iter_listbox_children<G> (Gtk.ListBox listbox, BoolFunc<G> func) {
+            unowned Gtk.Widget ? widget = listbox.get_first_child ();
+            if (widget == null) {
+                return;
+            }
+            do {
+                if (func(widget)) {
+                    return;
+                }
+                widget = widget.get_next_sibling ();
+            } while (widget != null && widget != listbox.get_first_child ());
+        }
 
         public delegate void Delegate_walk_func (FileInfo file_info, File file);
 
@@ -11,7 +26,16 @@ namespace SwaySettings {
             try {
                 var directory = File.new_for_path (path);
                 if (!directory.query_exists ()) return 1;
-                var enumerator = directory.enumerate_children (FileAttribute.STANDARD_NAME, 0);
+
+                string[] attributes = {
+                    FileAttribute.STANDARD_NAME,
+                    FileAttribute.STANDARD_TYPE,
+                    FileAttribute.STANDARD_IS_BACKUP,
+                    FileAttribute.STANDARD_IS_SYMLINK,
+                    FileAttribute.STANDARD_IS_HIDDEN,
+                };
+                var enumerator = directory.enumerate_children (
+                    string.joinv (",", attributes), 0);
                 FileInfo file_prop;
                 while ((file_prop = enumerator.next_file ()) != null) {
                     func (file_prop, directory);
@@ -101,7 +125,10 @@ namespace SwaySettings {
         public static string ? set_gsetting (Settings settings,
                                              string name,
                                              Variant value) {
-            if (!settings.settings_schema.has_key (name)) return null;
+            if (!settings.settings_schema.has_key (name)) {
+                stderr.printf ("GSchema key \"%s\" not found!\n", name);
+                return null;
+            }
 
             var v_type = settings.settings_schema.get_key (name).get_value_type ();
             if (!v_type.equal (value.get_type ())) {
@@ -110,6 +137,10 @@ namespace SwaySettings {
             }
 
             switch (value.get_type_string ()) {
+                case "i":
+                    int32 val = value.get_int32 ();
+                    settings.set_int (name, val);
+                    return val.to_string ();
                 case "b":
                     bool val = value.get_boolean ();
                     settings.set_boolean (name, val);
@@ -146,6 +177,7 @@ namespace SwaySettings {
             File file = File.new_for_path (p);
             string path = file.get_uri ();
             string checksum = Checksum.compute_for_string (ChecksumType.MD5, path, path.length);
+            // Only use large thumbnails to match the widget size
             string checksum_path = "%s/thumbnails/large/%s.png".printf (
                 Environment.get_user_cache_dir (), checksum);
 

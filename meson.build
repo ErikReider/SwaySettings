@@ -13,6 +13,8 @@ add_project_arguments(
 
 i18n = import('i18n')
 
+swaysettings_sources = []
+
 subdir('data')
 subdir('src')
 subdir('po')

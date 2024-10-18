@@ -1,5 +1,5 @@
 namespace SwaySettings {
-    [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/Bluetooth/BluetoothDeviceRow.ui")]
+    [GtkTemplate (ui = "/org/erikreider/swaysettings/ui/BluetoothDeviceRow.ui")]
     class BluetoothDeviceRow : Gtk.ListBoxRow {
         public enum State {
             UNPAIRED,
@@ -78,10 +78,6 @@ namespace SwaySettings {
 
                 // Updates the ListBox sorting order
                 this.changed ();
-                // Without this, the style of each row would not be updated.
-                // If the row has rounded borders, those borders would not update.
-                // Would result in rounded rows in the middle
-                if (parent != null) parent.get_style_context ().changed ();
 
                 var paired = cgd.lookup_value ("Paired", VariantType.BOOLEAN);
                 if (paired != null) {
@@ -153,30 +149,26 @@ namespace SwaySettings {
         private void remove_button_clicked_cb () {
             if (!device.paired) return;
 
-            const string TITLE = "<b><big>Remove \"%s\"?</big></b>";
-            const string SUB = "If you remove the device, you will have to repair the device to use it.";
-            var window = (Hdy.ApplicationWindow) this.get_toplevel ();
+            string title = "Remove \"%s\"?".printf (device.alias);
+            const string BODY = "If you remove the device, you will have to repair the device to use it.";
+            var window = (Adw.ApplicationWindow) this.get_root ();
 
-            var dialog = new Gtk.MessageDialog.with_markup (
-                window,
-                Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                Gtk.MessageType.QUESTION,
-                Gtk.ButtonsType.OK_CANCEL,
-                TITLE,
-                device.alias) {
-                secondary_text = SUB,
-                secondary_use_markup = false,
-            };
-            var result = (Gtk.ResponseType) dialog.run ();
-            dialog.close ();
-            if (result == Gtk.ResponseType.OK) {
-                try {
-                    adapter.remove_device (new ObjectPath (((DBusProxy) device).g_object_path));
-                    device.trusted = false;
-                } catch (Error e) {
-                    stderr.printf ("Remove device Error: %s\n", e.message);
+            var dialog = new Adw.MessageDialog (window, title, BODY);
+            dialog.add_responses ("cancel", "Cancel", "remove", "Remove", null);
+            dialog.set_response_appearance ("remove", Adw.ResponseAppearance.DESTRUCTIVE);
+            dialog.set_default_response ("cancel");
+            dialog.set_close_response ("cancel");
+            dialog.response.connect ((dialog, response) => {
+                if (response == "remove") {
+                    try {
+                        adapter.remove_device (new ObjectPath (((DBusProxy) device).g_object_path));
+                        device.trusted = false;
+                    } catch (Error e) {
+                        stderr.printf ("Remove device Error: %s\n", e.message);
+                    }
                 }
-            }
+            });
+            dialog.present ();
         }
 
         /**
@@ -205,14 +197,14 @@ namespace SwaySettings {
 
             device_name.set_label (device.alias);
 
-            const string DEFAULT_ICON = "bluetooth-symbolic.symbolic";
+            const string DEFAULT_ICON = "bluetooth-symbolic";
             string icon = DEFAULT_ICON;
             if (device.icon != null && device.icon.length > 0) icon = device.icon;
-            if (!Gtk.IconTheme.get_default ().has_icon (icon)) {
+            if (!Gtk.IconTheme.get_for_display (get_display ()).has_icon (icon)) {
                 icon = DEFAULT_ICON;
             }
-            device_image.set_from_icon_name (icon, Gtk.IconSize.INVALID);
-            device_image.icon_size = 48;
+            device_image.set_from_icon_name (icon);
+            device_image.pixel_size = 48;
         }
 
         private void update_state () {

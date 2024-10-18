@@ -1,40 +1,60 @@
 namespace SwaySettings {
     public static Settings self_settings;
+    public static UserMgr userMgr;
+    public static Application wallpaper_application;
 
-    public class Main : Object {
+    public static bool wallpaper_application_registered () {
+        if (wallpaper_application == null) {
+            wallpaper_application = new Application (
+                "org.erikreider.swaysettings-wallpaper",
+                ApplicationFlags.IS_LAUNCHER);
+        }
 
+        if (!wallpaper_application.is_registered) {
+            try {
+                // Register wallpaper application
+                wallpaper_application.register ();
+            } catch (Error e) {
+                debug (e.message);
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public class Main {
         private static string page = "";
-        private static bool list_pages = false;
-
-        private const OptionEntry[] ENTRIES = {
-            {
-                "page",
-                'p',
-                OptionFlags.NONE,
-                OptionArg.STRING,
-                ref page,
-                "Navigate to page",
-                "[PAGE_NAME]"
-            },
-            {
-                "list-pages",
-                'l',
-                OptionFlags.NONE,
-                OptionArg.NONE,
-                ref list_pages,
-                "List all pages",
-                null
-            },
-            { null }
-        };
 
         private static string ? page_value = null;
 
-        public static int main (string[] args) {
-            try {
-                Gtk.init_with_args (ref args, null, ENTRIES, null);
+        private static void print_help () {
+            string[] msg = {
+                "Usage:",
+                "  swaysettings [OPTION...]",
+                "Options:",
+                "  -p, --page=[PAGE_NAME]\tNavigate to page",
+                "  -l, --list-pages\t\tList all pages",
+            };
+            print("%s\n", string.joinv("\n", msg));
+            Process.exit(0);
+        }
 
-                if (list_pages) {
+        private static void parse_cmdline (string[] args) {
+            if (args.length < 2) {
+                return;
+            }
+            switch (args[1]) {
+                case "-p":
+                case "--page":
+                    if (args.length < 3 || args[2].length == 0) {
+                        stderr.printf ("Too few arguments");
+                        Process.exit(1);
+                    }
+                    page = args[2];
+                    break;
+                case "-l":
+                case "--list-pages":
                     EnumClass enumc = (EnumClass) typeof (PageType).class_ref ();
                     foreach (var enum_value in enumc.values) {
                         string ? name = ((PageType) enum_value.value)
@@ -42,15 +62,29 @@ namespace SwaySettings {
                         if (name == null) continue;
                         print ("%s\n", name);
                     }
-                    return 0;
-                }
+                    Process.exit(0);
+                default:
+                    print_help();
+                    break;
+            }
+        }
 
-                Hdy.init ();
+        public static int main (string[] args) {
+            parse_cmdline(args);
 
+            Gtk.init ();
+            Adw.init ();
+
+            userMgr = new UserMgr ();
+
+            wallpaper_application_registered ();
+
+            try {
 #if USE_GLOBAL_GSCHEMA
                 // Use the global compiled gschema in /usr/share/glib-2.0/schemas/*
                 self_settings = new Settings ("org.erikreider.swaysettings");
 #else
+                message ("Using local GSchema");
                 // Meant for use in development.
                 // Uses the compiled gschema in SwaySettings/data/
                 // Should never be used in production!
@@ -60,7 +94,7 @@ namespace SwaySettings {
                 SettingsSchemaSource sss = new SettingsSchemaSource.from_directory (settings_dir, null, false);
                 SettingsSchema schema = sss.lookup ("org.erikreider.swaysettings", false);
                 if (sss.lookup == null) {
-                    print ("ID not found.");
+                    error ("ID not found.\n");
                     return 0;
                 }
                 self_settings = new Settings.full (schema, null, null);
@@ -78,26 +112,27 @@ namespace SwaySettings {
                         win.navigato_to_page (page_value);
                     }
                 });
-                SimpleAction simple_action = new SimpleAction (
-                    "page", GLib.VariantType.STRING);
-                simple_action.activate.connect ((param) => {
+                SimpleAction action = new SimpleAction ("page", VariantType.STRING);
+                action.activate.connect ((param) => {
                     page_value = param.get_string ();
                 });
-                app.add_action (simple_action);
+                app.add_action (action);
                 app.register ();
 
-                app.activate_action ("page", page ?? "");
+                if (page != null && page.length > 0) {
+                    app.activate_action ("page", page);
+                }
 
                 // Load custom CSS
                 Gtk.CssProvider css_provider = new Gtk.CssProvider ();
                 css_provider.load_from_resource (
                     "/org/erikreider/swaysettings/style.css");
-                Gtk.StyleContext.add_provider_for_screen (
-                    Gdk.Screen.get_default (),
+                Gtk.StyleContext.add_provider_for_display (
+                    Gdk.Display.get_default (),
                     css_provider,
                     Gtk.STYLE_PROVIDER_PRIORITY_SETTINGS);
 
-                return app.run (args);
+                return app.run ();
             } catch (Error e) {
                 stderr.printf ("%s\n", e.message);
                 return 1;

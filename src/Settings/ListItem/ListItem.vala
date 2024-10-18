@@ -1,10 +1,9 @@
 namespace SwaySettings {
-    public class ListItem : Hdy.ActionRow {
+    public class ListItem : Adw.ActionRow {
 
         public ListItem (string title, Gtk.Widget widget) {
-            Object ();
-            set_title (title);
-            this.child = widget;
+            add_prefix (new Gtk.Label (title));
+            add_suffix (widget);
             widget.halign = Gtk.Align.FILL;
             widget.hexpand = true;
         }
@@ -60,7 +59,7 @@ namespace SwaySettings {
         }
     }
 
-    public class ListComboEnum : Hdy.ComboRow {
+    public class ListComboEnum : Adw.ComboRow {
 
         public delegate void selected_index (int index);
 
@@ -73,14 +72,14 @@ namespace SwaySettings {
 
             int selected_index = 0;
             int i = 0;
-            this.set_for_enum (enum_type, (val) => {
-                if (i == index) selected_index = i;
-                i++;
-                var nick = val.get_nick ();
-                return nick.up (1) + nick.slice (1, nick.length);
-            });
-            this.set_selected_index (selected_index);
-            this.notify["selected-index"].connect ((e) => callback (get_selected_index ()));
+            // this.set_for_enum (enum_type, (val) => {
+            //     if (i == index) selected_index = i;
+            //     i++;
+            //     var nick = val.get_nick ();
+            //     return nick.up (1) + nick.slice (1, nick.length);
+            // });
+            // this.set_selected_index (selected_index);
+            // this.notify["selected-index"].connect ((e) => callback (get_selected_index ()));
         }
 
         public void set_selected_from_enum (int val) {
@@ -88,7 +87,7 @@ namespace SwaySettings {
             for (int i = 0; i < this.get_model ().get_n_items (); i++) {
                 if (val == i) selected_index = i;
             }
-            this.set_selected_index (selected_index);
+            // this.set_selected_index (selected_index);
         }
     }
 }
