@@ -57,7 +57,8 @@ namespace SwaySettings {
             preview_image = new ThumbnailImage (current_wallpaper,
                                                 PREVIEW_IMAGE_HEIGHT,
                                                 PREVIEW_IMAGE_WIDTH,
-                                                scaling_mode) {
+                                                scaling_mode,
+                                                false) {
                 halign = Gtk.Align.CENTER,
                 valign = Gtk.Align.START,
                 vexpand = false,

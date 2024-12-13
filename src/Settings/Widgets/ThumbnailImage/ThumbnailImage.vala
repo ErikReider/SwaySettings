@@ -1,23 +1,60 @@
 namespace SwaySettings {
     public class ThumbnailImage : Adw.Bin {
         private Utils.ScaleModes scaling_mode;
+        private Gtk.Overlay overlay;
         private Gtk.Picture picture;
-        public string ? image_path;
+        private Gtk.Button remove_button;
+        private Gtk.Button preview_button;
+
+        public string ?image_path;
         public Wallpaper wallpaper;
         public int width;
         public int height;
-        public bool have_remove_button = false;
+        public bool full_size;
 
         public signal void on_remove_click (Wallpaper wp);
         public signal void on_set_image (bool visible);
 
         construct {
+            overlay = new Gtk.Overlay ();
+            set_child (overlay);
+
             picture = new Gtk.Picture () {
                 content_fit = Gtk.ContentFit.COVER,
                 can_shrink = true,
                 vexpand = true,
                 hexpand = true,
             };
+
+            var button_box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 2) {
+                halign = Gtk.Align.END,
+                valign = Gtk.Align.START,
+            };
+            overlay.add_overlay (button_box);
+
+            // Preview button
+            preview_button =
+                new Gtk.Button.from_icon_name ("image-x-generic-symbolic") {
+                has_frame = false,
+                visible = false,
+            };
+            preview_button.add_css_class ("circular");
+            preview_button.add_css_class ("img-remove-button");
+            preview_button.clicked.connect (show_preview);
+            button_box.append (preview_button);
+
+            // Remove button
+            remove_button =
+                new Gtk.Button.from_icon_name ("window-close-symbolic") {
+                has_frame = false,
+                visible = false,
+            };
+            remove_button.add_css_class ("circular");
+            remove_button.add_css_class ("img-remove-button");
+            remove_button.clicked.connect (() => {
+                on_remove_click (this.wallpaper);
+            });
+            button_box.append (remove_button);
 
             // Clip the corners to make them rounded
             add_css_class ("thumbnail-image");
@@ -27,11 +64,13 @@ namespace SwaySettings {
                                int height,
                                int width,
                                Utils.ScaleModes scaling_mode,
+                               bool full_size,
                                int margin = 8) {
             this.wallpaper = wallpaper;
             this.width = width;
             this.height = height;
             this.scaling_mode = scaling_mode;
+            this.full_size = full_size;
             set_scaling_mode ();
             set_request ();
 
@@ -39,8 +78,6 @@ namespace SwaySettings {
             this.margin_bottom = margin;
             this.margin_start = margin;
             this.margin_end = margin;
-
-            set_child (picture);
 
             refresh_image.begin ();
         }
@@ -56,7 +93,6 @@ namespace SwaySettings {
             this.width = width;
             this.height = height;
             this.scaling_mode = scaling_mode;
-            this.have_remove_button = have_remove_button;
             set_scaling_mode ();
             set_request ();
 
@@ -65,22 +101,8 @@ namespace SwaySettings {
             this.margin_start = margin;
             this.margin_end = margin;
 
-            if (have_remove_button) {
-                var overlay = new Gtk.Overlay ();
-                var button = new Gtk.Button.from_icon_name ("window-close-symbolic") {
-                    halign = Gtk.Align.END,
-                    valign = Gtk.Align.START,
-                    has_frame = false,
-                };
-                button.add_css_class ("circular");
-                button.add_css_class ("img-remove-button");
-                button.clicked.connect (() => on_remove_click (this.wallpaper));
-                set_child (overlay);
-                overlay.set_child (picture);
-                overlay.add_overlay (button);
-            } else {
-                set_child (picture);
-            }
+            preview_button.set_visible (true);
+            remove_button.set_visible (have_remove_button);
 
             if (!checked_folder_exists) {
                 check_folder_exist ();
@@ -116,14 +138,23 @@ namespace SwaySettings {
         }
 
         public async void refresh_image() {
+            overlay.set_child (new Adw.Spinner () {
+                width_request = 128,
+                height_request = 128,
+            });
+
             // Load the images in the background without blocking the main thread
-            var data = new ThumbnailThread (image_path, wallpaper, width, height,
-                refresh_image.callback);
+            var data = new ThumbnailThread (image_path, wallpaper, width,
+                                            height, full_size,
+                                            refresh_image.callback);
+
             new Thread<void> (wallpaper.path, data.begin);
             yield;
 
             image_path = data.image_path;
             picture.set_paintable (data.texture);
+            // Replace spinner with picture
+            overlay.set_child (picture);
 
             on_set_image (data.texture != null);
         }
@@ -154,37 +185,65 @@ namespace SwaySettings {
                 stderr.printf ("Check Folder Error: %s\n", e.message);
             }
         }
+
+        private void show_preview () {
+            Adw.Dialog dialog = new Adw.Dialog () {
+                title = "Preview",
+                follows_content_size = true,
+            };
+
+            var toolbar_view = new Adw.ToolbarView ();
+            toolbar_view.set_top_bar_style (Adw.ToolbarStyle.FLAT);
+            toolbar_view.set_reveal_top_bars (true);
+            toolbar_view.add_top_bar (new Adw.HeaderBar ());
+            dialog.set_child (toolbar_view);
+
+            var image = new ThumbnailImage (wallpaper, -1, -1, scaling_mode,
+                                            true, 0);
+            image.add_css_class ("no-round");
+            toolbar_view.set_content (image);
+
+            dialog.present (get_root ());
+        }
     }
 
     private class ThumbnailThread {
-        public string ? image_path;
-        public Gdk.Texture ? texture = null;
+        public string ?image_path;
+        public Gdk.Texture ?texture = null;
 
         Wallpaper wallpaper;
         int width;
         int height;
+        bool full_size;
         SourceFunc callback;
 
-        public ThumbnailThread(string ? image_path,
+        public ThumbnailThread(string ?image_path,
                                Wallpaper wallpaper,
-                               int width, int height,
+                               int width,
+                               int height,
+                               bool full_size,
                                SourceFunc callback) {
             this.image_path = image_path;
             this.wallpaper = wallpaper;
             this.width = width;
             this.height = height;
+            this.full_size = full_size;
             this.callback = callback;
         }
 
         public void begin() {
-            if (wallpaper.thumbnail_valid && wallpaper.thumbnail_path != null) {
+            if (full_size) {
+                image_path = wallpaper.path;
+                show_image ();
+            } else if (wallpaper.thumbnail_valid &&
+                       wallpaper.thumbnail_path != null) {
                 image_path = wallpaper.thumbnail_path;
                 show_image ();
             } else {
                 generate_thumbnail ();
             }
 
-            Idle.add((owned) callback);
+            Idle.add ((owned) callback);
         }
 
         private void generate_thumbnail () {
@@ -199,8 +258,13 @@ namespace SwaySettings {
 
         private void show_image () {
             try {
-                Gdk.Pixbuf pixbuf = new Gdk.Pixbuf.from_file_at_scale (
-                    image_path, width, height, true);
+                Gdk.Pixbuf pixbuf;
+                if (full_size) {
+                    pixbuf = new Gdk.Pixbuf.from_file (image_path);
+                } else {
+                    pixbuf = new Gdk.Pixbuf.from_file_at_scale (
+                        image_path, width, height, true);
+                }
 
                 texture = Gdk.Texture.for_pixbuf (pixbuf);
             } catch (Error e) {

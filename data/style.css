@@ -15,6 +15,10 @@
   border-radius: 9px;
 }
 
+.thumbnail-image.no-round picture {
+  border-radius: 0;
+}
+
 .theme-preview-item .window {
   border-radius: 6px;
   box-shadow: 0 1px 4px 1px alpha(black, 0.13),
