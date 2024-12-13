@@ -9,6 +9,7 @@ namespace SwaySettings {
         public bool have_remove_button = false;
 
         public signal void on_remove_click (Wallpaper wp);
+        public signal void on_set_image (bool visible);
 
         construct {
             picture = new Gtk.Picture () {
@@ -123,6 +124,8 @@ namespace SwaySettings {
 
             image_path = data.image_path;
             picture.set_paintable (data.texture);
+
+            on_set_image (data.texture != null);
         }
 
         private void check_folder_exist () {
@@ -155,7 +158,7 @@ namespace SwaySettings {
 
     private class ThumbnailThread {
         public string ? image_path;
-        public Gdk.Texture ? texture;
+        public Gdk.Texture ? texture = null;
 
         Wallpaper wallpaper;
         int width;
@@ -201,6 +204,7 @@ namespace SwaySettings {
 
                 texture = Gdk.Texture.for_pixbuf (pixbuf);
             } catch (Error e) {
+                texture = null;
                 stderr.printf ("Set Image Error: %s\n", e.message);
             }
         }

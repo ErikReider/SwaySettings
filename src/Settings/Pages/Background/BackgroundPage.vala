@@ -330,7 +330,7 @@ namespace SwaySettings {
 
             bool checked_folder_exists = false;
             foreach (var wp in paths) {
-                var item = new ThumbnailImage.batch (
+                ThumbnailImage item = new ThumbnailImage.batch (
                     wp,
                     LIST_IMAGE_HEIGHT, LIST_IMAGE_WIDTH,
                     scaling_mode,
@@ -349,8 +349,10 @@ namespace SwaySettings {
 
                 flow_box.append (f_child);
                 if (wp.path == path) flow_box.select_child (f_child);
-                // Idle.add (add_images.callback);
-                // yield;
+
+                item.on_set_image.connect ((visible) => {
+                    f_child.set_visible (visible);
+                });
             }
         }
 
