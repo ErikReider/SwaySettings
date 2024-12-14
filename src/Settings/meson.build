@@ -21,7 +21,7 @@ subdir('Pages')
 executable(
   'swaysettings',
   swaysettings_sources + shared_files,
-  vala_args: ['--target-glib=2.50', '--pkg=linux'],
+  vala_args: ['--target-glib=2.82', '--pkg=linux'],
   dependencies: [
     dep_glib,
     dep_gio_unix,

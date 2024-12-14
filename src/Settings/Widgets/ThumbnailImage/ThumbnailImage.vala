@@ -215,7 +215,7 @@ namespace SwaySettings {
         int width;
         int height;
         bool full_size;
-        SourceFunc callback;
+        unowned SourceFunc callback;
 
         public ThumbnailThread(string ?image_path,
                                Wallpaper wallpaper,
@@ -243,7 +243,7 @@ namespace SwaySettings {
                 generate_thumbnail ();
             }
 
-            Idle.add ((owned) callback);
+            Idle.add (() => callback ());
         }
 
         private void generate_thumbnail () {

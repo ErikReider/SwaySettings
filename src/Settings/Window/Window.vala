@@ -277,7 +277,7 @@ namespace SwaySettings {
                     break;
             }
 
-            if (page is IpcPage) {
+            if (page is IIpcPage) {
                 if (!ipc.inited) {
                     return new NoIpcPage (item, content_page);
                 }

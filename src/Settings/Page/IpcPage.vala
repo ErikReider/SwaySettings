@@ -1,5 +1,5 @@
 namespace SwaySettings {
-    public interface IpcPage {
+    public interface IIpcPage {
         public abstract unowned IPC ipc { get; set; }
     }
 

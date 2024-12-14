@@ -23,7 +23,7 @@ namespace SwaySettings {
         }
     }
 
-    public abstract class InputPage : PageScroll, IpcPage {
+    public abstract class InputPage : PageScroll, IIpcPage {
         public IPC ipc { get; set; }
 
         InputDevice device;
