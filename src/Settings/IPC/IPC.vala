@@ -28,12 +28,21 @@ namespace SwaySettings {
 
         private Socket socket = null;
 
+        public bool inited { get; private set; }
+
         public IPC () {
+            string ? socket_path = get_sock_path ();
+
+            this.inited = socket_path != null;
+            if (socket_path == null) {
+                return;
+            }
+
             try {
                 socket = new Socket (GLib.SocketFamily.UNIX,
                                      GLib.SocketType.STREAM,
                                      GLib.SocketProtocol.DEFAULT);
-                socket.connect (new GLib.UnixSocketAddress (get_sock_path ()));
+                socket.connect (new GLib.UnixSocketAddress (socket_path));
                 socket.set_blocking (true);
             } catch (Error e) {
                 stderr.printf (e.message + "\n");
@@ -51,7 +60,7 @@ namespace SwaySettings {
             }
         }
 
-        private string get_sock_path () {
+        private string ? get_sock_path () {
             string[] paths = {
                 GLib.Environment.get_variable ("SWAYSOCK"),
                 GLib.Environment.get_variable ("I3SOCK"),
@@ -63,10 +72,6 @@ namespace SwaySettings {
                     break;
                 }
             }
-            if (path == null) {
-                stderr.printf ("COULD NOT FIND SWAY SOCKET ENVIRONMENT VARIABLE!!!");
-                Process.exit (1);
-            }
             return path;
         }
 
@@ -76,6 +81,9 @@ namespace SwaySettings {
         }
 
         public Json.Node get_reply (SwayCommands cmd) {
+            if (!inited) {
+                return new Json.Node (Json.NodeType.NULL);
+            }
             try {
                 ByteArray np = new ByteArray ();
                 np.append (magic_number);
@@ -103,6 +111,9 @@ namespace SwaySettings {
         }
 
         public bool run_command (string cmd) {
+            if (!inited) {
+                return false;
+            }
             try {
                 ByteArray np = new ByteArray ();
 

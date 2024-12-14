@@ -23,13 +23,13 @@ namespace SwaySettings {
         }
     }
 
-    public abstract class InputPage : PageScroll {
+    public abstract class InputPage : PageScroll, IpcPage {
+        public IPC ipc { get; set; }
+
         InputDevice device;
         HashMap<string, Language> languages;
 
         public abstract InputTypes input_type { get; }
-
-        IPC ipc;
 
         protected InputPage (SettingsItem item,
                              Adw.NavigationPage page,

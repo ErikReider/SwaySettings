@@ -9,6 +9,7 @@ swaysettings_sources += files([
   'ListItem/ListItem.vala',
   'Window/Window.vala',
   'Window/SidebarListItem.vala',
+  'Page/IpcPage.vala',
   'Page/Page.vala',
   'Page/InputPage.vala',
   'UserMgr/UserMgr.vala',

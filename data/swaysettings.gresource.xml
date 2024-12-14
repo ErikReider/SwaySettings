@@ -3,6 +3,8 @@
   <gresource prefix="/org/erikreider/swaysettings">
       <file compressed="true">style.css</file>
 
+      <file preprocess="xml-stripblanks">icons/scalable/actions/arrows-questionmark-symbolic.svg</file>
+
       <file>ui/OrderListSelector.ui</file>
       <file>ui/KeyboardInputSelector.ui</file>
       <!-- <file>ui/Item/Item.ui</file> -->
