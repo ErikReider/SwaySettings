@@ -19,6 +19,7 @@ namespace SwaySettings {
             return new InputPageOption (new ArrayList<Gtk.Widget>.wrap ({
                 get_state_widget (),
                 get_scroll_factor (),
+                get_scroll_method (),
                 get_natural_scroll (),
                 get_tap (),
                 get_click_method (),

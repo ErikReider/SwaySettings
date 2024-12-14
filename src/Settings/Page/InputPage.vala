@@ -370,6 +370,18 @@ namespace SwaySettings {
                         device.input_type.parse (), profile.parse ()));
             });
         }
+
+        // Scroll method
+        public Gtk.Widget get_scroll_method () {
+            return new ListComboEnum ("Scroll Method",
+                                      device.data.scroll_method,
+                                      typeof (ScrollMethods),
+                                      (index) => {
+                var profile = (ScrollMethods) index;
+                device.data.scroll_method = profile;
+                write_new_settings (
+                    "input type:%s scroll_method %s".printf (
+                        device.input_type.parse (), profile.parse ()));
             });
         }
     }
