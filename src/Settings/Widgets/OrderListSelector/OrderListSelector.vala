@@ -5,7 +5,7 @@ namespace SwaySettings {
         public abstract string to_string ();
     }
 
-    [GtkTemplate (ui = "/org/erikreider/swaysettings/Widgets/OrderListSelector/OrderListSelector.ui")]
+    [GtkTemplate (ui = "/org/erikreider/swaysettings/ui/OrderListSelector.ui")]
     public class OrderListSelector : Gtk.Box {
         [GtkChild]
         unowned Gtk.ListBox list_box;
@@ -34,9 +34,9 @@ namespace SwaySettings {
             this.update_callback = update_callback;
             this.list = list;
 
-            this.get_style_context ().add_class ("content");
-            this.get_style_context ().add_class ("view");
-            this.get_style_context ().add_class ("frame");
+            add_css_class ("content");
+            add_css_class ("view");
+            add_css_class ("frame");
 
             // Activates row on keyboard navigation
             list_box.row_selected.connect ((_, r) => {
@@ -89,17 +89,14 @@ namespace SwaySettings {
         }
 
         void update_list () {
-            foreach (var w in list_box.get_children ()) {
-                list_box.remove (w);
-            }
+            list_box.remove_all ();
             for (int i = 0; i < list.size; i++) {
                 var item = list[i];
                 var row = new Gtk.ListBoxRow ();
-                row.add (new Gtk.Label (item.to_string ()));
-                list_box.add (row);
+                row.set_child (new Gtk.Label (item.to_string ()));
+                list_box.append (row);
                 if (selected_index == i) row.activate ();
             }
-            this.show_all ();
         }
     }
 }

@@ -7,46 +7,50 @@ namespace SwaySettings {
 
         ArrayList<DesktopAppInfo> startup_apps;
 
-        public StartupApps (SettingsItem item, Hdy.Deck deck) {
-            base (item, deck);
+        public StartupApps (SettingsItem item, Adw.NavigationPage page) {
+            base (item, page);
         }
 
         public override Gtk.Widget set_child () {
             var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 8);
             list_box = new Gtk.ListBox ();
             list_box.selection_mode = Gtk.SelectionMode.NONE;
-            list_box.get_style_context ().add_class ("content");
+            list_box.add_css_class ("content");
             add_apps ();
 
             var add_button = new Gtk.Button.with_label ("Add Application");
+            add_button.add_css_class ("pill");
+            add_button.set_halign (Gtk.Align.CENTER);
             add_button.clicked.connect ((e) => {
-                var window = (SwaySettings.Window)get_toplevel ();
-                new DesktopAppChooser (window, (desktop) => {
+                new DesktopAppChooser (this, (desktop) => {
                     add_app_to_startup.begin (desktop.filename, () => {
                         refresh_apps ();
                     });
                 });
             });
 
-            box.add (list_box);
-            box.add (add_button);
+            box.append (list_box);
+            box.append (add_button);
             return box;
         }
 
         void add_apps () {
             startup_apps = get_startup_apps ();
             foreach (var app_info in startup_apps) {
-                list_box.add (new StartupAppsItem (app_info, (a_info) => {
+                list_box.append (new StartupAppsItem (app_info, (a_info) => {
                     remove_app_from_startup.begin (
                         a_info.get_filename (),
                         () => refresh_apps ());
                 }));
             }
-            list_box.show_all ();
         }
 
         void refresh_apps () {
-            list_box.foreach ((element) => list_box.remove (element));
+            unowned Gtk.Widget child = list_box.get_first_child ();
+            while (child != null) {
+                list_box.remove (child);
+                child = list_box.get_first_child ();
+            }
             add_apps ();
         }
 
@@ -102,7 +106,7 @@ namespace SwaySettings {
         }
     }
 
-    [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/StartupApps/StartupAppsItem.ui")]
+    [GtkTemplate (ui = "/org/erikreider/swaysettings/ui/StartupAppsItem.ui")]
     class StartupAppsItem : Gtk.ListBoxRow {
 
         [GtkChild]
@@ -121,7 +125,7 @@ namespace SwaySettings {
         public StartupAppsItem (DesktopAppInfo app_info, on_remove callback) {
             Object ();
             image.set_pixel_size (48);
-            image.set_from_gicon (app_info.get_icon (), Gtk.IconSize.INVALID);
+            image.set_from_gicon (app_info.get_icon ());
             title.set_text (app_info.get_display_name ());
             subtitle.set_text (app_info.get_commandline ());
 
@@ -129,48 +133,63 @@ namespace SwaySettings {
         }
     }
 
-    [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/StartupApps/StartupAppsChooser.ui")]
-    class DesktopAppChooser : Hdy.Window {
-
+    class DesktopAppChooser : Adw.Dialog {
+    
         Gtk.ListStore liststore = new Gtk.ListStore (3,
                                                      typeof (string),
                                                      typeof (string),
                                                      typeof (int));
-
-        [GtkChild]
-        unowned Gtk.TreeView tree_view;
-
-        [GtkChild]
-        unowned Gtk.Button save_button;
-
-        [GtkChild]
-        unowned Gtk.Button cancel_button;
-
+    
+        Gtk.TreeView tree_view = new Gtk.TreeView ();
+    
+        Gtk.Button cancel_button = new Gtk.Button.with_label ("Cancel");
+        Gtk.Button save_button = new Gtk.Button.with_label ("Add");
+    
         ArrayList<DesktopAppInfo> apps = new ArrayList<DesktopAppInfo> ();
-
+    
         public delegate void on_selected (DesktopAppInfo app_info);
 
-        public DesktopAppChooser (SwaySettings.Window window,
-                                    on_selected callback) {
-            Object ();
-            this.set_attached_to (window);
-            this.set_transient_for (window);
+        // TODO: Make tree_view scalable
+        // TODO: Turn dialog into bottom sheet when window is small size
+        construct {
+            set_title ("Choose Application");
 
+            Adw.ToolbarView toolbar = new Adw.ToolbarView ();
+            set_child (toolbar);
+
+            // Header
+            Adw.HeaderBar headerbar = new Adw.HeaderBar ();
+            headerbar.set_show_start_title_buttons (false);
+            headerbar.set_show_end_title_buttons (false);
+            headerbar.pack_start (cancel_button);
+            headerbar.pack_end (save_button);
+            save_button.add_css_class ("suggested-action");
+            toolbar.add_top_bar (headerbar);
+
+            // Content
+            Gtk.ScrolledWindow scrolled_window = new Gtk.ScrolledWindow ();
+            scrolled_window.hscrollbar_policy = Gtk.PolicyType.NEVER;
+            scrolled_window.set_propagate_natural_height (true);
+            toolbar.set_content (scrolled_window);
+            scrolled_window.set_child (tree_view);
+        }
+    
+        public DesktopAppChooser (Gtk.Widget parent, on_selected callback) {
             tree_view.set_model (liststore);
-
-            cancel_button.clicked.connect (() => this.close ());
+    
+            cancel_button.clicked.connect (() => close ());
             tree_view.row_activated.connect (() => {
                 callback (get_selected ());
-                this.close ();
+                close ();
             });
             save_button.clicked.connect (() => {
                 var selection = get_selected ();
                 if (selection != null) {
                     callback (selection);
-                    this.close ();
+                    close ();
                 }
             });
-
+    
             var icon_column = new Gtk.TreeViewColumn.with_attributes (
                 "icon",
                 new Gtk.CellRendererPixbuf (),
@@ -181,15 +200,15 @@ namespace SwaySettings {
                 new Gtk.CellRendererText (),
                 "text",
                 0);
-
+    
             tree_view.append_column (icon_column);
             tree_view.append_column (name_column);
-
+    
             populate_list ();
 
-            this.show_all ();
+            present (parent);
         }
-
+    
         void populate_list () {
             var all_apps = GLib.AppInfo.get_all ();
             all_apps.sort ((a, b) => {
@@ -212,7 +231,7 @@ namespace SwaySettings {
                 }
             }
         }
-
+    
         DesktopAppInfo ? get_selected () {
             var selection = tree_view.get_selection ();
             Gtk.TreeModel tree_model;

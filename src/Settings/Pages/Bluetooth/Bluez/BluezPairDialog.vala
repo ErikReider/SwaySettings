@@ -1,18 +1,11 @@
 namespace Bluez {
-    [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/Bluetooth/Bluez/BluezPairDialog.ui")]
     public class PairDialog : Gtk.Dialog {
-        [GtkChild]
-        unowned Gtk.Box custom_box;
+        Adw.Bin code_widget;
 
-        [GtkChild]
-        unowned Gtk.Image image;
-        [GtkChild]
-        unowned Gtk.Image badge;
+        Gtk.Image image;
 
-        [GtkChild]
-        unowned Gtk.Label title_label;
-        [GtkChild]
-        unowned Gtk.Label message_label;
+        Gtk.Label title_label;
+        Gtk.Label message_label;
 
         public enum AuthType {
             REQUEST_CONFIRMATION,
@@ -82,6 +75,48 @@ namespace Bluez {
         }
 
         construct {
+            // Build dialog
+            {
+                set_resizable (false);
+                default_width = 250;
+
+                unowned Gtk.Box box = get_content_area ();
+                box.margin_top = 8;
+                box.margin_start = 8;
+                box.margin_end = 8;
+                box.set_orientation (Gtk.Orientation.VERTICAL);
+                box.set_spacing (12);
+
+                image = new Gtk.Image.from_icon_name ("video-display") {
+                    pixel_size = 96,
+                    halign = Gtk.Align.CENTER,
+                    margin_top = 8,
+                    margin_bottom = 8,
+                    margin_start = 8,
+                    margin_end = 8,
+                };
+                box.append (image);
+
+                title_label = new Gtk.Label (null) {
+                    wrap = true,
+                    hexpand = true,
+                    justify = Gtk.Justification.CENTER,
+                };
+                title_label.add_css_class ("title-2");
+                box.append (title_label);
+                message_label = new Gtk.Label (null) {
+                    wrap = true,
+                    hexpand = true,
+                    justify = Gtk.Justification.CENTER,
+                };
+                message_label.add_css_class ("body");
+                box.append (message_label);
+
+                code_widget = new Adw.Bin ();
+                box.append (code_widget);
+            }
+
+            // Logic
             Device1 ? device;
             string device_name = "Unknown Bluetooth Device";
             try {
@@ -90,69 +125,57 @@ namespace Bluez {
                     "org.bluez",
                     object_path,
                     DBusProxyFlags.GET_INVALIDATED_PROPERTIES);
-                image.set_from_icon_name (device.icon ?? "bluetooth",
-                                          Gtk.IconSize.INVALID);
+                image.set_from_icon_name (device.icon ?? "bluetooth");
                 device_name = device.name ?? device.address;
             } catch (IOError e) {
-                image.set_from_icon_name ("bluetooth", Gtk.IconSize.INVALID);
+                image.set_from_icon_name ("bluetooth");
                 stderr.printf ("Pair dialog construct: %s\n", e.message);
             }
 
             switch (auth_type) {
                 case AuthType.REQUEST_CONFIRMATION:
-                    badge.set_from_icon_name ("dialog-password",
-                                              Gtk.IconSize.INVALID);
                     message_label.label =
                         "Make sure the code displayed on “%s” matches the one below."
                          .printf (device_name);
 
-                    var confirm = add_button ("Pair",
-                                              Gtk.ResponseType.ACCEPT);
-                    confirm.get_style_context ().add_class (
-                        Gtk.STYLE_CLASS_SUGGESTED_ACTION);
+                    var confirm = add_button ("Pair", Gtk.ResponseType.ACCEPT);
+                    confirm.add_css_class ("suggested-action");
                     break;
                 case AuthType.DISPLAY_PASSKEY:
-                    badge.set_from_icon_name ("dialog-password",
-                                              Gtk.IconSize.INVALID);
                     message_label.label =
                         ("“%s” would like to pair with this device."
                          + " Make sure the code displayed on “%s” matches the one below.")
                          .printf (device_name, device_name);
 
                     var confirm = add_button ("Pair", Gtk.ResponseType.ACCEPT);
-                    confirm.get_style_context ().add_class (
-                        Gtk.STYLE_CLASS_SUGGESTED_ACTION);
+                    confirm.add_css_class ("suggested-action");
                     break;
                 case AuthType.DISPLAY_PIN_CODE:
-                    badge.set_from_icon_name ("dialog-password",
-                                              Gtk.IconSize.INVALID);
                     message_label.label =
                         "Type the code displayed below on “%s”, followed by Enter."
                          .printf (device_name);
                     break;
                 case AuthType.REQUEST_AUTHORIZATION:
-                    badge.set_from_icon_name ("dialog-question",
-                                              Gtk.IconSize.INVALID);
                     message_label.label = "“%s” would like to pair with this device."
                                            .printf (device_name);
 
                     var confirm = add_button ("Pair", Gtk.ResponseType.ACCEPT);
-                    confirm.get_style_context ().add_class (
-                        Gtk.STYLE_CLASS_SUGGESTED_ACTION);
+                    confirm.add_css_class ("suggested-action");
                     break;
             }
 
             // Display the passkey
             if (passkey != null && passkey.length > 0) {
-                var passkey_label = new Gtk.Label (passkey);
-                passkey_label.get_style_context ().add_class (
-                    Gtk.STYLE_CLASS_HEADER);
+                var passkey_label = new Gtk.Label (passkey) {
+                    margin_top = 8,
+                    margin_bottom = 8,
+                    margin_start = 8,
+                    margin_end = 8,
+                };
+                passkey_label.add_css_class ("title-1");
 
-                custom_box.add (passkey_label);
-                custom_box.show_all ();
+                code_widget.set_child (passkey_label);
             }
-
-            modal = true;
         }
     }
 }

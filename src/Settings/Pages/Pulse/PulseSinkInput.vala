@@ -57,10 +57,13 @@ namespace SwaySettings {
         }
     }
 
-    [GtkTemplate (ui = "/org/erikreider/swaysettings/Pages/Pulse/PulseSinkInput.ui")]
+    [GtkTemplate (ui = "/org/erikreider/swaysettings/ui/PulseSinkInput.ui")]
     public class SinkInputRow : Gtk.ListBoxRow {
         [GtkChild]
         unowned Gtk.ToggleButton mute_toggle;
+
+        [GtkChild]
+        unowned Gtk.Label output_value;
 
         [GtkChild]
         unowned Gtk.Scale scale;
@@ -93,15 +96,16 @@ namespace SwaySettings {
                                        scale, "sensitive",
                                        BindingFlags.INVERT_BOOLEAN);
             mute_toggle.toggled.connect ((button) => {
-                Gtk.Image img = (Gtk.Image) button.get_child ();
                 string icon = button.active
                     ? PulseContent.TOGGLE_ICON_MUTED
                     : PulseContent.TOGGLE_ICON_UNMUTED;
-                img.set_from_icon_name (icon, Gtk.IconSize.BUTTON);
+                button.set_icon_name (icon);
 
                 client.set_sink_input_mute (button.active, sink_input);
             });
             scale.value_changed.connect (() => {
+                output_value.label = "%.0lf".printf(Math.round (scale.get_value ()));
+                output_value.label = ((int) scale.get_value ()).to_string ();
                 client.set_sink_input_volume (
                     sink_input,
                     (float) scale.get_value ());
@@ -111,18 +115,22 @@ namespace SwaySettings {
         public void update (PulseSinkInput sink_input) {
             this.sink_input = sink_input;
 
-            title.set_text (sink_input.name);
-            media_name.set_text (sink_input.media_name);
+            title.set_markup (Markup.printf_escaped (
+                    "<span text_transform='capitalize'>%s</span>", sink_input.name));
+            title.set_visible (sink_input.name != null && sink_input.name.length > 0);
+
+            media_name.set_visible (sink_input.media_name != null
+                && sink_input.media_name.length > 0);
+            media_name.set_markup (Markup.printf_escaped (
+                    "<span text_transform='capitalize'>%s</span>", sink_input.media_name));
 
             icon.set_from_icon_name (
-                sink_input.application_icon_name ?? "application-x-executable",
-                Gtk.IconSize.DIALOG);
+                sink_input.application_icon_name ?? "application-x-executable");
 
             mute_toggle.set_active (sink_input.is_muted);
 
             scale.set_value (sink_input.volume);
-
-            this.show_all ();
+            output_value.label = "%.0lf".printf(Math.round (scale.get_value ()));
         }
     }
 }

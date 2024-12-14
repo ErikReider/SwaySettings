@@ -1,10 +1,10 @@
 namespace SwaySettings {
-    public class ListItem : Hdy.ActionRow {
+    public class ListItem : Adw.ActionRow {
 
-        public ListItem (string title, Gtk.Widget widget) {
-            Object ();
-            set_title (title);
-            this.child = widget;
+        public ListItem (string title,
+                         Gtk.Widget widget) {
+            add_prefix (new Gtk.Label (title));
+            add_suffix (widget);
             widget.halign = Gtk.Align.FILL;
             widget.hexpand = true;
         }
@@ -15,12 +15,16 @@ namespace SwaySettings {
 
         public delegate bool on_release_delegate (Gtk.Range range);
 
-        public ListSlider (string title, double value,
-                            double min,
-                            double max,
-                            double step,
-                            on_release_delegate on_release) {
-            var slider_widget = new Gtk.Scale.with_range (Gtk.Orientation.HORIZONTAL, min, max, step);
+        public ListSlider (string title,
+                           double value,
+                           double min,
+                           double max,
+                           double step,
+                           on_release_delegate on_release) {
+            var slider_widget =
+                new Gtk.Scale.with_range (Gtk.Orientation.HORIZONTAL, min, max,
+                                          step);
+            slider_widget.set_draw_value (true);
             slider_widget.set_value (value);
             base (title, slider_widget);
 
@@ -28,7 +32,8 @@ namespace SwaySettings {
             slider_widget.value_changed.connect ((event) => on_release (event));
         }
 
-        public void add_mark (double value, Gtk.PositionType position) {
+        public void add_mark (double value,
+                              Gtk.PositionType position) {
             slider_widget.add_mark (value, position, null);
         }
 
@@ -42,7 +47,9 @@ namespace SwaySettings {
 
         public delegate bool on_state_set (bool state);
 
-        public ListSwitch (string title, bool value, on_state_set on_release) {
+        public ListSwitch (string title,
+                           bool value,
+                           on_state_set on_release) {
             var switch_widget = new Gtk.Switch ();
             switch_widget.set_active (value);
             switch_widget.state_set.connect ((value) => on_release (value));
@@ -60,27 +67,36 @@ namespace SwaySettings {
         }
     }
 
-    public class ListComboEnum : Hdy.ComboRow {
+    public class ListComboEnum : Adw.ComboRow {
 
-        public delegate void selected_index (int index);
+        public delegate void selected_index (uint index);
 
-        public ListComboEnum (string title, int index, GLib.Type enum_type, selected_index callback) {
-            Object ();
+        public ListComboEnum (string title,
+                              int index,
+                              GLib.Type enum_type,
+                              selected_index callback) {
+            var enumc = (EnumClass) enum_type.class_ref ();
+            ListStore liststore = new ListStore (typeof(Gtk.StringObject));
 
             this.set_title (title);
-            // this.height_request = List_Item.height_req;
             this.selectable = false;
 
-            int selected_index = 0;
+            set_model (liststore);
+
             int i = 0;
-            this.set_for_enum (enum_type, (val) => {
-                if (i == index) selected_index = i;
+            foreach (var value in enumc.values) {
+                weak string nick = value.value_nick;
+                string name = nick.up (1) + nick.slice (1, nick.length);
+                liststore.append (new Gtk.StringObject (name));
+
+                if (i == index) {
+                    set_selected (i);
+                }
                 i++;
-                var nick = val.get_nick ();
-                return nick.up (1) + nick.slice (1, nick.length);
+            }
+            this.notify["selected"].connect ((e) => {
+                callback (get_selected ());
             });
-            this.set_selected_index (selected_index);
-            this.notify["selected-index"].connect ((e) => callback (get_selected_index ()));
         }
 
         public void set_selected_from_enum (int val) {
@@ -88,7 +104,7 @@ namespace SwaySettings {
             for (int i = 0; i < this.get_model ().get_n_items (); i++) {
                 if (val == i) selected_index = i;
             }
-            this.set_selected_index (selected_index);
+            this.set_selected (selected_index);
         }
     }
 }

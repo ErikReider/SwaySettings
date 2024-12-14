@@ -1,8 +1,9 @@
 using Gee;
 
 namespace SwaySettings {
-    [GtkTemplate (ui = "/org/erikreider/swaysettings/Widgets/KeyboardInputSelector/KeyboardInputSelector.ui")]
-    public class KeyboardInputSelector : Hdy.Window {
+    [GtkTemplate (ui =
+                      "/org/erikreider/swaysettings/ui/KeyboardInputSelector.ui")]
+    public class KeyboardInputSelector : Adw.Dialog {
 
         [GtkChild]
         unowned Gtk.ListBox list_box;
@@ -12,12 +13,10 @@ namespace SwaySettings {
         [GtkChild]
         unowned Gtk.Button button_cancel;
 
-        public KeyboardInputSelector (SwaySettings.Window window,
-                                      HashMap<string, Language> all_languages,
+        public KeyboardInputSelector (HashMap<string, Language> all_languages,
                                       ArrayList<Language> used_languages,
                                       OrderListSelector ols) {
-            this.set_attached_to (window);
-            this.set_transient_for (window);
+            set_follows_content_size (true);
 
             button_add.sensitive = false;
 
@@ -32,12 +31,13 @@ namespace SwaySettings {
                 var lang = values.get ();
                 if (used_languages.contains (lang)) continue;
                 var label = new Gtk.Label (lang.to_string ());
-                label.set_alignment (0f, 0.5f);
+                label.set_xalign (0.0f);
+                label.set_yalign (0.5f);
                 label.set_single_line_mode (true);
                 Pango.AttrList attrs = new Pango.AttrList ();
                 attrs.insert (Pango.attr_scale_new (1.1));
                 label.attributes = attrs;
-                list_box.add (label);
+                list_box.append (label);
                 langs += lang;
             }
 
@@ -68,7 +68,6 @@ namespace SwaySettings {
                 this.destroy ();
             });
 
-            this.show_all ();
             list_box.unselect_all ();
             list_box.set_focus_child (null);
         }

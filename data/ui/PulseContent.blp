@@ -1,0 +1,171 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $SwaySettingsPulseContent: Adw.Bin {
+  child: Stack stack {
+    transition-type: crossfade;
+
+    StackPage {
+      name: "pulse_page";
+
+      child: Box pulse_page {
+        spacing: 12;
+        orientation: vertical;
+
+        Adw.PreferencesGroup output_group {
+          title: 'Output Device';
+
+          Adw.ActionRow {
+            title: 'Device';
+
+            ComboBox output_combo_box {
+              valign: center;
+              hexpand: true;
+            }
+          }
+
+          Adw.ActionRow output_profile_row {
+            title: 'Configuration';
+
+            ComboBox profile_combo_box {
+              valign: center;
+              hexpand: true;
+            }
+          }
+
+          Adw.PreferencesRow {
+            child: Box {
+              margin-top: 8;
+              margin-bottom: 8;
+              margin-start: 8;
+              margin-end: 8;
+
+              Label output_value {
+                width-chars: 3;
+              }
+
+              Scale output_slider {
+                adjustment: Adjustment output_adjustment {
+                  page-increment: 10.0;
+                  step-increment: 1.0;
+                  value: 0;
+                  lower: 0;
+                  upper: 100.0;
+                };
+
+                digits: 0;
+                hexpand: true;
+
+                styles [
+                  "pulse-scale"
+                ]
+              }
+
+              ToggleButton output_mute_toggle {
+                halign: center;
+                icon-name: 'audio-volume-high-symbolic';
+                valign: center;
+              }
+            };
+          }
+        }
+
+        Adw.PreferencesGroup input_group {
+          title: 'Input Device';
+
+          Adw.ActionRow {
+            title: 'Device';
+
+            ComboBox input_combo_box {
+              valign: center;
+              hexpand: true;
+            }
+          }
+
+          Adw.PreferencesRow {
+            Box {
+              margin-top: 8;
+              margin-bottom: 8;
+              margin-start: 8;
+              margin-end: 8;
+
+              Label input_value {
+                width-chars: 3;
+              }
+
+              Scale input_slider {
+                adjustment: Adjustment input_adjustment {
+                  page-increment: 10.0;
+                  step-increment: 1.0;
+                  upper: 100.0;
+                };
+
+                digits: 0;
+                hexpand: true;
+
+                styles [
+                  "pulse-scale"
+                ]
+              }
+
+              ToggleButton input_mute_toggle {
+                halign: center;
+                icon-name: 'audio-volume-high-symbolic';
+                valign: center;
+              }
+            }
+          }
+        }
+
+        Adw.PreferencesGroup sink_inputs_group {
+          title: 'Volume Levels';
+
+          ListBox levels_listbox {
+            styles [
+              "content"
+            ]
+
+            [placeholder]
+            Box {
+              opacity: 0.5;
+              orientation: vertical;
+              spacing: 12;
+
+              Image {
+                icon-name: 'application-x-executable-symbolic';
+                pixel-size: 72;
+              }
+
+              Label {
+                label: 'Nothing playing';
+              }
+            }
+          }
+        }
+      };
+    }
+
+    StackPage {
+      name: "error_page";
+
+      child: Box error_page {
+        vexpand: true;
+        hexpand: true;
+        valign: center;
+        halign: center;
+        opacity: 0.5;
+        orientation: vertical;
+        spacing: 16;
+
+        Image {
+          icon-name: 'audio-volume-muted';
+          pixel-size: 128;
+        }
+
+        Label {
+          label: 'PulseAudio is disabled';
+        }
+      };
+    }
+  };
+}

@@ -2,48 +2,61 @@
  * vim: ft=less
  */
 
-@define-color accent_color rgb(53, 132, 228);
 @define-color borders-light rgba(0, 0, 0, 0.12);
 @define-color borders-dark rgba(255, 255, 255, 0.15);
 
-#preview .window {
+.thumbnail-image picture {
+  background-color: black;
+}
+
+.theme-preview-item picture,
+.thumbnail-image picture {
+  /* Use smaller inner corner radius bc of outer outlines using 12px */
+  border-radius: 9px;
+}
+
+.thumbnail-image.no-round picture {
+  border-radius: 0;
+}
+
+.theme-preview-item .window {
   border-radius: 6px;
   box-shadow: 0 1px 4px 1px alpha(black, 0.13),
     0 1px 10px 5px alpha(black, 0.09), 0 3px 16px 8px alpha(black, 0.04),
     0 0 0 1px alpha(black, 0.05);
 }
 
-#preview .window .header-bar {
+.theme-preview-item .window .header-bar {
   min-height: 15px;
   border-top-right-radius: 6px;
   border-top-left-radius: 6px;
 }
-#preview .window .header-bar.dark {
+.theme-preview-item .window .header-bar.dark {
   box-shadow: inset 0 -1px @borders-dark;
 }
-#preview .window .header-bar.light {
+.theme-preview-item .window .header-bar.light {
   box-shadow: inset 0 -1px @borders-light;
 }
 
-#preview .window.light {
+.theme-preview-item .window.light {
   background-color: #fafafa;
   color: alpha(black, 0.8);
 }
 
-#preview .window.front.light .header-bar {
+.theme-preview-item .window.front.light .header-bar {
   background-color: #ebebeb;
 }
 
-#preview .window.dark {
+.theme-preview-item .window.dark {
   background-color: #242424;
   color: white;
 }
 
-#preview .window.front.dark .header-bar {
+.theme-preview-item .window.front.dark .header-bar {
   background-color: #303030;
 }
 
-.preview-button,
+.theme-preview-item,
 .background-flowbox-child {
   background: none;
   border-radius: 12px;
@@ -52,17 +65,17 @@
   outline: none;
 }
 
-.preview-button:checked,
+.theme-preview-item:checked,
 .background-flowbox-child:selected {
   box-shadow: 0 0 0 3px @accent_color;
 }
 
-.preview-button:focus:focus-visible,
+.theme-preview-item:focus:focus-visible,
 .background-flowbox-child:focus:focus-visible {
   box-shadow: 0 0 0 3px alpha(@accent_color, 0.3);
 }
 
-.preview-button:checked:focus:focus-visible,
+.theme-preview-item:checked:focus:focus-visible,
 .background-flowbox-child:selected:focus:focus-visible {
   box-shadow: 0 0 0 3px @accent_color, 0 0 0 6px alpha(@accent_color, 0.3);
 }
@@ -92,4 +105,24 @@
   box-shadow: none;
   background: rgba(0, 0, 0, 0.4);
   border: none;
+}
+
+.pulse-scale {
+  /* https://gitlab.gnome.org/GNOME/gtk/-/issues/5171 */
+  transform: translate(0, 6px);
+}
+
+.storage-row {
+  margin: 10px 0;
+}
+
+.storage-row-usage {
+  margin-top: 4px;
+  border-radius: 6px;
+}
+
+.storage-row-usage progress,
+.storage-row-usage trough {
+  border-radius: 0px;
+  min-height: 24px;
 }

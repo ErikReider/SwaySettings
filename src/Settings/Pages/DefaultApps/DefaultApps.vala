@@ -15,8 +15,8 @@ namespace SwaySettings {
             DefaultAppData ("File Browser", "inode/directory"),
         };
 
-        public DefaultApps (SettingsItem item, Hdy.Deck deck) {
-            base (item, deck);
+        public DefaultApps (SettingsItem item, Adw.NavigationPage page) {
+            base (item, page);
         }
 
         public override Gtk.Widget set_child () {
@@ -25,11 +25,10 @@ namespace SwaySettings {
                 vexpand = false,
                 valign = Gtk.Align.START,
             };
-            list_box.get_style_context ().add_class ("content");
+            list_box.add_css_class ("content");
             for (int i = 0; i < mime_types.length; i++) {
-                list_box.add (get_item (mime_types[i]));
+                list_box.append (get_item (mime_types[i]));
             }
-            list_box.show_all ();
             return list_box;
         }
 
