@@ -289,7 +289,6 @@ namespace SwaySettings {
                 };
                 var img = new Gtk.Image.from_icon_name ("image-missing-symbolic") {
                     pixel_size = 96,
-                    opacity = 0.75,
                 };
                 box.append (img);
                 box.append (new Gtk.Label ("No wallpapers found..."));

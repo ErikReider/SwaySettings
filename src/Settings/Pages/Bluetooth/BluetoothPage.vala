@@ -97,7 +97,6 @@ namespace SwaySettings {
             // Error Image
             Gtk.Image error_image = new Gtk.Image () {
                 pixel_size = 128,
-                opacity = 0.5,
             };
             error_image.set_from_icon_name ("bluetooth-symbolic");
             error_box.append (error_image);
@@ -172,7 +171,6 @@ namespace SwaySettings {
 
             Gtk.Image placeholder_image = new Gtk.Image () {
                 pixel_size = 72,
-                opacity = 0.5,
             };
             placeholder_image.set_from_icon_name ("bluetooth-symbolic");
             placeholder_box.append (placeholder_image);
