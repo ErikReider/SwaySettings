@@ -2,21 +2,22 @@ using Gee;
 
 namespace SwaySettings {
     public class InputPageSection {
-        public string ? title;
+        public string ?title;
         public Gtk.Widget widget;
 
-        public InputPageSection (Gtk.Widget widget, string ? title = null) {
+        public InputPageSection (Gtk.Widget widget,
+                                 string ?title = null) {
             this.widget = widget;
             this.title = title;
         }
     }
 
     public class InputPageOption {
-        public string ? title;
+        public string ?title;
         public ArrayList<Gtk.Widget> widgets;
 
         public InputPageOption (ArrayList<Gtk.Widget> widgets,
-                                  string ? title = null) {
+                                string ?title = null) {
             this.widgets = widgets;
             this.title = title;
         }
@@ -30,8 +31,10 @@ namespace SwaySettings {
 
         IPC ipc;
 
-        protected InputPage (SettingsItem item, Hdy.Deck deck, IPC ipc) {
-            base (item, deck);
+        protected InputPage (SettingsItem item,
+                             Adw.NavigationPage page,
+                             IPC ipc) {
+            base (item, page);
             this.ipc = ipc;
         }
 
@@ -63,21 +66,21 @@ namespace SwaySettings {
             for (int i = 0; i < top_sections.size; i++) {
                 var section = top_sections[i];
                 if (section != null) {
-                    var pref_group = new Hdy.PreferencesGroup ();
+                    var pref_group = new Adw.PreferencesGroup ();
                     pref_group.set_title (section.title ?? "");
                     pref_group.add (section.widget);
-                    box.add (pref_group);
+                    box.append (pref_group);
                 }
             }
 
             var options = get_options ();
             if (options.widgets.size > 0) {
-                var pref_group = new Hdy.PreferencesGroup ();
+                var pref_group = new Adw.PreferencesGroup ();
                 pref_group.set_title (options.title ?? "");
                 foreach (var option in options.widgets) {
                     if (option != null) pref_group.add (option);
                 }
-                box.add (pref_group);
+                box.append (pref_group);
             }
 
             return box;
@@ -90,7 +93,8 @@ namespace SwaySettings {
             var languages = new HashMap<string, Language> ();
             unowned Xml.Doc doc = Xml.Parser.parse_file (path);
             if (doc == null) {
-                stderr.printf ("File %s not found or permissions missing", path);
+                stderr.printf ("File %s not found or permissions missing",
+                               path);
                 return languages;
             }
 
@@ -127,19 +131,21 @@ namespace SwaySettings {
         }
 
         bool init_input_devices () {
-            Json.Node ipc_output = ipc.get_reply (SwayCommands.GET_IMPUTS);
+            Json.Node ipc_output = ipc.get_reply (SwayCommands.GET_INPUTS);
             if (ipc_output.get_node_type () == Json.NodeType.ARRAY) {
                 foreach (var node in ipc_output.get_array ().get_elements ()) {
                     if (node.get_node_type () != Json.NodeType.OBJECT) continue;
-                    unowned Json.Object ? obj = node.get_object ();
+                    unowned Json.Object ?obj = node.get_object ();
                     if (obj == null) continue;
 
                     InputTypes type = InputTypes.parse_string (
                         obj.get_string_member ("type") ?? "");
-                    if (input_type != type || type == InputTypes.NEITHER) continue;
+                    if (input_type != type ||
+                        type == InputTypes.NEITHER) continue;
                     // Skip if the Mouse / Touchpad doesn't have "accel_speed"
                     // Example would be a keyboard that reports as a mouse
-                    if ((type == InputTypes.POINTER || type == InputTypes.TOUCHPAD) &&
+                    if ((type == InputTypes.POINTER ||
+                         type == InputTypes.TOUCHPAD) &&
                         obj.get_member ("libinput") ? .get_object ()
                         ? .has_member ("accel_speed") == false) {
                         continue;
@@ -153,7 +159,8 @@ namespace SwaySettings {
             return false;
         }
 
-        InputDevice get_device_settings (Json.Object ? obj, InputTypes type) {
+        InputDevice get_device_settings (Json.Object ?obj,
+                                         InputTypes type) {
             InputDevice device = new InputDevice (
                 obj.get_string_member ("identifier"), type);
             switch (type) {
@@ -176,7 +183,7 @@ namespace SwaySettings {
                     break;
                 case InputTypes.POINTER:
                 case InputTypes.TOUCHPAD:
-                    unowned Json.Node ? lib = obj.get_member ("libinput");
+                    unowned Json.Node ?lib = obj.get_member ("libinput");
                     if (lib == null
                         || lib.get_node_type () != Json.NodeType.OBJECT) {
                         break;
@@ -185,13 +192,13 @@ namespace SwaySettings {
                         typeof (InputData), lib);
 
                     // Get scroll factor
-                    unowned Json.Node ? node = obj.get_member ("scroll_factor");
+                    unowned Json.Node ?node = obj.get_member ("scroll_factor");
                     if (node != null && node.get_value_type () == Type.DOUBLE) {
                         double scroll_factor = node.get_double ();
                         device.scroll_factor = (float) scroll_factor;
                     }
                     break;
-                default : break;
+                    default : break;
             }
 
             return device;
@@ -229,15 +236,16 @@ namespace SwaySettings {
 
                 string type = device.input_type.parse ();
                 string langs = string.joinv (", ", array);
-                var cmd = @"input type:$(type) xkb_layout \"$(langs)\"";
+                var cmd = "input type:%s xkb_layout \"%s\"".printf (type,
+                                                                    langs);
                 write_new_settings (cmd);
             },
                                              (order_list_selector) => {
-                new KeyboardInputSelector (
-                    (SwaySettings.Window)get_toplevel (),
+                var dialog = new KeyboardInputSelector (
                     languages,
                     device.data.xkb_layout_names,
                     order_list_selector);
+                dialog.present (get_root ());
             });
             ols.sensitive = languages.size > 0;
             return ols;
@@ -246,14 +254,15 @@ namespace SwaySettings {
         // scroll_factor
         public Gtk.Widget get_scroll_factor () {
             var row = new ListSlider ("Scroll Factor",
-                                       device.scroll_factor,
-                                       0.0, 10, 1,
-                                       (slider) => {
+                                      device.scroll_factor,
+                                      0.0, 10, 1,
+                                      (slider) => {
                 var value = (float) slider.get_value ();
                 device.scroll_factor = value;
                 var str_value = value.to_string ().replace (",", ".");
                 write_new_settings (
-                    @"input type:$(device.input_type.parse ()) scroll_factor $(str_value)");
+                    "input type:%s scroll_factor %s".printf (
+                        device.input_type.parse (), str_value));
                 return false;
             });
             row.add_mark (1.0, Gtk.PositionType.TOP);
@@ -263,10 +272,12 @@ namespace SwaySettings {
         // natural_scroll
         public Gtk.Widget get_natural_scroll () {
             return new ListSwitch ("Natural Scrolling",
-                                    device.data.natural_scroll.to_bool (),
-                                    (value) => {
+                                   device.data.natural_scroll.to_bool (),
+                                   (value) => {
                 device.data.natural_scroll = BoolEnum.from_bool (value);
-                write_new_settings (@"input type:$(device.input_type.parse ()) natural_scroll $(value)");
+                write_new_settings (
+                    "input type:%s natural_scroll %s".printf (
+                        device.input_type.parse (), value.to_string ()));
                 return false;
             });
         }
@@ -274,25 +285,32 @@ namespace SwaySettings {
         // accel_profile
         public Gtk.Widget get_accel_profile () {
             return new ListComboEnum ("Acceleration Profile",
-                                        device.data.accel_profile,
-                                        typeof (AccelProfiles),
-                                        (index) => {
+                                      device.data.accel_profile,
+                                      typeof (AccelProfiles),
+                                      (index) => {
                 var profile = (AccelProfiles) index;
                 device.data.accel_profile = profile;
-                write_new_settings (@"input type:$(device.input_type.parse ()) accel_profile $(profile.parse())");
+                write_new_settings (
+                    "input type:%s accel_profile %s".printf (
+                        device.input_type.parse (), profile.parse ()));
             });
         }
 
         // pointer_accel
         public Gtk.Widget get_pointer_accel () {
+            const double min = -1.0;
+            const double max = 1.0;
+            const double step = 0.1;
             var row = new ListSlider ("Pointer Acceleration",
-                                       device.data.accel_speed,
-                                       -1.0, 1.0, 0.1,
-                                       (slider) => {
+                                      device.data.accel_speed,
+                                      min, max, step,
+                                      (slider) => {
                 var value = (float) slider.get_value ();
                 device.data.accel_speed = value;
                 var str_value = value.to_string ().replace (",", ".");
-                write_new_settings (@"input type:$(device.input_type.parse ()) pointer_accel $(str_value)");
+                write_new_settings (
+                    "input type:%s pointer_accel %s".printf (
+                        device.input_type.parse (), str_value));
                 return false;
             });
             row.add_mark (0.0, Gtk.PositionType.TOP);
@@ -302,10 +320,12 @@ namespace SwaySettings {
         // Disable while typing
         public Gtk.Widget get_dwt () {
             return new ListSwitch ("Disable While Typing",
-                                    device.data.dwt.to_bool (),
-                                    (value) => {
+                                   device.data.dwt.to_bool (),
+                                   (value) => {
                 device.data.dwt = BoolEnum.from_bool (value);
-                write_new_settings (@"input type:$(device.input_type.parse ()) dwt $(value)");
+                write_new_settings (
+                    "input type:%s dwt %s".printf (device.input_type.parse (),
+                                                   value.to_string ()));
                 return false;
             });
         }
@@ -313,22 +333,26 @@ namespace SwaySettings {
         // Disable on external mouse
         public Gtk.Widget get_state_widget () {
             return new ListComboEnum ("State",
-                                        device.data.send_events,
-                                        typeof (Events),
-                                        (index) => {
+                                      device.data.send_events,
+                                      typeof (Events),
+                                      (index) => {
                 var event = (Events) index;
                 device.data.send_events = event;
-                write_new_settings (@"input type:$(device.input_type.parse ()) events $(event.parse ())");
+                write_new_settings (
+                    "input type:%s events %s".printf (
+                        device.input_type.parse (), event.parse ()));
             });
         }
 
         // Tap to click
         public Gtk.Widget get_tap () {
             return new ListSwitch ("Tap to Click",
-                                    device.data.tap.to_bool (),
-                                    (value) => {
+                                   device.data.tap.to_bool (),
+                                   (value) => {
                 device.data.tap = BoolEnum.from_bool (value);
-                write_new_settings (@"input type:$(device.input_type.parse ()) tap $(value)");
+                write_new_settings (
+                    "input type:%s tap %s".printf (device.input_type.parse (),
+                                                   value.to_string ()));
                 return false;
             });
         }
@@ -336,12 +360,16 @@ namespace SwaySettings {
         // Click method
         public Gtk.Widget get_click_method () {
             return new ListComboEnum ("Click Method",
-                                        device.data.click_method,
-                                        typeof (ClickMethods),
-                                        (index) => {
+                                      device.data.click_method,
+                                      typeof (ClickMethods),
+                                      (index) => {
                 var profile = (ClickMethods) index;
                 device.data.click_method = profile;
-                write_new_settings (@"input type:$(device.input_type.parse ()) click_method $(profile.parse())");
+                write_new_settings (
+                    "input type:%s click_method %s".printf (
+                        device.input_type.parse (), profile.parse ()));
+            });
+        }
             });
         }
     }

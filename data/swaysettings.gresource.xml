@@ -3,8 +3,8 @@
   <gresource prefix="/org/erikreider/swaysettings">
       <file compressed="true">style.css</file>
 
-      <!-- <file>ui/Widgets/OrderListSelector/OrderListSelector.ui</file> -->
-      <!-- <file>ui/Widgets/KeyboardInputSelector/KeyboardInputSelector.ui</file> -->
+      <file>ui/OrderListSelector.ui</file>
+      <file>ui/KeyboardInputSelector.ui</file>
       <!-- <file>ui/Item/Item.ui</file> -->
       <file>ui/AboutPCContent.ui</file>
       <file>ui/StorageRow.ui</file>

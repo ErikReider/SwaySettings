@@ -3,8 +3,10 @@ using Gee;
 namespace SwaySettings {
     public class KeyboardPage : InputPage {
 
-        public KeyboardPage (SettingsItem item, Hdy.Deck deck, IPC ipc) {
-            base (item, deck, ipc);
+        public KeyboardPage (SettingsItem item,
+                             Adw.NavigationPage page,
+                             IPC ipc) {
+            base (item, page, ipc);
         }
 
         public override SwaySettings.InputTypes input_type {
@@ -15,7 +17,8 @@ namespace SwaySettings {
 
         public override ArrayList<InputPageSection> get_top_sections () {
             return new ArrayList<InputPageSection>.wrap ({
-                new InputPageSection (get_keyboard_language (), "Keyboard Layout"),
+                new InputPageSection (get_keyboard_language (),
+                                      "Keyboard Layout"),
             });
         }
     }

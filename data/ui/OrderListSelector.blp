@@ -1,0 +1,49 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $SwaySettingsOrderListSelector: Gtk.Box {
+  orientation: vertical;
+  valign: fill;
+  halign: fill;
+
+  Gtk.ListBox list_box {
+    selection-mode: single;
+    activate-on-single-click: true;
+    vexpand: true;
+    hexpand: true;
+    valign: fill;
+    halign: fill;
+    height-request: 150;
+  }
+
+  Gtk.Box {
+    orientation: horizontal;
+    halign: start;
+    valign: fill;
+    margin-top: 8;
+    margin-bottom: 8;
+    margin-start: 8;
+    margin-end: 8;
+    spacing: 8;
+
+    Gtk.Button button_add {
+      icon-name: "list-add-symbolic";
+    }
+
+    Gtk.Button button_remove {
+      icon-name: "list-remove-symbolic";
+
+      styles [
+        "destructive-action"
+      ]
+    }
+
+    Gtk.Button button_up {
+      icon-name: "go-up-symbolic";
+    }
+
+    Gtk.Button button_down {
+      icon-name: "go-down-symbolic";
+    }
+  }
+}

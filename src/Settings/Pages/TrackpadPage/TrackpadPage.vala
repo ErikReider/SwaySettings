@@ -3,8 +3,10 @@ using Gee;
 namespace SwaySettings {
     public class TrackpadPage : InputPage {
 
-        public TrackpadPage (SettingsItem item, Hdy.Deck deck, IPC ipc) {
-            base (item, deck, ipc);
+        public TrackpadPage (SettingsItem item,
+                             Adw.NavigationPage page,
+                             IPC ipc) {
+            base (item, page, ipc);
         }
 
         public override SwaySettings.InputTypes input_type {

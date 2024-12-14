@@ -43,7 +43,8 @@ namespace SwaySettings {
 
         public bool is_valid () {
             bool n_valid = name != null && name.length > 0;
-            bool sd_valid = short_description != null && short_description.length > 0;
+            bool sd_valid = short_description != null &&
+                            short_description.length > 0;
             bool d_valid = description != null && description.length > 0;
             return n_valid && sd_valid && d_valid;
         }
@@ -252,7 +253,7 @@ namespace SwaySettings {
         public float scroll_factor { get; set; default = 1.0f; }
 
         public InputDevice (string identifier,
-                             InputTypes type) {
+                            InputTypes type) {
             this.identifier = identifier;
             this.input_type = type;
             this.data = new InputData ();
@@ -361,7 +362,8 @@ namespace SwaySettings {
         }
 
         // Keyboard
-        public ArrayList<Language> xkb_layout_names = new ArrayList<Language> ();
+        public ArrayList<Language> xkb_layout_names =
+            new ArrayList<Language> ();
 
         public override bool deserialize_property (string property_name,
                                                    out Value value,
@@ -410,31 +412,31 @@ namespace SwaySettings {
                     node.set_string (casted.parse ());
                     break;
                 case "gchararray":
-                    string ? casted = value.get_string ();
+                    string ?casted = value.get_string ();
                     if (casted != null) {
                         node.set_string (casted);
                     }
                     break;
-                case "gboolean" :
-                    bool ? casted = value.get_boolean ();
+                case "gboolean":
+                    bool ?casted = value.get_boolean ();
                     if (casted != null) {
                         node.set_boolean (casted);
                     }
                     break;
-                case "gint64" :
-                    int64 ? casted = (int64 ? ) value.get_int64 ();
+                case "gint64":
+                    int64 ?casted = (int64 ? ) value.get_int64 ();
                     if (casted != null) {
                         node.set_int (casted);
                     }
                     break;
                 case "gfloat":
-                    float ? casted = (float ? ) value.get_float ();
+                    float ?casted = (float ? ) value.get_float ();
                     if (casted != null) {
                         node.set_double (casted);
                     }
                     break;
                 case "gdouble":
-                    double ? casted = (double ? ) value.get_double ();
+                    double ?casted = (double ? ) value.get_double ();
                     if (casted != null) {
                         node.set_double (casted);
                     }

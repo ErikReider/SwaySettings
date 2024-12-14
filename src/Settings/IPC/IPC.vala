@@ -15,7 +15,7 @@ namespace SwaySettings {
         SEND_TICK = 10,
         SYNC = 11,
         GET_BINDING_STATE = 12,
-        GET_IMPUTS = 100,
+        GET_INPUTS = 100,
         GET_SEATS = 101,
     }
 

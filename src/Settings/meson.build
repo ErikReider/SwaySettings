@@ -2,17 +2,17 @@ swaysettings_sources += files([
   'main.vala',
   'Widgets/StorageRow/StorageRow.vala',
   'Widgets/ThumbnailImage/ThumbnailImage.vala',
-  # 'Widgets/OrderListSelector/OrderListSelector.vala',
-  # 'Widgets/KeyboardInputSelector/KeyboardInputSelector.vala',
+  'Widgets/OrderListSelector/OrderListSelector.vala',
+  'Widgets/KeyboardInputSelector/KeyboardInputSelector.vala',
   'IPC/IPC.vala',
   'Rfkill/Rfkill.vala',
   'ListItem/ListItem.vala',
   'Window/Window.vala',
   'Window/SidebarListItem.vala',
   'Page/Page.vala',
-  # 'Page/InputPage.vala',
+  'Page/InputPage.vala',
   'UserMgr/UserMgr.vala',
-  # 'InputSettings/InputSettings.vala',
+  'InputSettings/InputSettings.vala',
 ])
 
 subdir('Pages')

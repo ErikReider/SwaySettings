@@ -1,0 +1,68 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $SwaySettingsKeyboardInputSelector: Adw.Dialog {
+  width-request: 400;
+  height-request: 200;
+
+  Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      title-widget: Adw.WindowTitle {
+        title: "Choose Keyboard Layout";
+      };
+    }
+
+    Gtk.Box {
+      orientation: vertical;
+
+      Gtk.ScrolledWindow {
+        vexpand: true;
+        valign: fill;
+        propagate-natural-height: true;
+        margin-top: 18;
+        margin-bottom: 0;
+        margin-start: 18;
+        margin-end: 18;
+
+        child: Gtk.Viewport {
+          valign: fill;
+          halign: fill;
+          vexpand: true;
+          hexpand: true;
+
+          child: Gtk.ListBox list_box {
+            selection-mode: single;
+            activate-on-single-click: false;
+            valign: fill;
+            halign: fill;
+            vexpand: true;
+            hexpand: true;
+          };
+        };
+      }
+
+      Gtk.Box {
+        halign: end;
+        orientation: horizontal;
+        spacing: 8;
+        margin-top: 12;
+        margin-bottom: 12;
+        margin-start: 18;
+        margin-end: 18;
+
+        Gtk.Button button_cancel {
+          label: "Cancel";
+        }
+
+        Gtk.Button button_add {
+          label: "Add Layout";
+
+          styles [
+            "suggested-action"
+          ]
+        }
+      }
+    }
+  }
+}

@@ -8,7 +8,7 @@ namespace SwaySettings {
         APPEARANCE,
         STARTUP_APPS,
         DEFAULT_APPS,
-        SWAYNC,
+        // SWAYNC,
         SOUND,
         BLUETOOTH,
         KEYBOARD,
@@ -29,8 +29,8 @@ namespace SwaySettings {
                     return "Startup Apps";
                 case DEFAULT_APPS:
                     return "Default Apps";
-                case SWAYNC:
-                    return "Sway Notification Center";
+                // case SWAYNC:
+                //     return "Sway Notification Center";
                 case BLUETOOTH:
                     return "Bluetooth";
                 case SOUND:
@@ -59,8 +59,8 @@ namespace SwaySettings {
                     return "startup-apps";
                 case DEFAULT_APPS:
                     return "default-apps";
-                case SWAYNC:
-                    return "swaync";
+                // case SWAYNC:
+                //     return "swaync";
                 case BLUETOOTH:
                     return "bluetooth";
                 case SOUND:
@@ -225,8 +225,6 @@ namespace SwaySettings {
 
         public Page ? get_page (SettingsItem item) {
             switch (item.page_type) {
-                default:
-                    return null;
                 case ABOUT_PC:
                     return new AboutPC (item, content_page);
                 case WALLPAPER:
@@ -243,15 +241,16 @@ namespace SwaySettings {
                     return new BluetoothPage (item, content_page);
                 case SOUND:
                     return new PulsePage (item, content_page);
-                // case KEYBOARD:
-                //     return new KeyboardPage (item, deck, ipc);
-                // case MOUSE:
-                //     return new MousePage (item, deck, ipc);
-                // case TRACKPAD:
-                //     return new TrackpadPage (item, deck, ipc);
+                case KEYBOARD:
+                    return new KeyboardPage (item, content_page, ipc);
+                case MOUSE:
+                    return new MousePage (item, content_page, ipc);
+                case TRACKPAD:
+                    return new TrackpadPage (item, content_page, ipc);
                 case USERS:
                     return new Users (item, content_page);
             }
+
             return null;
         }
     }
