@@ -54,11 +54,9 @@ namespace SwaySettings {
     public class Swaync : PageScroll {
 
         ConfigModel settings;
-        IPC ipc;
 
-        public Swaync (SettingsItem item, Hdy.Deck deck, IPC ipc) {
-            base (item, deck);
-            this.ipc = ipc;
+        public Swaync (SettingsItem item, Adw.NavigationPage page) {
+            base (item, page);
         }
 
         public override Gtk.Widget set_child () {
@@ -84,9 +82,9 @@ namespace SwaySettings {
             });
 
             var list_box = new Gtk.ListBox ();
-            list_box.get_style_context ().add_class ("content");
-            list_box.add (combo_x);
-            list_box.add (combo_y);
+            list_box.add_css_class ("content");
+            list_box.append (combo_x);
+            list_box.append (combo_y);
 
             return list_box;
         }

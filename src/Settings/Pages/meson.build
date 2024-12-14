@@ -15,7 +15,7 @@ swaysettings_sources += files([
   'TrackpadPage/TrackpadPage.vala',
   'DefaultApps/DefaultApps.vala',
   'StartupApps/StartupApps.vala',
-  # 'Swaync/Swaync.vala',
+  'Swaync/Swaync.vala',
   'Users/Users.vala',
   'Pulse/PulsePage.vala',
   'Pulse/PulseDaemon.vala',
