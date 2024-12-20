@@ -143,7 +143,8 @@ namespace Wallpaper {
                 }
 
                 app = new Gtk.Application ("org.erikreider.swaysettings-wallpaper",
-                                           ApplicationFlags.FLAGS_NONE);
+                                           ApplicationFlags.DEFAULT_FLAGS);
+                app.hold ();
                 app.activate.connect ((g_app) => {
                     if (activated) return;
                     activated = true;
