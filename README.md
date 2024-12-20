@@ -47,18 +47,19 @@ makepkg -si
 - vala
 - meson
 - git
-- gtk3
-- gtk-layer-shell
-- libhandy
+- gtk4
+- gtk4-layer-shell
+- libadwaita
+- blueprint-compiler
+- granite7
+- libgtop
 - glib2
 - gobject-introspection
 - libgee
 - json-glib
-- granite
 - libxml2
 - xkeyboard-config
 - accountsservice
-- gtk-layer-shell
 - libpulse
 - bluez
 
