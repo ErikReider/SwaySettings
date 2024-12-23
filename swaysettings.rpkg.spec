@@ -19,6 +19,7 @@ BuildRequires: granite-7-devel >= 7.5
 BuildRequires: pulseaudio-libs-devel
 BuildRequires: accountsservice-devel
 BuildRequires: bluez
+BuildRequires: blueprint-compiler
 BuildRequires: glib2-devel >= 2.50
 BuildRequires: gobject-introspection-devel >= 1.68
 BuildRequires: libgee-devel >= 0.20
