@@ -1,5 +1,5 @@
 # vim: syntax=spec
-Name:       {{{ git_dir_name }}}
+Name:       swaysettings-git
 Version:    0.5.0
 Release:    1%{?dist}
 Summary:    A gui for setting sway wallpaper, default apps, GTK themes, etc...
