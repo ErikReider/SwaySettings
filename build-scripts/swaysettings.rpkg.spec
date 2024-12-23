@@ -5,8 +5,8 @@ Release:    1%{?dist}
 Summary:    A gui for setting sway wallpaper, default apps, GTK themes, etc...
 License:    GPLv3
 URL:        https://github.com/ErikReider/SwaySettings
-VCS:        {{{ git_dir_vcs }}}
-Source:     {{{ git_dir_pack }}}
+VCS:        {{{ git_repo_vcs }}}
+Source:     {{{ git_repo_pack }}}
 
 BuildRequires:    meson >= 0.60.0
 BuildRequires:    vala
@@ -43,7 +43,7 @@ Requires: gtk4-layer-shell
 A gui for setting sway wallpaper, default apps, GTK themes, etc...
 
 %prep
-{{{ git_dir_setup_macro }}}
+{{{ git_repo_setup_macro }}}
 
 %build
 %meson
@@ -66,4 +66,4 @@ A gui for setting sway wallpaper, default apps, GTK themes, etc...
 
 # Changelog will be empty until you make first annotated Git tag.
 %changelog
-{{{ git_dir_changelog }}}
+{{{ git_repo_changelog }}}
