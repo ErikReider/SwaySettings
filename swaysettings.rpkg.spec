@@ -25,6 +25,7 @@ BuildRequires: gobject-introspection-devel >= 1.68
 BuildRequires: libgee-devel >= 0.20
 BuildRequires: json-glib-devel >= 1.0
 BuildRequires: libudisks2-devel
+BuildRequires: libgtop2-devel
 BuildRequires: systemd-devel
 BuildRequires: systemd
 BuildRequires: scdoc
