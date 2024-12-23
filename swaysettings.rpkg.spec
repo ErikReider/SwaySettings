@@ -18,16 +18,18 @@ BuildRequires: libadwaita-devel >= 1.6
 BuildRequires: granite-7-devel >= 7.5
 BuildRequires: pulseaudio-libs-devel
 BuildRequires: accountsservice-devel
-BuildRequires: bluez
+BuildRequires: bluez-libs-devel
 BuildRequires: blueprint-compiler
 BuildRequires: glib2-devel >= 2.50
 BuildRequires: gobject-introspection-devel >= 1.68
 BuildRequires: libgee-devel >= 0.20
 BuildRequires: json-glib-devel >= 1.0
+BuildRequires: libudisks2-devel
 BuildRequires: systemd-devel
 BuildRequires: systemd
 BuildRequires: scdoc
 Requires: dbus
+Requires: bluez
 Requires: libgtop2
 Requires: udisks2
 Requires: glib2
