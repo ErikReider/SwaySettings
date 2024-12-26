@@ -1,6 +1,6 @@
 # vim: syntax=spec
 Name:       swaysettings-git
-Version:    0.5.0
+Version:    {{{ git_repo_release lead="$(git describe --tags --abbrev=0)" }}}
 Release:    1%{?dist}
 Summary:    A gui for setting sway wallpaper, default apps, GTK themes, etc...
 License:    GPLv3
