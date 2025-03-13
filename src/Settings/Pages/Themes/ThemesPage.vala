@@ -329,6 +329,13 @@ namespace SwaySettings {
         }
 
         ArrayList<string> get_gtk_themes (string setting_name, string folder_name) {
+            string[] attributes = {
+                // No need to get other attributes than the ones needed
+                FileAttribute.STANDARD_NAME,
+                FileAttribute.STANDARD_TYPE,
+            };
+            string file_attributes = string.joinv (",", attributes);
+
             string[] paths = Environment.get_system_data_dirs ();
 
             paths += Environment.get_user_data_dir ();
@@ -343,13 +350,26 @@ namespace SwaySettings {
             if (min_ver % 2 != 0) min_ver++;
 
             foreach (string path in paths) {
+                Functions.extract_symlink (ref path);
                 if (!FileUtils.test (path, FileTest.IS_DIR)) continue;
+
                 try {
                     var directory = File.new_for_path (path);
-                    var enumerator = directory.enumerate_children (
-                        FileAttribute.STANDARD_NAME, 0);
+                    var enumerator = directory.enumerate_children (file_attributes, 0);
                     FileInfo file_prop;
                     while ((file_prop = enumerator.next_file ()) != null) {
+                        // Also check if the file is a symlink
+                        string child_file_path =
+                            Path.build_path (Path.DIR_SEPARATOR_S, path,
+                                             file_prop.get_name ());
+                        if (Functions.extract_symlink (ref child_file_path)) {
+                            File child_file =
+                                File.new_for_path (child_file_path);
+                            // Get the new file information
+                            file_prop = child_file.query_info (file_attributes,
+                                                               0);
+                        }
+
                         string name = file_prop.get_name ();
                         string folder_path = Path.build_path ("/", path, name);
                         string flatpak_path = Path.build_path (

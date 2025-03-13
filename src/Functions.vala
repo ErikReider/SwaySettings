@@ -114,6 +114,20 @@ namespace SwaySettings {
             return path;
         }
 
+        public static bool extract_symlink (ref string path) {
+            bool is_symlink = false;
+            while (FileUtils.test (path, FileTest.IS_SYMLINK)) {
+                try {
+                    path = FileUtils.read_link (path);
+                    is_symlink = true;
+                } catch (Error e) {
+                    warning ("Could not read link for path: %s", path);
+                    break;
+                }
+            }
+            return is_symlink;
+        }
+
         private delegate Type TypeFunc ();
 
         /** https://gitlab.gnome.org/GNOME/vala/-/issues/412 */
