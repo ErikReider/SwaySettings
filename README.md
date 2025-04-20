@@ -66,7 +66,10 @@ makepkg -si
 #### Build
 
 ``` zsh
-meson build
-ninja -C build
+# Setup
+meson setup build
+# Build
+meson compile -C build
+# Install (optional)
 meson install -C build
 ```
