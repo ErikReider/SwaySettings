@@ -1,0 +1,3 @@
+services += files(
+  'Wallpaper.vala',
+)

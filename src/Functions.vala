@@ -215,5 +215,46 @@ namespace SwaySettings {
 
             return checksum_path;
         }
+
+        public static bool set_wallpaper (string file_path,
+                                          Settings self_settings) {
+            if (file_path == null) return false;
+            try {
+                string dest_path = Path.build_path (
+                    Path.DIR_SEPARATOR_S,
+                    Environment.get_user_config_dir (),
+                    "swaysettings-wallpaper");
+
+                File file = File.new_for_path (file_path);
+                File file_dest = File.new_for_path (dest_path);
+
+                if (!file.query_exists ()) {
+                    stderr.printf (
+                        "File %s not found or permissions missing",
+                        file_path);
+                    return false;
+                }
+
+                file.copy (file_dest, FileCopyFlags.OVERWRITE);
+                Functions.generate_thumbnail (dest_path, true);
+
+                Functions.set_gsetting (self_settings,
+                                        Constants.SETTINGS_WALLPAPER_PATH,
+                                        file_path);
+
+                if (Utils.wallpaper_application_registered ()) {
+                    Utils.Config config = Utils.Config() {
+                        path = file_path,
+                        scale_mode = Utils.get_scale_mode_gschema (self_settings),
+                    };
+                    Utils.wallpaper_application.activate_action (Constants.WALLPAPER_ACTION_NAME, config);
+                }
+            } catch (Error e) {
+                stderr.printf ("%s\n", e.message);
+                return false;
+            }
+
+            return true;
+        }
     }
 }

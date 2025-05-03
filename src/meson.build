@@ -27,3 +27,4 @@ shared_files = files([
 subdir('Settings')
 subdir('Wallpaper')
 subdir('AutoStart')
+subdir('Portal')

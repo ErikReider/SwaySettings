@@ -15,6 +15,8 @@ i18n = import('i18n')
 
 swaysettings_sources = []
 
+dep_systemd = dependency('systemd')
+
 subdir('data')
 subdir('src')
 subdir('po')
