@@ -30,6 +30,28 @@ exec sway-wallpaper
 exec sway-autostart
 ```
 
+### SwaySettings XDG Portal Usage
+
+Please follow the [xdg-desktop-portal-wlr](https://github.com/emersion/xdg-desktop-portal-wlr/#running)
+instructions.
+
+More info can be found [here](https://flatpak.github.io/xdg-desktop-portal/docs/portals.conf.html)
+and [here](https://flatpak.github.io/xdg-desktop-portal/docs/configuration-file.html).
+
+#### Example for Sway
+
+```conf
+# ~/.config/xdg-desktop-portal/sway-portals.conf
+
+[preferred]
+# Use swaysettings and gtk for every portal interface...
+default=swaysettings;gtk;
+# ... except for the ScreenCast and Screenshot
+org.freedesktop.impl.portal.ScreenCast=wlr
+org.freedesktop.impl.portal.Screenshot=wlr
+org.freedesktop.impl.portal.Secret=gnome-keyring;
+```
+
 ### Arch
 
 The package is available on the 

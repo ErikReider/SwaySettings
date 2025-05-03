@@ -33,18 +33,30 @@ namespace SwaySettings {
             }
         }
 
+        private void connect_wallpaper_listener () {
+            self_settings.changed[Constants.SETTINGS_WALLPAPER_PATH]
+             .connect (on_user_wallpapers_change);
+        }
+
+        private void disconnect_wallpaper_listener () {
+            self_settings.changed[Constants.SETTINGS_WALLPAPER_PATH]
+             .disconnect (on_user_wallpapers_change);
+        }
+
         construct {
             self_settings.changed[Constants.SETTINGS_USER_WALLPAPERS]
-             .connect (on_user_wallpapers_change);
+                .connect (on_user_wallpapers_change);
             self_settings.changed[Constants.SETTINGS_WALLPAPER_SCALING_MODE]
-             .connect (on_user_wallpapers_change);
+                .connect (on_user_wallpapers_change);
+            connect_wallpaper_listener ();
         }
 
         ~BackgroundPage () {
             self_settings.changed[Constants.SETTINGS_USER_WALLPAPERS]
-             .disconnect (on_user_wallpapers_change);
+                .disconnect (on_user_wallpapers_change);
             self_settings.changed[Constants.SETTINGS_WALLPAPER_SCALING_MODE]
-             .disconnect (on_user_wallpapers_change);
+                .disconnect (on_user_wallpapers_change);
+            disconnect_wallpaper_listener ();
         }
 
         public BackgroundPage (SettingsItem item, Adw.NavigationPage page) {
@@ -114,43 +126,6 @@ namespace SwaySettings {
                     }
                     widget = widget.get_next_sibling ();
                 } while (widget != null && widget != flow_box.get_first_child ());
-            }
-        }
-
-        private void set_wallpaper (string file_path) {
-            if (file_path == null) return;
-            try {
-                string dest_path = Path.build_path (
-                    Path.DIR_SEPARATOR_S,
-                    Environment.get_user_config_dir (),
-                    "swaysettings-wallpaper");
-
-                File file = File.new_for_path (file_path);
-                File file_dest = File.new_for_path (dest_path);
-
-                if (!file.query_exists ()) {
-                    stderr.printf (
-                        "File %s not found or permissions missing",
-                        file_path);
-                    return;
-                }
-
-                file.copy (file_dest, FileCopyFlags.OVERWRITE);
-                Functions.set_gsetting (self_settings,
-                                        Constants.SETTINGS_WALLPAPER_PATH,
-                                        file_path);
-
-                Functions.generate_thumbnail (dest_path, true);
-
-                if (wallpaper_application_registered ()) {
-                    Utils.Config config = Utils.Config() {
-                        path = file_path,
-                        scale_mode = scaling_mode,
-                    };
-                    wallpaper_application.activate_action (Constants.WALLPAPER_ACTION_NAME, config);
-                }
-            } catch (Error e) {
-                stderr.printf ("%s\n", e.message);
             }
         }
 
@@ -315,8 +290,10 @@ namespace SwaySettings {
                 if (!(child is ThumbnailImage)) return;
                 ThumbnailImage img = (ThumbnailImage) child;
                 if (img.image_path != null) {
-                    set_wallpaper (img.wallpaper.path);
+                    disconnect_wallpaper_listener ();
+                    Functions.set_wallpaper (img.wallpaper.path, self_settings);
                     refresh_selected_wallpaper (img.wallpaper.path);
+                    connect_wallpaper_listener ();
                 }
             });
             row.set_child (flow_box);
@@ -388,12 +365,12 @@ namespace SwaySettings {
             Functions.set_gsetting (self_settings,
                 Constants.SETTINGS_WALLPAPER_SCALING_MODE,
                 mode);
-            if (wallpaper_application_registered ()) {
+            if (Utils.wallpaper_application_registered ()) {
                 Utils.Config config = Utils.Config() {
                     path = current_wallpaper.path,
                     scale_mode = scaling_mode,
                 };
-                wallpaper_application.activate_action (Constants.WALLPAPER_ACTION_NAME, config);
+                Utils.wallpaper_application.activate_action (Constants.WALLPAPER_ACTION_NAME, config);
             }
         }
 

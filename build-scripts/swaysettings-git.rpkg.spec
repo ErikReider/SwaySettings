@@ -27,6 +27,7 @@ BuildRequires: json-glib-devel >= 1.0
 BuildRequires: libudisks2-devel
 BuildRequires: libgtop2-devel
 BuildRequires: systemd-devel
+BuildRequires: pkgconfig(systemd)
 BuildRequires: systemd
 BuildRequires: scdoc
 Requires: dbus
@@ -63,6 +64,11 @@ A gui for setting sway wallpaper, default apps, GTK themes, etc...
 %{_datadir}/applications/org.erikreider.swaysettings.desktop
 %{_datadir}/icons/hicolor/scalable/apps/org.erikreider.swaysettings.svg
 %{_datadir}/icons/hicolor/symbolic/apps/org.erikreider.swaysettings-symbolic.svg
+# Portal
+%{_libexecdir}/xdg-desktop-portal-swaysettings
+%{_datadir}/dbus-1/services/org.freedesktop.impl.portal.desktop.swaysettings.service
+%{_datadir}/xdg-desktop-portal/portals/swaysettings.portal
+%{_userunitdir}/xdg-desktop-portal-swaysettings.service
 
 # Changelog will be empty until you make first annotated Git tag.
 %changelog

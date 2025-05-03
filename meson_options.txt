@@ -1,1 +1,2 @@
 option('use-global-gschema', type: 'boolean', value: true, description: 'Use the global built gschema for SwaySettings')
+option('systemduserunitdir', type: 'string', value: '', description: 'Custom directory to install systemd user units.')

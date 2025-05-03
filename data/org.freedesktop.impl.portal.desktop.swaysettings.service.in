@@ -1,0 +1,4 @@
+[D-BUS Service]
+Name=org.freedesktop.impl.portal.desktop.swaysettings
+Exec=@LIBEXECDIR@/xdg-desktop-portal-swaysettings
+SystemdService=xdg-desktop-portal-swaysettings.service

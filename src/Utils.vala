@@ -1,4 +1,26 @@
 namespace Utils {
+    public static Application wallpaper_application;
+
+    public static bool wallpaper_application_registered () {
+        if (wallpaper_application == null) {
+            wallpaper_application = new Application (
+                "org.erikreider.swaysettings-wallpaper",
+                ApplicationFlags.IS_LAUNCHER);
+        }
+
+        if (!wallpaper_application.is_registered) {
+            try {
+                // Register wallpaper application
+                wallpaper_application.register ();
+            } catch (Error e) {
+                debug (e.message);
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public enum ScaleModes {
         FILL = 0,
         STRETCH = 1,
