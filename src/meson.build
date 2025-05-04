@@ -16,6 +16,7 @@ dep_gtk4_layer_shell = dependency('gtk4-layer-shell-0', version: '>= 1.0.2')
 dep_libpulse = dependency('libpulse')
 dep_libpulse_mainloop_glib = dependency('libpulse-mainloop-glib')
 dep_math = meson.get_compiler('c').find_library('m', required : true)
+dep_gsettings_schemas = dependency('gsettings-desktop-schemas')
 
 shared_files = files([
   'Constants.vala',

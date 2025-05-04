@@ -15,6 +15,7 @@ BuildRequires:    git
 BuildRequires: gtk4-devel >= 4.16
 BuildRequires: gtk4-layer-shell-devel
 BuildRequires: libadwaita-devel >= 1.6
+BuildRequires: pkgconfig(gsettings-desktop-schemas)
 BuildRequires: granite-7-devel >= 7.5
 BuildRequires: pulseaudio-libs-devel
 BuildRequires: accountsservice-devel

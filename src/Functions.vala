@@ -256,5 +256,47 @@ namespace SwaySettings {
 
             return true;
         }
+
+        public static Adw.AccentColor get_accent_color (Settings ? settings) {
+            int color_enum = GDesktop.AccentColor.BLUE;
+            if (settings != null) {
+                SettingsSchema schema = settings.settings_schema;
+                if (schema != null && schema.has_key ("accent-color")) {
+                    color_enum = settings?.get_enum ("accent-color");
+                }
+            }
+            Adw.AccentColor color;
+            switch (color_enum) {
+                default:
+                case GDesktop.AccentColor.BLUE:
+                    color = Adw.AccentColor.BLUE;
+                    break;
+                case GDesktop.AccentColor.TEAL:
+                    color = Adw.AccentColor.TEAL;
+                    break;
+                case GDesktop.AccentColor.GREEN:
+                    color = Adw.AccentColor.GREEN;
+                    break;
+                case GDesktop.AccentColor.YELLOW:
+                    color = Adw.AccentColor.YELLOW;
+                    break;
+                case GDesktop.AccentColor.ORANGE:
+                    color = Adw.AccentColor.ORANGE;
+                    break;
+                case GDesktop.AccentColor.RED:
+                    color = Adw.AccentColor.RED;
+                    break;
+                case GDesktop.AccentColor.PINK:
+                    color = Adw.AccentColor.PINK;
+                    break;
+                case GDesktop.AccentColor.PURPLE:
+                    color = Adw.AccentColor.PURPLE;
+                    break;
+                case GDesktop.AccentColor.SLATE:
+                    color = Adw.AccentColor.SLATE;
+                    break;
+            }
+            return color;
+        }
     }
 }
