@@ -7,8 +7,6 @@ public void main (string[] args) {
     Environment.unset_variable ("GTK_USE_PORTAL");
     Environment.set_prgname ("xdg-desktop-portal-swaysettings");
 
-    Gtk.init ();
-
     mainloop = new MainLoop (null, false);
 
     if ("--replace" in args) {
@@ -58,6 +56,8 @@ void on_bus_aquired (DBusConnection conn,
     try {
         conn.register_object ("/org/freedesktop/portal/desktop",
                               new Services.Wallpaper (conn));
+        conn.register_object ("/org/freedesktop/portal/desktop",
+                              new Services.Settings (conn));
     } catch (IOError e) {
         critical ("Could not register CC service");
         Process.exit (1);

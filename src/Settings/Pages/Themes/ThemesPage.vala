@@ -3,6 +3,7 @@ using Gee;
 namespace SwaySettings {
     public class ThemesPage : PageScroll {
         Gtk.Box style_box;
+        Adw.Bin accent_preferences_box;
         Adw.Bin preferences_box;
 
         private static Settings settings = new Settings ("org.gnome.desktop.interface");
@@ -12,6 +13,7 @@ namespace SwaySettings {
         ThemePreviewItem preview_default;
         ThemePreviewItem preview_dark;
 
+        ulong gnome_settings_handler = 0;
         ulong self_settings_handler = 0;
 
         public ThemesPage (SettingsItem item, Adw.NavigationPage page) {
@@ -19,6 +21,10 @@ namespace SwaySettings {
         }
 
         public override async void on_back (Adw.NavigationPage deck) {
+            if (gnome_settings_handler != 0) {
+                settings.disconnect (gnome_settings_handler);
+                gnome_settings_handler = 0;
+            }
             if (self_settings_handler != 0) {
                 self_settings.disconnect (self_settings_handler);
                 self_settings_handler = 0;
@@ -52,13 +58,24 @@ namespace SwaySettings {
             };
             clamp.set_child (style_box);
 
+            // Accent Color
+            accent_preferences_box = new Adw.Bin ();
+            accent_preferences_box.set_child (get_accent_widget ());
+            main_box.append (accent_preferences_box);
+
             // GTK Options
             preferences_box = new Adw.Bin ();
             main_box.append (preferences_box);
 
             // Refresh all of the widgets when a value changes
             // This also gets called when ex gnome-tweaks changes a value
-            settings.changed.connect ((s, str) => settings_changed (s, str));
+            if (gnome_settings_handler != 0) {
+                settings.disconnect (gnome_settings_handler);
+                gnome_settings_handler = 0;
+            }
+            gnome_settings_handler = settings.changed.connect ((s, str) => {
+                settings_changed (s, str);
+            });
             self_settings_handler = self_settings.changed.connect ((s, str) => {
                 settings_changed (s, str);
             });
@@ -136,6 +153,9 @@ namespace SwaySettings {
                     // Replace with new widgets. Too lazy to reload everything
                     preferences_box.set_child (get_preferences ());
                     break;
+                case "accent-color":
+                    accent_preferences_box.set_child (get_accent_widget ());
+                    break;
             }
         }
 
@@ -175,6 +195,50 @@ namespace SwaySettings {
             // Animations
             pref_group.add (gtk_toggle_row ("Animations", "enable-animations"));
             pref_group.add (gtk_toggle_row ("Overlay Scrolling", "overlay-scrolling"));
+
+            return pref_group;
+        }
+
+        private Adw.PreferencesGroup get_accent_widget () {
+            Adw.PreferencesGroup pref_group = new Adw.PreferencesGroup ();
+            pref_group.set_title ("Accent Color");
+
+            Adw.PreferencesRow row = new Adw.PreferencesRow ();
+            row.set_activatable (false);
+            pref_group.add (row);
+
+            Gtk.Box accent_box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 12);
+            accent_box.set_margin_top (12);
+            accent_box.set_margin_bottom (12);
+            accent_box.set_halign (Gtk.Align.CENTER);
+            row.set_child (accent_box);
+
+
+            // Add the buttons
+            Adw.AccentColor accent_color = Functions.get_accent_color (settings);
+            unowned Gtk.ToggleButton ? prev_button = null;
+            foreach (EnumValue value in ((EnumClass) typeof (Adw.AccentColor).class_ref()).values) {
+                Gtk.ToggleButton button = new Gtk.ToggleButton ();
+                button.add_css_class ("accent-button");
+                button.add_css_class (value.value_nick);
+                if (value.value == accent_color) {
+                    button.set_active (true);
+                }
+                button.toggled.connect (() => {
+                    if (button.active) {
+                        Functions.set_gsetting (settings,
+                                                "accent-color",
+                                                // ex: blue, teal, green, etc...
+                                                new Variant.string (value.value_nick));
+                    }
+                });
+                accent_box.append (button);
+
+                if (prev_button != null) {
+                    button.set_group (prev_button);
+                }
+                prev_button = button;
+            }
 
             return pref_group;
         }

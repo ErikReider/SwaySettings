@@ -17,6 +17,7 @@ executable(
     dep_libadwaita,
     dep_gtk4_layer_shell,
     dep_gee,
+    dep_gsettings_schemas,
   ],
   install: true,
   install_dir: get_option('libexecdir')

@@ -2,8 +2,10 @@
  * vim: ft=less
  */
 
-@define-color borders-light rgba(0, 0, 0, 0.12);
-@define-color borders-dark rgba(255, 255, 255, 0.15);
+:root {
+  --borders-light: rgba(0, 0, 0, 0.12);
+  --borders-dark: rgba(255, 255, 255, 0.15);
+}
 
 *:disabled image {
   opacity: var(--disabled-opacity);
@@ -36,10 +38,10 @@
   border-top-left-radius: 6px;
 }
 .theme-preview-item .window .header-bar.dark {
-  box-shadow: inset 0 -1px @borders-dark;
+  box-shadow: inset 0 -1px var(--borders-dark);
 }
 .theme-preview-item .window .header-bar.light {
-  box-shadow: inset 0 -1px @borders-light;
+  box-shadow: inset 0 -1px var(--borders-light);
 }
 
 .theme-preview-item .window.light {
@@ -71,17 +73,17 @@
 
 .theme-preview-item:checked,
 .background-flowbox-child:selected {
-  box-shadow: 0 0 0 3px @accent_color;
+  box-shadow: 0 0 0 3px var(--accent-bg-color);
 }
 
 .theme-preview-item:focus:focus-visible,
 .background-flowbox-child:focus:focus-visible {
-  box-shadow: 0 0 0 3px alpha(@accent_color, 0.3);
+  box-shadow: 0 0 0 3px alpha(var(--accent-bg-color), 0.3);
 }
 
 .theme-preview-item:checked:focus:focus-visible,
 .background-flowbox-child:selected:focus:focus-visible {
-  box-shadow: 0 0 0 3px @accent_color, 0 0 0 6px alpha(@accent_color, 0.3);
+  box-shadow: 0 0 0 3px var(--accent-bg-color), 0 0 0 6px alpha(var(--accent-bg-color), 0.3);
 }
 
 .img-remove-button {
@@ -129,4 +131,70 @@
 .storage-row-usage trough {
   border-radius: 0px;
   min-height: 24px;
+}
+
+/* Accent widgets (Thanks gnome-control-center) */
+
+.accent-button {
+  border-radius: 9999px;
+  padding: 3px;
+  background: var(--accent-bg-color);
+  min-width: 24px;
+  min-height: 24px;
+  outline: none;
+  background-clip: content-box;
+  box-shadow: none;
+}
+
+.accent-button:checked {
+  box-shadow: 0 0 0 3px var(--accent-bg-color);
+}
+
+.accent-button:focus:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color) 30%, transparent);
+}
+
+.accent-button:checked:focus:focus-visible {
+  box-shadow: 0 0 0 3px var(--accent-bg-color),
+              0 0 0 6px color-mix(in srgb, var(--accent-color) 30%, transparent);
+}
+
+.blue, .teal, .green, .yellow, .orange, .red, .pink, .purple, .slate {
+  --accent-color: oklab(from var(--accent-bg-color) var(--standalone-color-oklab));
+}
+
+.blue {
+  --accent-bg-color: var(--accent-blue);
+}
+
+.teal {
+  --accent-bg-color: var(--accent-teal);
+}
+
+.green {
+  --accent-bg-color: var(--accent-green);
+}
+
+.yellow {
+  --accent-bg-color: var(--accent-yellow);
+}
+
+.orange {
+  --accent-bg-color: var(--accent-orange);
+}
+
+.red {
+  --accent-bg-color: var(--accent-red);
+}
+
+.pink {
+  --accent-bg-color: var(--accent-pink);
+}
+
+.purple {
+  --accent-bg-color: var(--accent-purple);
+}
+
+.slate {
+  --accent-bg-color: var(--accent-slate);
 }

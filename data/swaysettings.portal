@@ -1,4 +1,4 @@
 [portal]
 DBusName=org.freedesktop.impl.portal.desktop.swaysettings
-Interfaces=org.freedesktop.impl.portal.Wallpaper
+Interfaces=org.freedesktop.impl.portal.Wallpaper;org.freedesktop.impl.portal.Settings
 UseIn=sway;hyprland

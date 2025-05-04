@@ -39,6 +39,7 @@ executable(
     dep_libpulse,
     dep_libpulse_mainloop_glib,
     dep_math,
+    dep_gsettings_schemas,
   ],
   install: true,
 )
