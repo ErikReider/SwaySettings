@@ -1,4 +1,4 @@
-swaysettings_sources += files([
+swaysettings_settings_sources += files([
   'About/About.vala',
   'Background/BackgroundPage.vala',
   'Bluetooth/BluetoothPage.vala',

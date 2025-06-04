@@ -1,4 +1,4 @@
-swaysettings_sources += files([
+swaysettings_settings_sources = files([
   'main.vala',
   'Widgets/StorageRow/StorageRow.vala',
   'Widgets/ThumbnailImage/ThumbnailImage.vala',
@@ -20,7 +20,7 @@ subdir('Pages')
 
 executable(
   'swaysettings',
-  swaysettings_sources + shared_files,
+  swaysettings_sources + swaysettings_settings_sources + shared_files,
   vala_args: ['--target-glib=2.82', '--pkg=linux'],
   dependencies: [
     dep_glib,
