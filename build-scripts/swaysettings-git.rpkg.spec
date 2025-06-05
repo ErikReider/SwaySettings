@@ -32,6 +32,7 @@ BuildRequires: pkgconfig(systemd)
 BuildRequires: systemd
 BuildRequires: scdoc
 Requires: dbus
+Requires: grim
 Requires: bluez
 Requires: libgtop2
 Requires: udisks2
