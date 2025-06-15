@@ -135,3 +135,23 @@ public static void hide_all_except (ScreenshotWindow ref_window) {
         }
     }
 }
+
+/**
+ * Hides all windows that don't have any screenshot previews.
+ * Closes the application if there are no windows with previews.
+ */
+public static void try_hide_all (bool close_if_empty) {
+    bool has_screenshots = false;
+    foreach (var window in app.get_windows ()) {
+        ScreenshotWindow w = (ScreenshotWindow) window;
+        if (w.list.num_screenshots == 0) {
+            w.hide ();
+        } else {
+            has_screenshots = true;
+        }
+    }
+
+    if (!has_screenshots && close_if_empty) {
+        app.quit ();
+    }
+}

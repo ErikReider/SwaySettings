@@ -12,6 +12,7 @@ private class AnimationProgress : Object {
 public delegate Graphene.Size AnimationCallback (ScreenshotPreview widget,
                                                  double value);
 public delegate void AnimationDoneCallback (ScreenshotPreview widget);
+public delegate void ClickCallback (ScreenshotPreview widget);
 
 [GtkTemplate (ui = "/org/erikreider/swaysettings/ui/ScreenshotPreview.ui")]
 public class ScreenshotPreview : Adw.Bin {
@@ -49,15 +50,18 @@ public class ScreenshotPreview : Adw.Bin {
 
     private unowned AnimationCallback animation_cb;
     private unowned AnimationDoneCallback animation_done_cb;
+    private unowned ClickCallback close_click_cb;
 
     public ScreenshotPreview (ScreenshotWindow window,
                               Graphene.Rect global_rect,
                               AnimationCallback animation_cb,
-                              AnimationDoneCallback animation_done_cb) {
+                              AnimationDoneCallback animation_done_cb,
+                              ClickCallback close_click_cb) {
         this.window = window;
         this.global_rect = global_rect;
         this.animation_cb = animation_cb;
         this.animation_done_cb = animation_done_cb;
+        this.close_click_cb = close_click_cb;
 
         overlay.set_cursor_from_name ("pointer");
         overlay.add_controller (overlay_click);
@@ -81,7 +85,7 @@ public class ScreenshotPreview : Adw.Bin {
         close_button.add_css_class ("close");
         close_button.add_css_class ("circular");
         close_button.add_css_class ("opaque");
-        close_button.clicked.connect (close_button_click_cb);
+        close_button.clicked.connect (() => close_click_cb (this));
 
         Gtk.Button save_button =
             new Gtk.Button.from_icon_name ("document-save-symbolic");
@@ -228,12 +232,6 @@ public class ScreenshotPreview : Adw.Bin {
                                           double x,
                                           double y) {
         print ("PIC CLICK!\n");
-    }
-
-    // TODO:
-    private void close_button_click_cb (Gtk.Button button) {
-        print ("Close CLICK!\n");
-        // Also close the whole application if there are no visible previews left
     }
 
     // TODO:

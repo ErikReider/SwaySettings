@@ -125,7 +125,8 @@ public class ScreenshotList : Adw.Bin {
     public void add_preview (Graphene.Rect rect) {
         ScreenshotPreview preview = new ScreenshotPreview (window, rect,
                                                            animate_value_cb,
-                                                           animate_done_cb);
+                                                           animate_done_cb,
+                                                           preview_close_cb);
         fixed.put (preview, 0, 0);
         // Take the screenshot and wait
         if (!preview.set_texture (grim_screenshot_rect (rect))) {
@@ -172,5 +173,16 @@ public class ScreenshotList : Adw.Bin {
         fixed.remove (preview);
         box.append (preview);
         viewport.vadjustment.set_value (0.0);
+    }
+
+    private void preview_close_cb (ScreenshotPreview preview) {
+        // TODO: Save image? Maybe a dialog making sure if the user hasn't
+        // saved or copied the screenshot?
+        box.remove (preview);
+        preview_widgets.remove (preview);
+        preview.destroy ();
+
+        // Also close the whole application if there are no visible previews left
+        try_hide_all (true);
     }
 }
