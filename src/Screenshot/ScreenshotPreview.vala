@@ -18,7 +18,8 @@ public class ScreenshotPreview : Adw.Bin {
     public const uint ANIMATION_DURATION = 400;
     public const uint TIMEOUT_S = 10;
     public const int MAX_SIZE = 300;
-    public const int MIN_SIZE = 200;
+    // A good value to fit all the top buttons
+    public const int MIN_SIZE = 150;
 
     private unowned ScreenshotWindow window;
 
