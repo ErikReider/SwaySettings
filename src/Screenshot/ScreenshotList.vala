@@ -262,6 +262,12 @@ public class ScreenshotList : Adw.Bin {
         preview_widgets.remove (preview);
         preview.destroy ();
 
+        // Setting the input region here will cause the region to be
+        // outdated due to the new positions not being set yet.
+        // So wait until the widget is drawn.
+        input_region_dirty = true;
+        queue_allocate ();
+
         // Also close the whole application if there are no visible previews left
         try_hide_all (true);
     }
