@@ -2,10 +2,10 @@ static Settings self_settings;
 static bool activated = false;
 static Gtk.Application app;
 
-static double start_x = 0;
-static double start_y = 0;
-static double offset_x = 0;
-static double offset_y = 0;
+static int start_x = 0;
+static int start_y = 0;
+static int offset_x = 0;
+static int offset_y = 0;
 
 /** Separates each group of monitors and parses them separately */
 public static int main (string[] args) {
@@ -39,7 +39,10 @@ public static int main (string[] args) {
         app = new Gtk.Application ("org.erikreider.swaysettings-screenshot",
                                    ApplicationFlags.FLAGS_NONE);
         app.activate.connect ((g_app) => {
-            if (activated) return;
+            if (activated) {
+                show_all_screenshot_grids ();
+                return;
+            }
             activated = true;
             init ();
         });
@@ -97,6 +100,22 @@ private static void init_windows (Gdk.Display display,
     }
 }
 
+public static void show_all_screenshot_grids () {
+    foreach (var window in app.get_windows ()) {
+        ScreenshotWindow w = (ScreenshotWindow) window;
+        w.show_screenshot_grid ();
+        w.show ();
+    }
+}
+
+public static void show_all_screenshot_lists () {
+    foreach (var window in app.get_windows ()) {
+        ScreenshotWindow w = (ScreenshotWindow) window;
+        w.show_screenshot_list (false);
+        w.show ();
+    }
+}
+
 public static void queue_draw_all () {
     foreach (var window in app.get_windows ()) {
         ScreenshotWindow w = (ScreenshotWindow) window;
@@ -108,7 +127,11 @@ public static void hide_all_except (ScreenshotWindow ref_window) {
     foreach (var window in app.get_windows ()) {
         ScreenshotWindow w = (ScreenshotWindow) window;
         if (w != ref_window) {
-            w.hide ();
+            if (w.list.num_screenshots == 0) {
+                w.hide ();
+            } else {
+                w.show_screenshot_list (false);
+            }
         }
     }
 }

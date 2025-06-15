@@ -16,20 +16,20 @@ public class ScreenshotGrid : Adw.Bin {
         gesture_drag.drag_update.connect (drag_update_cb);
     }
 
-    public void drag_begin_cb (double x,
-                               double y) {
-        start_x = x + window.monitor.geometry.x;
-        start_y = y + window.monitor.geometry.y;
+    private void drag_begin_cb (double x,
+                                double y) {
+        start_x = (int) x + window.monitor.geometry.x;
+        start_y = (int) y + window.monitor.geometry.y;
         offset_x = 0;
         offset_y = 0;
 
         queue_draw ();
     }
 
-    public void drag_end_cb (double offset_x,
-                             double offset_y) {
+    private void drag_end_cb (double offset_x,
+                              double offset_y) {
         Graphene.Rect drag_rect = Graphene.Rect ().init (
-            (int) start_x, (int) start_y,
+            start_x, start_y,
             (int) offset_x, (int) offset_y);
 
         if (drag_rect.get_width () > 5 && drag_rect.get_height () > 5) {
@@ -44,19 +44,18 @@ public class ScreenshotGrid : Adw.Bin {
         queue_draw_all ();
     }
 
-    public void drag_update_cb (double x,
-                                double y) {
-        offset_x = x;
-        offset_y = y;
+    private void drag_update_cb (double x,
+                                 double y) {
+        offset_x = (int) x;
+        offset_y = (int) y;
         queue_draw_all ();
     }
 
-    public override void snapshot(Gtk.Snapshot snapshot) {
+    protected override void snapshot(Gtk.Snapshot snapshot) {
         Graphene.Rect drag_rect = Graphene.Rect ().init (
-            (int) start_x - window.monitor.geometry.x,
-            (int) start_y - window.monitor.geometry.y,
-            (int) offset_x,
-            (int) offset_y);
+            start_x - window.monitor.geometry.x,
+            start_y - window.monitor.geometry.y,
+            offset_x, offset_y);
 
         snapshot.push_mask (Gsk.MaskMode.INVERTED_ALPHA);
 
@@ -107,5 +106,20 @@ public class ScreenshotGrid : Adw.Bin {
                               border_color, });
 
         base.snapshot (snapshot);
+    }
+
+    public void set_input_region () {
+        // The input region should only cover the preview window
+        unowned Gdk.Surface ?surface = window.get_surface ();
+        if (surface != null) {
+            Cairo.RectangleInt rect_int = Cairo.RectangleInt () {
+                x = 0,
+                y = 0,
+                width = surface.width,
+                height = surface.height,
+            };
+            Cairo.Region region = new Cairo.Region.rectangle (rect_int);
+            surface.set_input_region (region);
+        }
     }
 }

@@ -6,6 +6,7 @@ executable(
     'ScreenshotWindow.vala',
     'ScreenshotGrid.vala',
     'ScreenshotPreview.vala',
+    'ScreenshotList.vala',
   )
   + swaysettings_sources
   + shared_files,

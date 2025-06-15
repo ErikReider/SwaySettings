@@ -1,4 +1,4 @@
-public static Gdk.Texture ? get_region (Graphene.Rect rect) {
+public static Gdk.Texture ? grim_screenshot_rect (Graphene.Rect rect) {
     try {
         // Create a subprocess to run `grim -` (output PNG to stdout)
         string[] cmd = {
@@ -24,4 +24,3 @@ public static Gdk.Texture ? get_region (Graphene.Rect rect) {
         return null;
     }
 }
-

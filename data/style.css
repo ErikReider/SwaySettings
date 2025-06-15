@@ -202,15 +202,34 @@ window.screenshot-window {
   background: transparent;
 }
 
+.screenshot-list {
+  padding: 32px;
+}
+
+.screenshot-list .screenshot-preview {
+  margin: 16px 0;
+}
+
 .screenshot-preview {
   transition: opacity var(--transition-time);
   background: var(--window-bg-color);
   border-radius: 16px;
   margin: 32px;
-  box-shadow: 0 22px 70px 4px rgba(0, 0, 0, 0.56);
+  box-shadow: 0 22px 26px 4px rgba(0, 0, 0, 0.56);
 }
 .screenshot-preview:disabled {
   opacity: 0;
+}
+
+.screenshot-preview-header {
+  padding: 8px;
+}
+.screenshot-preview-header button.close {
+  /* Mimic the Adwaita close button: 34px size */
+  margin: 5px;
+  padding: 0px;
+  min-height: 24px;
+  min-width: 24px;
 }
 
 .screenshot-preview-picture {

@@ -1,3 +1,6 @@
+private enum DecorationLayout {
+    LEFT, RIGTH;
+}
 private class AnimationProgress : Object {
     public double progress { get; set; }
 
@@ -6,20 +9,33 @@ private class AnimationProgress : Object {
     }
 }
 
-public class ScreenshotPreview : Gtk.Fixed {
-    public const uint ANIMATION_DURATION = 300;
+public delegate Graphene.Size AnimationCallback (ScreenshotPreview widget,
+                                                 double value);
+public delegate void AnimationDoneCallback (ScreenshotPreview widget);
+
+[GtkTemplate (ui = "/org/erikreider/swaysettings/ui/ScreenshotPreview.ui")]
+public class ScreenshotPreview : Adw.Bin {
+    public const uint ANIMATION_DURATION = 400;
     public const uint TIMEOUT_S = 10;
+    public const int MAX_SIZE = 300;
+    public const int MIN_SIZE = 200;
 
     private unowned ScreenshotWindow window;
 
-    private Gtk.Overlay overlay;
-    private Gtk.Picture picture;
+    [GtkChild]
+    unowned Gtk.Overlay overlay;
+
+    [GtkChild]
+    unowned Gtk.CenterBox header_bar;
+    [GtkChild]
+    unowned Gtk.Picture picture;
 
     private Adw.TimedAnimation animation;
     private Adw.AnimationTarget target;
 
-    private Cairo.Rectangle init_rect;
-    private Cairo.Rectangle dst_rect;
+    public Graphene.Rect global_rect { get; private set; }
+    public Graphene.Rect init_rect { get; private set; }
+    public Graphene.Rect dst_rect { get; private set; }
 
     private Gtk.GestureClick overlay_click = new Gtk.GestureClick ();
     private Gtk.EventControllerMotion motion_controller =
@@ -27,124 +43,114 @@ public class ScreenshotPreview : Gtk.Fixed {
 
     private AnimationProgress animation_progress = new AnimationProgress (0.0);
 
-    private int hide_id = -1;
+    private uint hide_id = 0;
+    private ulong map_id = 0;
 
-    public ScreenshotPreview (ScreenshotWindow window) {
+    private unowned AnimationCallback animation_cb;
+    private unowned AnimationDoneCallback animation_done_cb;
+
+    public ScreenshotPreview (ScreenshotWindow window,
+                              Graphene.Rect global_rect,
+                              AnimationCallback animation_cb,
+                              AnimationDoneCallback animation_done_cb) {
         this.window = window;
+        this.global_rect = global_rect;
+        this.animation_cb = animation_cb;
+        this.animation_done_cb = animation_done_cb;
 
-        overlay = new Gtk.Overlay ();
-        overlay.add_css_class ("screenshot-preview");
-        overlay.set_overflow (Gtk.Overflow.HIDDEN);
         overlay.set_cursor_from_name ("pointer");
         overlay.add_controller (overlay_click);
         overlay_click.released.connect (picture_button_click_cb);
         overlay.add_controller (motion_controller);
         motion_controller.enter.connect (remove_timer);
         motion_controller.leave.connect (add_timer);
-        put (overlay, 0, 0);
 
-        picture = new Gtk.Picture ();
-        picture.add_css_class ("screenshot-preview-picture");
-        overlay.set_child (picture);
+        // Fixes the Picture taking up too much space:
+        // https://gitlab.gnome.org/GNOME/gtk/-/issues/7092
+        picture.set_layout_manager (new Gtk.CenterLayout ());
 
-        Gtk.Image image_overlay =
-            new Gtk.Image.from_icon_name ("text-editor-symbolic");
-        image_overlay.add_css_class ("screenshot-image-overlay");
-        image_overlay.set_pixel_size (32);
-        image_overlay.set_valign (Gtk.Align.FILL);
-        image_overlay.set_halign (Gtk.Align.FILL);
-        image_overlay.set_vexpand (true);
-        image_overlay.set_hexpand (true);
-        overlay.add_overlay (image_overlay);
-
-        Adw.HeaderBar header_bar = new Adw.HeaderBar ();
         animation_progress.bind_property ("progress",
                                           header_bar, "opacity",
                                           BindingFlags.SYNC_CREATE);
-        header_bar.set_show_title (false);
-        header_bar.set_show_back_button (false);
-        header_bar.add_css_class ("flat");
-        header_bar.set_hexpand (true);
-        header_bar.set_halign (Gtk.Align.FILL);
-        header_bar.set_vexpand (false);
-        header_bar.set_valign (Gtk.Align.START);
-        overlay.add_overlay (header_bar);
 
-        bool left_aligned;
-        header_bar.set_decoration_layout (get_decoration_layout (
-                                              out left_aligned));
+        DecorationLayout decoration_layout = get_decoration_layout ();
+
+        Gtk.Button close_button =
+            new Gtk.Button.from_icon_name ("window-close-symbolic");
+        close_button.add_css_class ("close");
+        close_button.add_css_class ("circular");
+        close_button.add_css_class ("opaque");
+        close_button.clicked.connect (close_button_click_cb);
 
         Gtk.Button save_button =
             new Gtk.Button.from_icon_name ("document-save-symbolic");
         save_button.add_css_class ("circular");
         save_button.add_css_class ("flat");
-        save_button.set_halign (Gtk.Align.END);
         save_button.clicked.connect (save_button_click_cb);
-        if (left_aligned) {
-            header_bar.pack_end (save_button);
-        } else {
-            header_bar.pack_start (save_button);
-        }
+
+        Gtk.Button save_as_button =
+            new Gtk.Button.from_icon_name ("document-save-as-symbolic");
+        save_as_button.add_css_class ("circular");
+        save_as_button.add_css_class ("flat");
+        save_as_button.clicked.connect (save_as_button_click_cb);
 
         Gtk.Button copy_button =
             new Gtk.Button.from_icon_name ("edit-copy-symbolic");
         copy_button.add_css_class ("circular");
         copy_button.add_css_class ("flat");
-        copy_button.set_halign (Gtk.Align.END);
         copy_button.clicked.connect (copy_button_click_cb);
-        if (left_aligned) {
-            header_bar.pack_end (copy_button);
-        } else {
-            header_bar.pack_start (copy_button);
+
+        Gtk.Box button_box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 4);
+        button_box.append (copy_button);
+        button_box.append (save_as_button);
+        button_box.append (save_button);
+        switch (decoration_layout) {
+        case DecorationLayout.LEFT:
+            header_bar.set_end_widget (button_box);
+            header_bar.set_start_widget (close_button);
+            break;
+        case DecorationLayout.RIGTH:
+            header_bar.set_start_widget (button_box);
+            header_bar.set_end_widget (close_button);
+            break;
+
         }
 
         target = new Adw.CallbackAnimationTarget (animate_value_cb);
         animation = new Adw.TimedAnimation (this, 0.0, 1.0, ANIMATION_DURATION,
                                             target);
         animation.set_easing (Adw.Easing.EASE_IN);
-        animation.done.connect (() => {
-            Gtk.Border margin = overlay.get_style_context ().get_margin ();
-            Cairo.Rectangle rect = Cairo.Rectangle () {
-                x = dst_rect.x - margin.right,
-                y = dst_rect.y - margin.bottom,
-                width = dst_rect.width,
-                height = dst_rect.height,
-            };
-            set_input_region (rect);
+        animation.done.connect (animate_done_cb);
 
-            add_timer ();
-        });
-
-        map.connect (begin);
+        init_rects ();
     }
 
     private void add_timer () {
         remove_timer ();
-        hide_id = (int) Timeout.add_seconds_once (TIMEOUT_S, () => {
-            hide_id = -1;
-            // TODO:
-            print ("TIMEOUT!\n");
+        hide_id = Timeout.add_seconds_once (TIMEOUT_S, () => {
+            hide_id = 0;
+            // TODO:Close / save the screenshot after a timeout?
         });
     }
 
     private void remove_timer () {
-        if (hide_id > -1) {
+        if (hide_id > 0) {
             Source.remove (hide_id);
-            hide_id = -1;
+            hide_id = 0;
         }
     }
 
-    private string ? get_decoration_layout (out bool left_aligned) {
-        left_aligned = false;
+    private DecorationLayout get_decoration_layout () {
+        DecorationLayout layout = DecorationLayout.RIGTH;
 
         unowned Gtk.Settings?g_settings = Gtk.Settings.get_default ();
         if (g_settings == null) {
-            return null;
+            return layout;
         }
 
         string decoration = g_settings.gtk_decoration_layout;
         if (!decoration.contains (":")) {
-            return null;
+            return layout;
         }
 
         string[] split = decoration.split (":");
@@ -152,100 +158,68 @@ public class ScreenshotPreview : Gtk.Fixed {
         string end = "";
         if ("close" in split[0]) {
             start = "close";
-            left_aligned = true;
+            layout = DecorationLayout.LEFT;
         }
         if ("close" in split[1]) {
             end = "close";
-            left_aligned = false;
+            layout = DecorationLayout.RIGTH;
         }
 
-        if (start.length + end.length == 0) {
-            return null;
-        }
-        return "%s:%s".printf (start, end);
+        return layout;
     }
 
-    private void begin () {
-        Graphene.Rect rect = Graphene.Rect ().init (
-            (int) start_x, (int) start_y,
-            (int) offset_x, (int) offset_y);
-
-        init_rect = Cairo.Rectangle () {
-            x = rect.get_x () - window.monitor.geometry.x,
-            y = rect.get_y () - window.monitor.geometry.y,
-            width = rect.get_width (),
-            height = rect.get_height (),
-        };
+    private void init_rects () {
+        init_rect = Graphene.Rect ()
+                    .init_from_rect (global_rect)
+                    .offset (-window.monitor.geometry.x,
+                             -window.monitor.geometry.y);
 
         const double MON_SCALE = 0.1;
         double max_preview_size_width =
-            Math.fmax (window.monitor.geometry.width * MON_SCALE, 300);
+            Math.fmax (window.monitor.geometry.width * MON_SCALE, MAX_SIZE);
         double max_preview_size_height =
-            Math.fmax (window.monitor.geometry.height * MON_SCALE, 300);
+            Math.fmax (window.monitor.geometry.height * MON_SCALE, MAX_SIZE);
 
-        double dst_width = init_rect.width;
-        double dst_height = init_rect.height;
-        double ratio = init_rect.width / init_rect.height;
+        double dst_width = init_rect.get_width ();
+        double dst_height = init_rect.get_height ();
+        double ratio = init_rect.get_width () / init_rect.get_height ();
         if (ratio > 1.0) {
             // Wide
             double scale = dst_width / max_preview_size_width;
-            dst_height = (init_rect.height / scale);
+            dst_height = (init_rect.get_height () / scale);
         } else if (ratio < 1.0) {
             // Tall
             double scale = dst_height / max_preview_size_height;
-            dst_width = (init_rect.width / scale);
+            dst_width = (init_rect.get_width () / scale);
         }
-        dst_width = Math.fmin (dst_width, max_preview_size_width);
-        dst_height = Math.fmin (dst_height, max_preview_size_height);
+        dst_width = Math.fmax (
+            Math.fmin (dst_width, max_preview_size_width),
+            MIN_SIZE);
+        dst_height = Math.fmax (
+            Math.fmin (dst_height, max_preview_size_height),
+            MIN_SIZE);
 
-        dst_rect = Cairo.Rectangle () {
-            x = window.monitor.geometry.width - dst_width,
-            y = window.monitor.geometry.height - dst_height,
-            width = dst_width,
-            height = dst_height,
-        };
-
-        animation.play ();
+        dst_rect = Graphene.Rect ().init (
+            window.monitor.geometry.width - (float) dst_width,
+            window.monitor.geometry.height - (float)  dst_height,
+            (float) dst_width,
+            (float) dst_height);
     }
 
     private void animate_value_cb (double value) {
         this.animation_progress.progress = value;
 
-        Gtk.Border margin = overlay.get_style_context ().get_margin ();
-
-        double width = Adw.lerp (init_rect.width, dst_rect.width, value);
-        double height = Adw.lerp (init_rect.height, dst_rect.height, value);
-        double x = Adw.lerp (init_rect.x, dst_rect.x - margin.right, value);
-        double y = Adw.lerp (init_rect.y, dst_rect.y - margin.bottom, value);
-
-        move (overlay, x - margin.left, y - margin.top);
-        overlay.set_size_request (
-            (int) width + margin.left + margin.right,
-            (int) height + margin.top + margin.bottom);
-
-        set_input_region (null);
+        Graphene.Size size = this.animation_cb (this, value);
+        set_size_request ((int) size.width, (int) size.height);
     }
 
-    private void set_input_region (Cairo.Rectangle ?rect) {
-        // The input region should only cover the preview window
-        unowned Gdk.Surface ?surface = window.get_surface ();
-        if (surface != null) {
-            Cairo.RectangleInt rect_int;
-            if (rect != null) {
-                rect_int = Cairo.RectangleInt () {
-                    x = (int) rect.x,
-                    y = (int) rect.y,
-                    width = (int) rect.width,
-                    height = (int) rect.height,
-                };
-            } else {
-                rect_int = Cairo.RectangleInt () {
-                    x = 0, y = 0, width = 0, height = 0,
-                };
-            }
-            Cairo.Region region = new Cairo.Region.rectangle (rect_int);
-            surface.set_input_region (region);
-        }
+    private void animate_done_cb () {
+        this.animation_done_cb (this);
+
+        Graphene.Size size = this.animation_cb (this, 1.0);
+        set_size_request ((int) size.width, (int) size.height);
+
+        add_timer ();
     }
 
     // TODO:
@@ -253,6 +227,17 @@ public class ScreenshotPreview : Gtk.Fixed {
                                           double x,
                                           double y) {
         print ("PIC CLICK!\n");
+    }
+
+    // TODO:
+    private void close_button_click_cb (Gtk.Button button) {
+        print ("Close CLICK!\n");
+        // Also close the whole application if there are no visible previews left
+    }
+
+    // TODO:
+    private void save_as_button_click_cb (Gtk.Button button) {
+        print ("Save As CLICK!\n");
     }
 
     // TODO:
@@ -273,5 +258,18 @@ public class ScreenshotPreview : Gtk.Fixed {
         picture.set_paintable (texture);
         picture.set_content_fit (Gtk.ContentFit.CONTAIN);
         return true;
+    }
+
+    public void start_animation () {
+        if (map_id != 0) {
+            disconnect (map_id);
+            map_id = 0;
+        }
+        map_id = map.connect (() => {
+            disconnect (map_id);
+            map_id = 0;
+
+            animation.play ();
+        });
     }
 }
