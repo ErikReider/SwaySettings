@@ -7,6 +7,8 @@ static int start_y = 0;
 static int offset_x = 0;
 static int offset_y = 0;
 
+public const uint ANIMATION_DURATION = 400;
+
 /** Separates each group of monitors and parses them separately */
 public static int main (string[] args) {
     try {

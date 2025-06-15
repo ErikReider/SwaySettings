@@ -1,21 +1,24 @@
 [GtkTemplate (ui = "/org/erikreider/swaysettings/ui/ScreenshotList.ui")]
 public class ScreenshotList : Adw.Bin {
-    public const uint ANIMATION_DURATION = 300;
-
     private unowned ScreenshotWindow window;
 
     [GtkChild]
     unowned Gtk.Overlay overlay;
+
     [GtkChild]
     unowned Gtk.Fixed fixed;
-    [GtkChild]
-    unowned Gtk.Box box;
+
     [GtkChild]
     unowned Gtk.ScrolledWindow scrolled_window;
     [GtkChild]
     unowned Gtk.Viewport viewport;
+    [GtkChild]
+    unowned Gtk.Box box;
 
     private bool input_region_dirty = false;
+
+    private uint scroll_bottom_id = 0;
+    private double scroll_bottom_value = 0;
 
     List<ScreenshotPreview> preview_widgets = new List<ScreenshotPreview> ();
 
@@ -123,56 +126,133 @@ public class ScreenshotList : Adw.Bin {
     }
 
     public void add_preview (Graphene.Rect rect) {
-        ScreenshotPreview preview = new ScreenshotPreview (window, rect,
-                                                           animate_value_cb,
-                                                           animate_done_cb,
-                                                           preview_close_cb);
-        fixed.put (preview, 0, 0);
         // Take the screenshot and wait
-        if (!preview.set_texture (grim_screenshot_rect (rect))) {
+        Gdk.Texture ?texture = grim_screenshot_rect (rect);
+        if (texture == null) {
             stderr.printf ("Unable to screenshot!\n");
-            fixed.remove (preview);
             return;
         }
-        preview.start_animation ();
+
+        ScreenshotPreview fixed_preview = new ScreenshotPreview.fixed (window);
+        ScreenshotPreview list_preview = new ScreenshotPreview.list (window,
+                                                                     preview_close_cb);
+
+        Graphene.Rect init_rect = Graphene.Rect ()
+                                  .init_from_rect (rect)
+                                  .offset (-window.monitor.geometry.x,
+                                           -window.monitor.geometry.y);
+        Graphene.Rect dst_rect = ScreenshotPreview.calculate_dst_rect (window,
+                                                                       init_rect);
+        Gtk.Adjustment scroll_start_value = viewport.vadjustment;
+
+        Adw.CallbackAnimationTarget target = new Adw.CallbackAnimationTarget (
+            (value) => {
+            animate_value_cb (fixed_preview, list_preview,
+                              init_rect, dst_rect,
+                              scroll_start_value, value);
+        });
+        Adw.TimedAnimation animation = new Adw.TimedAnimation (this, 0.0, 1.0,
+                                                               ANIMATION_DURATION,
+                                                               target);
+        animation.set_easing (Adw.Easing.EASE_IN);
+        animation.done.connect ((value) => {
+            list_preview.set_opacity (1.0);
+
+            // Setting the input region here will cause the region to be
+            // outdated due to the new positions not being set yet.
+            // So wait until the widget is drawn.
+            input_region_dirty = true;
+
+            fixed.remove (fixed_preview);
+
+            list_preview.add_timer ();
+        });
+
+        fixed_preview.set_texture (texture);
+        list_preview.set_texture (texture);
+
+        fixed.put (fixed_preview, init_rect.get_x (), init_rect.get_y ());
+        box.append (list_preview);
+
+        preview_widgets.append (list_preview);
+
+        // Ensures the animation starts after GTK recalculates the layout and
+        // both widgets are mapped
+        Idle.add_once (() => {
+            animation.play ();
+        });
     }
 
-    private Graphene.Size animate_value_cb (ScreenshotPreview preview,
-                                            double value) {
-        Gtk.Border margin = preview.get_style_context ().get_margin ();
+    private void animate_value_cb (ScreenshotPreview fixed_preview,
+                                   ScreenshotPreview list_preview,
+                                   Graphene.Rect init_rect,
+                                   Graphene.Rect dst_rect,
+                                   Gtk.Adjustment scroll_start_adj,
+                                   double value) {
+        Gtk.Border fixed_margin =
+            fixed_preview.get_style_context ().get_margin ();
+        Gtk.Border list_margin =
+            list_preview.get_style_context ().get_margin ();
 
-        Graphene.Rect init_rect = preview.init_rect;
-        Graphene.Rect dst_rect = preview.dst_rect;
+        //
+        // Fixed Preview Hero animation
+        //
+        double fixed_width = Adw.lerp (init_rect.get_width (),
+                                       dst_rect.get_width (), value);
+        double fixed_height = Adw.lerp (init_rect.get_height (),
+                                        dst_rect.get_height (), value);
+        double fixed_x = Adw.lerp (init_rect.get_x (),
+                                   dst_rect.get_x () - fixed_margin.right -
+                                   list_margin.right, value);
+        double fixed_y = Adw.lerp (init_rect.get_y (),
+                                   dst_rect.get_y () - fixed_margin.bottom -
+                                   list_margin.bottom, value);
 
-        double width = Adw.lerp (init_rect.get_width (), dst_rect.get_width (),
-                                 value);
-        double height = Adw.lerp (init_rect.get_height (),
-                                  dst_rect.get_height (), value);
-        double x = Adw.lerp (init_rect.get_x (),
-                             dst_rect.get_x () - margin.right, value);
-        double y = Adw.lerp (init_rect.get_y (),
-                             dst_rect.get_y () - margin.bottom, value);
+        fixed.move (fixed_preview, fixed_x - fixed_margin.left,
+                    fixed_y - fixed_margin.top);
 
-        if (preview.parent == fixed) {
-            fixed.move (preview, x - margin.left, y - margin.top);
+        fixed_preview.set_size_request ((int) fixed_width + fixed_margin.left +
+                                        fixed_margin.right,
+                                        (int) fixed_height + fixed_margin.top +
+                                        fixed_margin.bottom);
+        fixed_preview.header_bar.set_opacity (value);
+
+        //
+        // List Preview expand animation
+        //
+        double list_width = dst_rect.get_width () + list_margin.left +
+                            list_margin.right;
+        double list_height = Adw.lerp (0, dst_rect.get_height (),
+                                       value) + list_margin.top +
+                             list_margin.bottom;
+
+        list_preview.set_size_request ((int) list_width,
+                                       (int) list_height);
+
+        // Scroll to the bottom preview
+        double scroll_value = Adw.lerp (scroll_start_adj.value,
+                                        scroll_start_adj.upper -
+                                        scroll_start_adj.page_size +
+                                        list_height,
+                                        value);
+        scroll_to_bottom (scroll_value);
+    }
+
+    private void scroll_to_bottom (double scroll_value) {
+        if (scroll_bottom_id != 0) {
+            Source.remove (scroll_bottom_id);
+            scroll_bottom_id = 0;
         }
 
-        return Graphene.Size ().init (
-            (float) width + margin.left + margin.right,
-            (float) height + margin.top + margin.bottom);
-    }
-
-    private void animate_done_cb (ScreenshotPreview preview) {
-        preview_widgets.append (preview);
-
-        // Setting the input region here will cause the region to be
-        // outdated due to the new positions not being set yet.
-        // So wait until the widget is drawn.
-        input_region_dirty = true;
-
-        fixed.remove (preview);
-        box.append (preview);
-        viewport.vadjustment.set_value (0.0);
+        // HACK: To avoid a weird segfault when accessing local variables
+        // in the Idle callback...
+        scroll_bottom_value = scroll_value;
+        // Ensures the scroll happens after GTK recalculates the layout
+        scroll_bottom_id = Idle.add_once (() => {
+            scroll_bottom_id = 0;
+            Gtk.Adjustment vadjustment = viewport.get_vadjustment ();
+            vadjustment.set_value (scroll_bottom_value);
+        });
     }
 
     private void preview_close_cb (ScreenshotPreview preview) {
