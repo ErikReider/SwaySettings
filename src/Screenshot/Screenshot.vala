@@ -111,10 +111,20 @@ public static void show_all_screenshot_grids () {
 }
 
 public static void show_all_screenshot_lists () {
+    bool has_screenshots = false;
     foreach (var window in app.get_windows ()) {
         ScreenshotWindow w = (ScreenshotWindow) window;
-        w.show_screenshot_list (false);
-        w.show ();
+        if (w.list.num_screenshots == 0) {
+            w.hide ();
+        } else {
+            has_screenshots = true;
+            w.show_screenshot_list (false);
+            w.show ();
+        }
+    }
+
+    if (!has_screenshots) {
+        app.quit ();
     }
 }
 
