@@ -246,7 +246,24 @@ public class ScreenshotPreview : Adw.Bin {
 
     // TODO:
     private void copy_button_click_cb (Gtk.Button button) {
-        print ("Copy CLICK!\n");
+        unowned Gdk.Paintable ?paintable = picture.get_paintable ();
+        if (paintable == null) {
+            return;
+        } else if (!(paintable is Gdk.Texture)) {
+            warning (
+                "Could not copy screenshot to clipboard. Type mismatch: %s",
+                paintable.get_type ().name ());
+            return;
+        }
+
+        unowned Gdk.Clipboard clipboard = window.get_clipboard ();
+        if (clipboard == null) {
+            warning (
+                "Could not copy screenshot to clipboard. Clipboard could not be obtained");
+            return;
+        }
+
+        clipboard.set_texture ((Gdk.Texture) paintable);
     }
 
     public bool set_texture (Gdk.Texture ?texture) {
