@@ -31,22 +31,11 @@ public class ScreenshotPreview : Adw.Bin {
 
     private uint hide_id = 0;
 
-    private unowned ClickCallback ?close_click_cb = null;
-
     public ScreenshotPreview.list (ScreenshotWindow window,
                                    ClickCallback close_click_cb) {
         this(window);
-        this.close_click_cb = close_click_cb;
 
         this.opacity = 0.0;
-    }
-
-    public ScreenshotPreview.fixed (ScreenshotWindow window) {
-        this(window);
-    }
-
-    private ScreenshotPreview (ScreenshotWindow window) {
-        this.window = window;
 
         overlay.set_cursor_from_name ("pointer");
         overlay.add_controller (overlay_click);
@@ -55,22 +44,12 @@ public class ScreenshotPreview : Adw.Bin {
         motion_controller.enter.connect (remove_timer);
         motion_controller.leave.connect (add_timer);
 
-        // Fixes the Picture taking up too much space:
-        // https://gitlab.gnome.org/GNOME/gtk/-/issues/7092
-        picture.set_layout_manager (new Gtk.CenterLayout ());
-
-        DecorationLayout decoration_layout = get_decoration_layout ();
-
         Gtk.Button close_button =
             new Gtk.Button.from_icon_name ("window-close-symbolic");
         close_button.add_css_class ("close");
         close_button.add_css_class ("circular");
         close_button.add_css_class ("opaque");
-        close_button.clicked.connect (() => {
-            if (this.close_click_cb != null) {
-                close_click_cb (this);
-            }
-        });
+        close_button.clicked.connect (() => close_click_cb (this));
 
         Gtk.Button save_button =
             new Gtk.Button.from_icon_name ("document-save-symbolic");
@@ -94,7 +73,7 @@ public class ScreenshotPreview : Adw.Bin {
         button_box.append (copy_button);
         button_box.append (save_as_button);
         button_box.append (save_button);
-        switch (decoration_layout) {
+        switch (get_decoration_layout ()) {
             case DecorationLayout.LEFT:
                 header_bar.set_end_widget (button_box);
                 header_bar.set_start_widget (close_button);
@@ -103,8 +82,21 @@ public class ScreenshotPreview : Adw.Bin {
                 header_bar.set_start_widget (button_box);
                 header_bar.set_end_widget (close_button);
                 break;
-
         }
+    }
+
+    public ScreenshotPreview.fixed (ScreenshotWindow window) {
+        this(window);
+
+        set_can_target (false);
+    }
+
+    private ScreenshotPreview (ScreenshotWindow window) {
+        this.window = window;
+
+        // Fixes the Picture taking up too much space:
+        // https://gitlab.gnome.org/GNOME/gtk/-/issues/7092
+        picture.set_layout_manager (new Gtk.CenterLayout ());
     }
 
     public void add_timer () {
