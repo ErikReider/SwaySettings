@@ -250,7 +250,7 @@ namespace SwaySettings {
         }
         public InputData data;
         public string identifier { get; private set; }
-        public float scroll_factor { get; set; default = 1.0f; }
+        public double scroll_factor { get; set; default = 1.0; }
 
         public InputDevice (string identifier,
                             InputTypes type) {
@@ -289,8 +289,10 @@ namespace SwaySettings {
                 case InputTypes.TOUCHPAD:
                     // events
                     settings_list += data.send_events.get_line ();
-                    // pointer_accel
-                    settings_list += @"pointer_accel $(data.accel_speed)";
+                    // pointer_accel: Use double to_string to ensure '.' are used
+                    settings_list +=
+                        "pointer_accel %s".printf (
+                            data.accel_speed.to_string ());
                     // accel_profile
                     settings_list += data.accel_profile.get_line ();
                     // natural_scroll
@@ -299,8 +301,9 @@ namespace SwaySettings {
                     // left_handed
                     settings_list +=
                         @"left_handed $(data.left_handed.parse ())";
-                    // scroll_factor
-                    settings_list += @"scroll_factor $(scroll_factor)";
+                    // scroll_factor: Use double to_string to ensure '.' are used
+                    settings_list +=
+                        "scroll_factor %s".printf (scroll_factor.to_string ());
                     // middle_emulation
                     settings_list +=
                         @"middle_emulation $(data.middle_emulation.parse ())";
