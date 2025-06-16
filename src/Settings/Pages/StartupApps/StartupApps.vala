@@ -56,10 +56,12 @@ namespace SwaySettings {
 
         ArrayList<DesktopAppInfo> get_startup_apps () {
             ArrayList<DesktopAppInfo> apps = new ArrayList<DesktopAppInfo> ();
-            string auto_start_path = @"$(Environment.get_user_config_dir())/autostart";
+            string auto_start_path = Path.build_path (Path.DIR_SEPARATOR_S,
+                Environment.get_user_config_dir (), "autostart");
             Functions.walk_through_dir (auto_start_path, (file_info) => {
                 // Implement "X-GNOME-Autostart-enabled" check???
-                var app_path = @"$(auto_start_path)/$(file_info.get_name())";
+                string app_path = Path.build_path (Path.DIR_SEPARATOR_S,
+                    auto_start_path, file_info.get_name ());
                 var app = new DesktopAppInfo.from_filename (app_path);
                 if (app == null) return;
                 apps.add (app);

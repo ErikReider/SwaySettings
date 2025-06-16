@@ -112,7 +112,7 @@ namespace SwaySettings {
         }
 
         public string get_line () {
-            return @"accel_profile $(parse ())";
+            return "accel_profile %s".printf (parse ());
         }
     }
 
@@ -180,7 +180,7 @@ namespace SwaySettings {
         }
 
         public string get_line () {
-            return @"click_method $(parse ())";
+            return "click_method %s".printf (parse ());
         }
     }
 
@@ -208,7 +208,7 @@ namespace SwaySettings {
         }
 
         public string get_line () {
-            return @"tap_button_map $(parse ())";
+            return "tap_button_map %s".printf (parse ());
         }
     }
 
@@ -240,7 +240,7 @@ namespace SwaySettings {
         }
 
         public string get_line () {
-            return @"events $(parse())";
+            return "events %s".printf (parse ());
         }
     }
 
@@ -260,7 +260,9 @@ namespace SwaySettings {
         }
 
         public string[] get_settings () {
-            string[] lines = { @"input type:$(input_type.parse()) {\n" };
+            string[] lines = {
+                "input type:%s {\n".printf (input_type.parse ())
+            };
             foreach (string line in get_type_settings ()) {
                 lines += get_string_line (line);
             }
@@ -269,7 +271,7 @@ namespace SwaySettings {
         }
 
         private string get_string_line (string line) {
-            return @"\t$(line)\n";
+            return "\t%s\n".printf (line);
         }
 
         private string[] get_type_settings () {
@@ -283,7 +285,7 @@ namespace SwaySettings {
                         array += lang.name;
                     }
                     string languages = string.joinv (", ", array);
-                    settings_list += (@"xkb_layout \"$(languages)\"");
+                    settings_list += "xkb_layout \"%s\"".printf (languages);
                     break;
                 case InputTypes.POINTER:
                 case InputTypes.TOUCHPAD:
@@ -297,24 +299,26 @@ namespace SwaySettings {
                     settings_list += data.accel_profile.get_line ();
                     // natural_scroll
                     settings_list +=
-                        @"natural_scroll $(data.natural_scroll.parse ())";
+                        "natural_scroll %s".printf (
+                            data.natural_scroll.parse ());
                     // left_handed
                     settings_list +=
-                        @"left_handed $(data.left_handed.parse ())";
+                        "left_handed %s".printf (data.left_handed.parse ());
                     // scroll_factor: Use double to_string to ensure '.' are used
                     settings_list +=
                         "scroll_factor %s".printf (scroll_factor.to_string ());
                     // middle_emulation
                     settings_list +=
-                        @"middle_emulation $(data.middle_emulation.parse ())";
+                        "middle_emulation %s".printf (
+                            data.middle_emulation.parse ());
 
                     if (InputTypes.TOUCHPAD == input_type) {
                         // scroll_method
                         settings_list += data.scroll_method.get_line ();
                         // dwt
-                        settings_list += @"dwt $(data.dwt.parse ())";
+                        settings_list += "dwt %s".printf (data.dwt.parse ());
                         // tap
-                        settings_list += @"tap $(data.tap.parse ())";
+                        settings_list += "tap %s".printf (data.tap.parse ());
                         // tap_button_map
                         settings_list += data.tap_button_map.get_line ();
                         // click_method
@@ -351,7 +355,7 @@ namespace SwaySettings {
         public BoolEnum tap {
             get; set; default = BoolEnum.DISABLED;
         }
-        public float accel_speed {
+        public double accel_speed {
             get; set; default = 0;
         }
         public ClickMethods click_method {

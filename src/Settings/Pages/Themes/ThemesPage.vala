@@ -406,7 +406,8 @@ namespace SwaySettings {
             for (var i = 0; i < paths.length; i++) {
                 paths[i] = Path.build_path ("/", paths[i], folder_name);
             }
-            paths += @"$(Environment.get_home_dir ())/.$(folder_name)";
+            paths += Path.build_path (Path.DIR_SEPARATOR_S,
+                Environment.get_home_dir (), ".%s".printf (folder_name));
 
             var themes = new ArrayList<string> ();
 
@@ -445,8 +446,8 @@ namespace SwaySettings {
 
                         switch (folder_name) {
                             case "themes":
-                                var new_path = @"$(folder_path)/gtk-3.";
-                                var file_v3 = File.new_for_path (@"$(new_path)0/gtk.css");
+                                var new_path = "%s/gtk-3.".printf (folder_path);
+                                var file_v3 = File.new_for_path ("%s0/gtk.css".printf (new_path));
                                 var file_min_ver = File.new_for_path (
                                     new_path + min_ver.to_string () + "/gtk.css");
                                 if (file_v3.query_exists ()
@@ -475,14 +476,17 @@ namespace SwaySettings {
         bool get_icons (string setting_name, string folder_path) throws Error {
             switch (setting_name) {
                 case "cursor-theme":
-                    var cursors_file = File.new_for_path (@"$(folder_path)/cursors");
+                    File cursors_file = File.new_for_path (
+                        Path.build_path (Path.DIR_SEPARATOR_S,
+                            folder_path, "cursors"));
                     FileType file_type = cursors_file.query_file_type (
                         FileQueryInfoFlags.NOFOLLOW_SYMLINKS);
                     if (file_type == FileType.DIRECTORY) return true;
                     break;
                 case "icon-theme":
-                    var theme_file = File.new_for_path (
-                        @"$(folder_path)/index.theme");
+                    File theme_file = File.new_for_path (
+                            Path.build_path (Path.DIR_SEPARATOR_S,
+                                folder_path, "index.theme"));
                     var file_type = theme_file.query_file_type (0);
                     if (FileType.REGULAR == file_type) {
                         var dir = File.new_for_path (folder_path);
