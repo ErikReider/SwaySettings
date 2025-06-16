@@ -141,7 +141,7 @@ namespace SwaySettings {
                 if (!from_value.holds (Type.BOOLEAN)) return false;
                 string ? name = this.daemon.get_alias ();
                 if (!from_value.get_boolean () || name == null) return true;
-                to_value = @"Discoverable as \"$(name)\"";
+                to_value = "Discoverable as \"%s\"".printf (name);
                 return true;
             });
 

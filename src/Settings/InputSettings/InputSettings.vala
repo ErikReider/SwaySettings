@@ -112,7 +112,7 @@ namespace SwaySettings {
         }
 
         public string get_line () {
-            return @"accel_profile $(parse ())";
+            return "accel_profile %s".printf (parse ());
         }
     }
 
@@ -180,7 +180,7 @@ namespace SwaySettings {
         }
 
         public string get_line () {
-            return @"click_method $(parse ())";
+            return "click_method %s".printf (parse ());
         }
     }
 
@@ -208,7 +208,7 @@ namespace SwaySettings {
         }
 
         public string get_line () {
-            return @"tap_button_map $(parse ())";
+            return "tap_button_map %s".printf (parse ());
         }
     }
 
@@ -240,7 +240,7 @@ namespace SwaySettings {
         }
 
         public string get_line () {
-            return @"events $(parse())";
+            return "events %s".printf (parse ());
         }
     }
 
@@ -250,7 +250,7 @@ namespace SwaySettings {
         }
         public InputData data;
         public string identifier { get; private set; }
-        public float scroll_factor { get; set; default = 1.0f; }
+        public double scroll_factor { get; set; default = 1.0; }
 
         public InputDevice (string identifier,
                             InputTypes type) {
@@ -260,7 +260,9 @@ namespace SwaySettings {
         }
 
         public string[] get_settings () {
-            string[] lines = { @"input type:$(input_type.parse()) {\n" };
+            string[] lines = {
+                "input type:%s {\n".printf (input_type.parse ())
+            };
             foreach (string line in get_type_settings ()) {
                 lines += get_string_line (line);
             }
@@ -269,7 +271,7 @@ namespace SwaySettings {
         }
 
         private string get_string_line (string line) {
-            return @"\t$(line)\n";
+            return "\t%s\n".printf (line);
         }
 
         private string[] get_type_settings () {
@@ -283,35 +285,40 @@ namespace SwaySettings {
                         array += lang.name;
                     }
                     string languages = string.joinv (", ", array);
-                    settings_list += (@"xkb_layout \"$(languages)\"");
+                    settings_list += "xkb_layout \"%s\"".printf (languages);
                     break;
                 case InputTypes.POINTER:
                 case InputTypes.TOUCHPAD:
                     // events
                     settings_list += data.send_events.get_line ();
-                    // pointer_accel
-                    settings_list += @"pointer_accel $(data.accel_speed)";
+                    // pointer_accel: Use double to_string to ensure '.' are used
+                    settings_list +=
+                        "pointer_accel %s".printf (
+                            data.accel_speed.to_string ());
                     // accel_profile
                     settings_list += data.accel_profile.get_line ();
                     // natural_scroll
                     settings_list +=
-                        @"natural_scroll $(data.natural_scroll.parse ())";
+                        "natural_scroll %s".printf (
+                            data.natural_scroll.parse ());
                     // left_handed
                     settings_list +=
-                        @"left_handed $(data.left_handed.parse ())";
-                    // scroll_factor
-                    settings_list += @"scroll_factor $(scroll_factor)";
+                        "left_handed %s".printf (data.left_handed.parse ());
+                    // scroll_factor: Use double to_string to ensure '.' are used
+                    settings_list +=
+                        "scroll_factor %s".printf (scroll_factor.to_string ());
                     // middle_emulation
                     settings_list +=
-                        @"middle_emulation $(data.middle_emulation.parse ())";
+                        "middle_emulation %s".printf (
+                            data.middle_emulation.parse ());
 
                     if (InputTypes.TOUCHPAD == input_type) {
                         // scroll_method
                         settings_list += data.scroll_method.get_line ();
                         // dwt
-                        settings_list += @"dwt $(data.dwt.parse ())";
+                        settings_list += "dwt %s".printf (data.dwt.parse ());
                         // tap
-                        settings_list += @"tap $(data.tap.parse ())";
+                        settings_list += "tap %s".printf (data.tap.parse ());
                         // tap_button_map
                         settings_list += data.tap_button_map.get_line ();
                         // click_method
@@ -348,7 +355,7 @@ namespace SwaySettings {
         public BoolEnum tap {
             get; set; default = BoolEnum.DISABLED;
         }
-        public float accel_speed {
+        public double accel_speed {
             get; set; default = 0;
         }
         public ClickMethods click_method {
@@ -380,6 +387,43 @@ namespace SwaySettings {
                     value = node.get_double ();
                     return true;
             }
+
+            // Parse enums
+            switch (property_name) {
+                case "accel-profile":
+                    value = AccelProfiles.parse_string (node.get_string ());
+                    return true;
+                case "send-events":
+                    value = Events.parse_string (node.get_string ());
+                    return true;
+                case "dwt":
+                    value = BoolEnum.parse_string (node.get_string ());
+                    return true;
+                case "left-handed":
+                    value = BoolEnum.parse_string (node.get_string ());
+                    return true;
+                case "natural-scroll":
+                    value = BoolEnum.parse_string (node.get_string ());
+                    return true;
+                case "middle-emulation":
+                    value = BoolEnum.parse_string (node.get_string ());
+                    return true;
+                case "tap":
+                    value = BoolEnum.parse_string (node.get_string ());
+                    return true;
+                case "click-method":
+                    value = AccelProfiles.parse_string (node.get_string ());
+                    return true;
+                case "scroll-method":
+                    value = AccelProfiles.parse_string (node.get_string ());
+                    return true;
+                case "tap-button-map":
+                    value = AccelProfiles.parse_string (node.get_string ());
+                    return true;
+                default:
+                    break;
+            }
+
             return default_deserialize_property (property_name,
                                                  out value,
                                                  pspec,
@@ -395,19 +439,23 @@ namespace SwaySettings {
                     BoolEnum casted = (BoolEnum) value.get_enum ();
                     node.set_string (casted.parse ());
                     break;
-                case "SwaySettingsClick_Methods":
+                case "SwaySettingsEvents":
+                    Events casted = (Events) value.get_enum ();
+                    node.set_string (casted.parse ());
+                    break;
+                case "SwaySettingsClickMethods":
                     ClickMethods casted = (ClickMethods) value.get_enum ();
                     node.set_string (casted.parse ());
                     break;
-                case "SwaySettingsScroll_Methods":
+                case "SwaySettingsScrollMethods":
                     ScrollMethods casted = (ScrollMethods) value.get_enum ();
                     node.set_string (casted.parse ());
                     break;
-                case "SwaySettingsTap_Button_Maps":
+                case "SwaySettingsTapButtonMaps":
                     TapButtonMaps casted = (TapButtonMaps) value.get_enum ();
                     node.set_string (casted.parse ());
                     break;
-                case "SwaySettingsAccel_Profiles":
+                case "SwaySettingsAccelProfiles":
                     AccelProfiles casted = (AccelProfiles) value.get_enum ();
                     node.set_string (casted.parse ());
                     break;

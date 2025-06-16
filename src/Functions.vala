@@ -48,9 +48,10 @@ namespace SwaySettings {
         }
 
         public static File check_settings_folder_exists (string file_name) {
-            string base_path = GLib.Environment.get_user_config_dir () + "/sway/.generated_settings";
+            string base_path = Path.build_path (Path.DIR_SEPARATOR_S,
+                Environment.get_user_config_dir (), "sway", ".generated_settings");
             // Checks if directory exists. Creates one if none
-            if (!GLib.FileUtils.test (base_path, GLib.FileTest.IS_DIR)) {
+            if (!FileUtils.test (base_path, FileTest.IS_DIR)) {
                 try {
                     var file = File.new_for_path (base_path);
                     file.make_directory ();
@@ -59,7 +60,8 @@ namespace SwaySettings {
                 }
             }
             // Checks if file exists. Creates one if none
-            var file = File.new_for_path (base_path + @"/$(file_name)");
+            var file = File.new_for_path (
+                Path.build_path (Path.DIR_SEPARATOR_S, base_path, file_name));
             if (!file.query_exists ()) {
                 try {
                     file.create (FileCreateFlags.NONE);
@@ -206,7 +208,7 @@ namespace SwaySettings {
                 string output;
                 string error;
                 bool status = Process.spawn_command_line_sync (
-                    @"gdk-pixbuf-thumbnailer \"$(p)\" \"$(checksum_path)\"",
+                    "gdk-pixbuf-thumbnailer \"%s\" \"%s\"".printf (p, checksum_path),
                     out output, out error);
                 if (!status || error.length > 0) {
                     throw new ThumbnailerError.FAILED (error);

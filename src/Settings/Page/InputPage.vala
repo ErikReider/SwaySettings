@@ -140,15 +140,18 @@ namespace SwaySettings {
 
                     InputTypes type = InputTypes.parse_string (
                         obj.get_string_member ("type") ?? "");
-                    if (input_type != type ||
-                        type == InputTypes.NEITHER) continue;
+                    if (input_type != type || type == InputTypes.NEITHER) {
+                        continue;
+                    }
                     // Skip if the Mouse / Touchpad doesn't have "accel_speed"
                     // Example would be a keyboard that reports as a mouse
                     if ((type == InputTypes.POINTER ||
-                         type == InputTypes.TOUCHPAD) &&
-                        obj.get_member ("libinput") ? .get_object ()
-                        ? .has_member ("accel_speed") == false) {
-                        continue;
+                         type == InputTypes.TOUCHPAD)) {
+                        if (obj.get_member ("libinput")
+                            ?.get_object ()
+                            ?.has_member ("accel_speed") == false) {
+                            continue;
+                        }
                     }
 
                     this.device = get_device_settings (obj, type);
@@ -198,7 +201,8 @@ namespace SwaySettings {
                         device.scroll_factor = (float) scroll_factor;
                     }
                     break;
-                    default : break;
+                default:
+                    break;
             }
 
             return device;
