@@ -387,6 +387,43 @@ namespace SwaySettings {
                     value = node.get_double ();
                     return true;
             }
+
+            // Parse enums
+            switch (property_name) {
+                case "accel-profile":
+                    value = AccelProfiles.parse_string (node.get_string ());
+                    return true;
+                case "send-events":
+                    value = Events.parse_string (node.get_string ());
+                    return true;
+                case "dwt":
+                    value = BoolEnum.parse_string (node.get_string ());
+                    return true;
+                case "left-handed":
+                    value = BoolEnum.parse_string (node.get_string ());
+                    return true;
+                case "natural-scroll":
+                    value = BoolEnum.parse_string (node.get_string ());
+                    return true;
+                case "middle-emulation":
+                    value = BoolEnum.parse_string (node.get_string ());
+                    return true;
+                case "tap":
+                    value = BoolEnum.parse_string (node.get_string ());
+                    return true;
+                case "click-method":
+                    value = AccelProfiles.parse_string (node.get_string ());
+                    return true;
+                case "scroll-method":
+                    value = AccelProfiles.parse_string (node.get_string ());
+                    return true;
+                case "tap-button-map":
+                    value = AccelProfiles.parse_string (node.get_string ());
+                    return true;
+                default:
+                    break;
+            }
+
             return default_deserialize_property (property_name,
                                                  out value,
                                                  pspec,
@@ -402,19 +439,23 @@ namespace SwaySettings {
                     BoolEnum casted = (BoolEnum) value.get_enum ();
                     node.set_string (casted.parse ());
                     break;
-                case "SwaySettingsClick_Methods":
+                case "SwaySettingsEvents":
+                    Events casted = (Events) value.get_enum ();
+                    node.set_string (casted.parse ());
+                    break;
+                case "SwaySettingsClickMethods":
                     ClickMethods casted = (ClickMethods) value.get_enum ();
                     node.set_string (casted.parse ());
                     break;
-                case "SwaySettingsScroll_Methods":
+                case "SwaySettingsScrollMethods":
                     ScrollMethods casted = (ScrollMethods) value.get_enum ();
                     node.set_string (casted.parse ());
                     break;
-                case "SwaySettingsTap_Button_Maps":
+                case "SwaySettingsTapButtonMaps":
                     TapButtonMaps casted = (TapButtonMaps) value.get_enum ();
                     node.set_string (casted.parse ());
                     break;
-                case "SwaySettingsAccel_Profiles":
+                case "SwaySettingsAccelProfiles":
                     AccelProfiles casted = (AccelProfiles) value.get_enum ();
                     node.set_string (casted.parse ());
                     break;
