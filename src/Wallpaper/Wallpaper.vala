@@ -160,6 +160,11 @@ namespace Wallpaper {
 
                 app.activate_action (Constants.WALLPAPER_ACTION_NAME, config);
 
+                // Exit early if a instance is already running
+                if (app.get_is_remote ()) {
+                    return 0;
+                }
+
                 return app.run ();
             } catch (Error e) {
                 stderr.printf ("Application error: %s\n", e.message);
