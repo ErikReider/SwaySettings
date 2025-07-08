@@ -1,9 +1,6 @@
 namespace Wallpaper {
     public static Settings self_settings;
 
-    public static BackgroundInfo background_info;
-    public static BackgroundInfo old_background_info;
-
     public struct BackgroundInfo {
         public Utils.Config config;
         public Gdk.Texture texture;
@@ -71,6 +68,7 @@ namespace Wallpaper {
         private static bool activated = false;
 
         private static SimpleAction action;
+        private static Utils.Config current_config;
 
         /** Separates each group of monitors and parses them separately */
         private static Utils.Config begin_parse (owned string[] args) throws Error {
@@ -129,7 +127,7 @@ namespace Wallpaper {
                 self_settings = new Settings.full (schema, null, null);
 #endif
 
-                Utils.Config config = begin_parse (args);
+                current_config = begin_parse (args);
 
                 if (option_list_modes) {
                     print ("Available scaling modes: \n");
@@ -151,17 +149,12 @@ namespace Wallpaper {
                     init ();
                 });
 
-                action = new SimpleAction (Constants.WALLPAPER_ACTION_NAME,
-                    new VariantType (Constants.WALLPAPER_ACTION_FORMAT));
-                action.activate.connect (action_activated);
-                app.add_action (action);
-
                 app.register ();
-
-                app.activate_action (Constants.WALLPAPER_ACTION_NAME, config);
 
                 // Exit early if a instance is already running
                 if (app.get_is_remote ()) {
+                    app.activate_action (Constants.WALLPAPER_ACTION_NAME, current_config);
+                    app.get_dbus_connection ().flush_sync ();
                     return 0;
                 }
 
@@ -177,31 +170,32 @@ namespace Wallpaper {
 
             action.activate.disconnect (action_activated);
 
-            old_background_info = background_info;
-            background_info.config = Utils.Config () {
+            current_config = Utils.Config () {
                 path = param.get_child_value (0).get_string (),
                 scale_mode = param.get_child_value (1).get_int32 (),
                 color = param.get_child_value (2).get_string (),
             };
 
-            if (background_info.config.path != null
-                && background_info.config.path.length > 0) {
-                try {
-                    Gdk.Pixbuf pixbuf = new Gdk.Pixbuf.from_file (background_info.config.path);
-                    background_info.texture = Gdk.Texture.for_pixbuf (pixbuf);
-                    background_info.width = pixbuf.width;
-                    background_info.height = pixbuf.height;
-                } catch (Error e) {
-                    stderr.printf ("Setting wallpaper error: %s\n", e.message);
-                }
+
+            List<weak Gtk.Window> windows = app.get_windows ().copy ();
+            int count = (int) windows.length ();
+            foreach (unowned Gtk.Window w in windows) {
+                unowned Window window = (Window) w;
+                window.change_wallpaper.begin (current_config, (obj, res) => {
+                    window.change_wallpaper.end (res);
+                    if (AtomicInt.dec_and_test (ref count)) {
+                        action_activated.callback ();
+                    }
+                });
             }
+            yield;
 
-            debug ("Old background: %s\n", old_background_info.to_string ());
-            debug ("New background: %s\n", background_info.to_string ());
-
-            app.get_windows ().foreach ((w) => {
-                ((Window) w).change_wallpaper ();
-            });
+            // Run all the animations at the same time, after all monitors
+            // have loaded its new textures
+            foreach (unowned Gtk.Window w in windows) {
+                unowned Window window = (Window) w;
+                window.run_animation ();
+            }
 
             action.activate.connect (action_activated);
         }
@@ -216,6 +210,14 @@ namespace Wallpaper {
             });
 
             init_windows (display, monitors);
+
+            // Activate once all windows have been added
+            action = new SimpleAction (Constants.WALLPAPER_ACTION_NAME,
+                new VariantType (Constants.WALLPAPER_ACTION_FORMAT));
+            action.activate.connect (action_activated);
+
+            app.add_action (action);
+            app.activate_action (Constants.WALLPAPER_ACTION_NAME, current_config);
         }
 
         private static void close_all_windows () {
@@ -235,8 +237,12 @@ namespace Wallpaper {
             for (int i = 0; i < monitors.get_n_items (); i++) {
                 Object ? obj = monitors.get_item (i);
                 if (obj == null || !(obj is Gdk.Monitor)) continue;
-                unowned Gdk.Monitor monitor = (Gdk.Monitor) obj;
+                Gdk.Monitor monitor = (Gdk.Monitor) obj;
                 add_window (monitor);
+            }
+
+            if (app.has_action (Constants.WALLPAPER_ACTION_NAME)) {
+                app.activate_action (Constants.WALLPAPER_ACTION_NAME, current_config);
             }
         }
     }
