@@ -55,6 +55,11 @@ namespace Wallpaper {
 
                 try {
                     File file = File.new_for_path (background_info.config.path);
+                    uint hash = file.hash ();
+                    if (old_background_info?.config?.path == background_info.config.path
+                        && old_background_info?.file_hash == hash) {
+                        return;
+                    }
                     InputStream stream = yield file.read_async (Priority.DEFAULT,
                                                                 pixbuf_cancellable);
                     Gdk.Pixbuf pixbuf = yield new Gdk.Pixbuf.from_stream_at_scale_async (
@@ -64,6 +69,7 @@ namespace Wallpaper {
                     background_info.texture = Gdk.Texture.for_pixbuf (pixbuf);
                     background_info.width = pixbuf.width;
                     background_info.height = pixbuf.height;
+                    background_info.file_hash = hash;
                 } catch (Error e) {
                     stderr.printf ("Setting wallpaper error: %s\n", e.message);
                 }

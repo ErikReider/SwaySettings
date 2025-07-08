@@ -6,6 +6,7 @@ namespace Wallpaper {
         public Gdk.Texture texture;
         public int width;
         public int height;
+        public uint file_hash;
 
         public string to_string () {
             return string.joinv ("\n", {
@@ -13,6 +14,7 @@ namespace Wallpaper {
                 "\tConfig: %s".printf (config.to_string ()),
                 "\tTexture: %p".printf (texture),
                 "\tDimensions: %ix%i".printf (width, height),
+                "\tHash: %u".printf (file_hash),
             });
         }
     }
