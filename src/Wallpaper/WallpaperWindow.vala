@@ -4,6 +4,8 @@ namespace Wallpaper {
         const int TRANSITION_DURATION = 500;
         const int BLUR_RADIUS = 100;
 
+        public unowned Gdk.Monitor monitor { get; construct set; }
+
         private double animation_progress = 1.0;
         private double animation_progress_inv {
             get {
@@ -11,9 +13,17 @@ namespace Wallpaper {
             }
         }
         private Adw.TimedAnimation ? animation;
+        private bool loading_texture = false;
+
+        private Cancellable pixbuf_cancellable = new Cancellable ();
+        private BackgroundInfo ? background_info = null;
+        private BackgroundInfo ? old_background_info = null;
 
         public Window (Gtk.Application app, Gdk.Monitor monitor) {
-            Object (application: app);
+            Object (
+                application: app,
+                monitor: monitor
+            );
 
             Adw.CallbackAnimationTarget target = new Adw.CallbackAnimationTarget (animation_value_cb);
             animation = new Adw.TimedAnimation (this, 1.0, 0.0, TRANSITION_DURATION, target);
@@ -26,11 +36,53 @@ namespace Wallpaper {
             GtkLayerShell.set_anchor (this, GtkLayerShell.Edge.BOTTOM, true);
             GtkLayerShell.set_anchor (this, GtkLayerShell.Edge.LEFT, true);
             GtkLayerShell.set_anchor (this, GtkLayerShell.Edge.RIGHT, true);
-
-            change_wallpaper ();
         }
 
-        public void change_wallpaper () {
+        public async void change_wallpaper (owned Utils.Config config) {
+            loading_texture = true;
+
+            old_background_info = background_info;
+            if (background_info == null) {
+                background_info = BackgroundInfo ();
+            }
+            background_info.config = config;
+
+            if (background_info.config.path != null
+                && background_info.config.path.length > 0) {
+                // Cancel previous download, reset the state and download again
+                pixbuf_cancellable.cancel ();
+                pixbuf_cancellable.reset ();
+
+                try {
+                    File file = File.new_for_path (background_info.config.path);
+                    uint hash = file.hash ();
+                    if (old_background_info?.config?.path == background_info.config.path
+                        && old_background_info?.file_hash == hash) {
+                        return;
+                    }
+                    InputStream stream = yield file.read_async (Priority.DEFAULT,
+                                                                pixbuf_cancellable);
+                    Gdk.Pixbuf pixbuf = yield new Gdk.Pixbuf.from_stream_at_scale_async (
+                        stream, monitor.geometry.width, monitor.geometry.height,
+                        true, pixbuf_cancellable);
+
+                    background_info.texture = Gdk.Texture.for_pixbuf (pixbuf);
+                    background_info.width = pixbuf.width;
+                    background_info.height = pixbuf.height;
+                    background_info.file_hash = hash;
+                } catch (Error e) {
+                    stderr.printf ("Setting wallpaper error: %s\n", e.message);
+                }
+            }
+
+            debug ("Old background: %s\n", old_background_info?.to_string ());
+            debug ("New background: %s\n", background_info?.to_string ());
+        }
+
+        // Has to be run after `change_wallpaper`
+        public void run_animation () {
+            loading_texture = false;
+
             // Start the transition
             animation.set_value_to (0);
             animation.play ();
@@ -46,7 +98,13 @@ namespace Wallpaper {
             };
 
             snapshot.append_color (bg_color, { { 0, 0 }, { get_width(), get_height() } });
-            if (animation.state == Adw.AnimationState.PLAYING) {
+
+            if (background_info == null || loading_texture) {
+                return;
+            }
+
+            if (animation.state == Adw.AnimationState.PLAYING
+                && old_background_info != null) {
                 snapshot.push_cross_fade (animation_progress_inv);
 
                 apply_transformed_background (snapshot, old_background_info);
@@ -73,7 +131,6 @@ namespace Wallpaper {
             }
 
             // Render texture and scale it correctly
-            snapshot.save ();
 
             int height = info.height;
             int width = info.width;
@@ -131,7 +188,6 @@ namespace Wallpaper {
                                                     { { x, y }, { width, height } });
                     break;
             }
-            snapshot.restore ();
         }
 
         private void draw_scale_tall (int buffer_width,
