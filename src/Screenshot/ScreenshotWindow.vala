@@ -54,6 +54,12 @@ public class ScreenshotWindow : Gtk.ApplicationWindow {
     public void show_screenshot_list (bool screenshot_taken) {
         GtkLayerShell.set_keyboard_mode (this, GtkLayerShell.KeyboardMode.NONE);
 
+        // Don't fade in the screenshot animation
+        stack.set_transition_type (screenshot_taken
+            ? Gtk.StackTransitionType.NONE
+            : Gtk.StackTransitionType.CROSSFADE);
+        stack.set_visible_child (list);
+
         if (screenshot_taken) {
             // Force the coords into a origin of top-left
             Graphene.Rect rect = Graphene.Rect ().init (
@@ -67,12 +73,8 @@ public class ScreenshotWindow : Gtk.ApplicationWindow {
             list.add_preview (rect);
 
             hide_all_except (this);
-
-            // Don't fade in the screenshot animation
-            stack.set_transition_type (Gtk.StackTransitionType.NONE);
         }
 
-        stack.set_visible_child (list);
         list.set_input_region ();
     }
 
