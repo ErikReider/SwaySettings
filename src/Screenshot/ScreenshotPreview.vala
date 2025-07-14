@@ -56,18 +56,21 @@ public class ScreenshotPreview : Adw.Bin {
 
         Gtk.Button save_button =
             new Gtk.Button.from_icon_name ("document-save-symbolic");
+        save_button.set_tooltip_text ("Save");
         save_button.add_css_class ("circular");
         save_button.add_css_class ("flat");
         save_button.clicked.connect (save_button_click_cb);
 
         Gtk.Button save_as_button =
             new Gtk.Button.from_icon_name ("document-save-as-symbolic");
+        save_as_button.set_tooltip_text ("Save As");
         save_as_button.add_css_class ("circular");
         save_as_button.add_css_class ("flat");
         save_as_button.clicked.connect (save_as_button_click_cb);
 
         Gtk.Button copy_button =
             new Gtk.Button.from_icon_name ("edit-copy-symbolic");
+        copy_button.set_tooltip_text ("Copy to clipboard");
         copy_button.add_css_class ("circular");
         copy_button.add_css_class ("flat");
         copy_button.clicked.connect (copy_button_click_cb);
