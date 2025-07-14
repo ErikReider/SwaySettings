@@ -8,6 +8,7 @@ namespace SwaySettings {
         APPEARANCE,
         STARTUP_APPS,
         DEFAULT_APPS,
+        SCREENSHOT,
         // SWAYNC,
         SOUND,
         BLUETOOTH,
@@ -29,6 +30,8 @@ namespace SwaySettings {
                     return "Startup Apps";
                 case DEFAULT_APPS:
                     return "Default Apps";
+                case SCREENSHOT:
+                    return "Screenshot";
                 // case SWAYNC:
                 //     return "Sway Notification Center";
                 case BLUETOOTH:
@@ -59,6 +62,8 @@ namespace SwaySettings {
                     return "startup-apps";
                 case DEFAULT_APPS:
                     return "default-apps";
+                case SCREENSHOT:
+                    return "screenshot";
                 // case SWAYNC:
                 //     return "swaync";
                 case BLUETOOTH:
@@ -109,6 +114,7 @@ namespace SwaySettings {
                 SettingsItem ("application-x-executable-symbolic",
                               PageType.STARTUP_APPS),
                 SettingsItem ("preferences-other", PageType.DEFAULT_APPS),
+                SettingsItem ("screenshooter-symbolic", PageType.SCREENSHOT),
                 // SettingsItem ("mail-unread", PageType.SWAYNC, "swaync", !Functions.is_swaync_installed ()),
             }),
             SettingsCategory ("Input", {
@@ -253,6 +259,9 @@ namespace SwaySettings {
                     break;
                 case DEFAULT_APPS:
                     page = new DefaultApps (item, content_page);
+                    break;
+                case SCREENSHOT:
+                    page = new ScreenshotPage (item, content_page);
                     break;
                 // case SWAYNC:
                 //     page = new Swaync (item, deck, ipc);

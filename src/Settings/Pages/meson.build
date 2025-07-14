@@ -14,6 +14,7 @@ swaysettings_settings_sources += files([
   'MousePage/MousePage.vala',
   'TrackpadPage/TrackpadPage.vala',
   'DefaultApps/DefaultApps.vala',
+  'ScreenshotPage/ScreenshotPage.vala',
   'StartupApps/StartupApps.vala',
   'Swaync/Swaync.vala',
   'Users/Users.vala',
