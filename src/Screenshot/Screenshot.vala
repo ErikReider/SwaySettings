@@ -15,6 +15,8 @@ public static int main (string[] args) {
         Gtk.init ();
         Adw.init ();
 
+    // TODO: Do this instead:
+    // https://discourse.gnome.org/t/having-trouble-getting-my-schema-to-work-in-gtk4-tutorial-example/8541/6
 #if USE_GLOBAL_GSCHEMA
         // Use the global compiled gschema in /usr/share/glib-2.0/schemas/*
         self_settings = new Settings ("org.erikreider.swaysettings");

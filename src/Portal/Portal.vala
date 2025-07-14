@@ -29,7 +29,7 @@ public void main (string[] args) {
     SettingsSchema schema = sss.lookup ("org.erikreider.swaysettings", false);
     if (sss.lookup == null) {
         error ("ID not found.\n");
-        return 0;
+        return;
     }
     self_settings = new Settings.full (schema, null, null);
 #endif

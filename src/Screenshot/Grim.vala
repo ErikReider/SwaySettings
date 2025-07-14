@@ -1,8 +1,11 @@
+public const string GRIM_FILE_FORMAT = "png";
+
 public static Gdk.Texture ? grim_screenshot_rect (Graphene.Rect rect) {
     try {
         // Create a subprocess to run `grim -` (output PNG to stdout)
         string[] cmd = {
             "grim",
+            "-t", GRIM_FILE_FORMAT,
             "-g", "%i,%i %ix%i".printf (
                 (int) rect.get_x (),
                 (int) rect.get_y (),

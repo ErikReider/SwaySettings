@@ -1,4 +1,5 @@
 datadir = get_option('datadir')
+gnome = import('gnome')
 
 desktop_file = i18n.merge_file(
   input: 'org.erikreider.swaysettings.desktop.in',
@@ -31,13 +32,14 @@ if appstream_util.found()
   )
 endif
 
-install_data(
-  'org.erikreider.swaysettings.gschema.xml',
-  install_dir: join_paths(datadir, 'glib-2.0/schemas'),
-)
-
-compile_schemas = find_program('glib-compile-schemas', required: false)
+# GSchema
+compile_schemas = find_program('glib-compile-schemas', required: true)
 if compile_schemas.found()
+  install_data(
+    'org.erikreider.swaysettings.gschema.xml',
+    install_dir: join_paths(datadir, 'glib-2.0/schemas'),
+  )
+
   test(
     'Validate schema file',
     compile_schemas,
@@ -45,15 +47,23 @@ if compile_schemas.found()
   )
 
   if get_option('use-global-gschema') == false
-    run_command(compile_schemas, ['--strict', meson.current_source_dir()])
+    custom_target(
+      'gschemas',
+      output: 'gschemas.compiled',
+      command: [
+        compile_schemas.full_path(),
+        '--strict', meson.current_source_dir(),
+      ],
+      build_by_default: true,
+      build_always_stale: true,
+      capture: true,
+    )
   else
     add_project_arguments('-D', 'USE_GLOBAL_GSCHEMA', language: 'vala')
   endif
 endif
 
 subdir('icons')
-
-gnome = import('gnome')
 
 # GResources
 blueprints = custom_target(

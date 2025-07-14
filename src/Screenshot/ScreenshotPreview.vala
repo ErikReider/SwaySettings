@@ -31,9 +31,12 @@ public class ScreenshotPreview : Adw.Bin {
 
     private uint hide_id = 0;
 
+    unowned ClickCallback close_click_cb = null;
+
     public ScreenshotPreview.list (ScreenshotWindow window,
                                    ClickCallback close_click_cb) {
         this(window);
+        this.close_click_cb = close_click_cb;
 
         this.opacity = 0.0;
 
@@ -49,7 +52,7 @@ public class ScreenshotPreview : Adw.Bin {
         close_button.add_css_class ("close");
         close_button.add_css_class ("circular");
         close_button.add_css_class ("opaque");
-        close_button.clicked.connect (() => close_click_cb (this));
+        close_button.clicked.connect (close_button_click_cb);
 
         Gtk.Button save_button =
             new Gtk.Button.from_icon_name ("document-save-symbolic");
@@ -175,31 +178,185 @@ public class ScreenshotPreview : Adw.Bin {
             (float) dst_height);
     }
 
-    // TODO:
-    private void picture_button_click_cb (int n_press,
-                                          double x,
-                                          double y) {
-        print ("PIC CLICK!\n");
+    private inline string get_file_name () {
+        DateTime time = new DateTime.now_local ();
+        return "Screenshot from %s.png".printf (time.format ("%Y-%m-%d %H-%M-%S"));
     }
 
-    // TODO:
-    private void save_as_button_click_cb (Gtk.Button button) {
-        print ("Save As CLICK!\n");
+    private File ? get_initial_folder () {
+        Variant ? variant = SwaySettings.Functions.get_gsetting (
+            self_settings,
+            Constants.SETTINGS_SCREENSHOT_SAVE_DEST,
+            VariantType.STRING);
+        if (variant == null) {
+            critical ("Setting: \"%s\" could not be found!",
+                Constants.SETTINGS_SCREENSHOT_SAVE_DEST);
+            return null;
+        }
+
+        string paths[2] = {
+            variant.dup_string (),
+            Path.build_path (
+                    Path.DIR_SEPARATOR_S,
+                    Environment.get_home_dir (),
+                    variant.dup_string ()),
+        };
+        foreach (string path in paths) {
+            if (path[:2] == "~/") {
+                path = Environment.get_home_dir () + path[1:];
+            }
+            File initial_file = File.new_for_path (path);
+            if (initial_file.query_exists ()) {
+                return initial_file;
+            }
+        }
+
+        return null;
     }
 
-    // TODO:
-    private void save_button_click_cb (Gtk.Button button) {
-        print ("Save CLICK!\n");
-    }
-
-    private void copy_button_click_cb (Gtk.Button button) {
-        unowned Gdk.Paintable ?paintable = picture.get_paintable ();
+    private unowned Gdk.Texture ? get_texture () {
+        unowned Gdk.Paintable ? paintable = picture.get_paintable ();
         if (paintable == null) {
-            return;
+            critical ("Paintable is null");
+            return null;
         } else if (!(paintable is Gdk.Texture)) {
             warning (
-                "Could not copy screenshot to clipboard. Type mismatch: %s",
+                "Could not save screenshot. Type mismatch: %s",
                 paintable.get_type ().name ());
+            return null;
+        }
+        return (Gdk.Texture) paintable;
+    }
+
+    private void picture_button_click_cb () {
+        Variant variant = SwaySettings.Functions.get_gsetting (
+            self_settings,
+            Constants.SETTINGS_SCREENSHOT_EDIT_CMD,
+            VariantType.STRING);
+        if (variant == null) {
+            critical ("Setting: \"%s\" could not be found!",
+                Constants.SETTINGS_SCREENSHOT_EDIT_CMD);
+            return;
+        }
+        string cmd_str = variant.dup_string ();
+        if (cmd_str[:2] == "~/") {
+            cmd_str = Environment.get_home_dir () + cmd_str[1:];
+        }
+
+        unowned Gdk.Texture ? texture = get_texture ();
+        if (texture == null) {
+            critical ("Texture is null");
+            return;
+        }
+
+        Bytes ? bytes = texture.save_to_png_bytes ();
+        if (bytes == null) {
+            critical ("Could not download PNG to bytes");
+            return;
+        }
+
+        try {
+            // Create a subprocess to run the set command
+            string[] cmd;
+            Shell.parse_argv (cmd_str, out cmd);
+
+            Subprocess subprocess = new Subprocess.newv (
+                cmd, SubprocessFlags.STDIN_PIPE);
+
+            // Get the STDIN stream
+            unowned OutputStream ? stdin_stream = subprocess.get_stdin_pipe ();
+            if (stdin_stream == null) {
+                stderr.printf("Failed to get stdin pipe for subprocess.\n");
+                return;
+            }
+
+            // Write to STDIN
+            stdin_stream.write_bytes (bytes);
+            stdin_stream.close ();
+        } catch (Error e) {
+            stderr.printf ("Error: %s\n", e.message);
+        }
+    }
+
+    private async void save_as_button_click_cb () {
+        unowned Gdk.Texture ? texture = get_texture ();
+        if (texture == null) {
+            critical ("Texture is null");
+            return;
+        }
+
+        Gtk.FileDialog dialog = new Gtk.FileDialog ();
+        dialog.set_modal (true);
+        dialog.set_title ("Save Screenshot");
+        dialog.set_initial_folder (get_initial_folder ());
+        dialog.set_initial_name (get_file_name ());
+
+        File ? file = null;
+        try {
+            file = yield dialog.save (null, null);
+            if (file == null) {
+                return;
+            }
+        } catch (Error e) {
+            info (e.message);
+            return;
+        }
+
+        if (!texture.save_to_png (file.get_path ())) {
+            critical ("Could not save screenshot %p in \"%s\"",
+                texture, file.get_path ());
+        }
+
+        // Exit on save
+        Variant ? variant = SwaySettings.Functions.get_gsetting (
+            self_settings, Constants.SETTINGS_SCREENSHOT_EXIT_ON_SAVE, VariantType.BOOLEAN);
+        if (variant == null) {
+            critical ("Setting: \"%s\" could not be found!",
+                Constants.SETTINGS_SCREENSHOT_EXIT_ON_SAVE);
+            return;
+        }
+        if (variant.get_boolean ()) {
+            close_button_click_cb ();
+        }
+    }
+
+    private async void save_button_click_cb () {
+        unowned Gdk.Texture ? texture = get_texture ();
+        if (texture == null) {
+            critical ("Texture is null");
+            return;
+        }
+
+        File ? initial_folder = get_initial_folder ();
+        string file_name = get_file_name ();
+        if (initial_folder == null) {
+            // Fallback
+            yield save_as_button_click_cb ();
+            return;
+        }
+
+        string path = Path.build_path (Path.DIR_SEPARATOR_S,
+            initial_folder.get_path (), file_name);
+
+        texture.save_to_png (path);
+
+        // Exit on save
+        Variant ? variant = SwaySettings.Functions.get_gsetting (
+            self_settings, Constants.SETTINGS_SCREENSHOT_EXIT_ON_SAVE, VariantType.BOOLEAN);
+        if (variant == null) {
+            critical ("Setting: \"%s\" could not be found!",
+                Constants.SETTINGS_SCREENSHOT_EXIT_ON_SAVE);
+            return;
+        }
+        if (variant.get_boolean ()) {
+            close_button_click_cb ();
+        }
+    }
+
+    private void copy_button_click_cb () {
+        unowned Gdk.Texture ? texture = get_texture ();
+        if (texture == null) {
+            critical ("Texture is null");
             return;
         }
 
@@ -210,7 +367,13 @@ public class ScreenshotPreview : Adw.Bin {
             return;
         }
 
-        clipboard.set_texture ((Gdk.Texture) paintable);
+        clipboard.set_texture (texture);
+    }
+
+    private void close_button_click_cb () {
+        if (close_click_cb != null) {
+            close_click_cb (this);
+        }
     }
 
     public void set_texture (Gdk.Texture texture) {
