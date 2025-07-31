@@ -3,7 +3,6 @@ Description=SwaySettings Wallpaper daemon
 Documentation=https://github.com/ErikReider/SwaySettings
 PartOf=graphical-session.target
 After=graphical-session.target
-Requisite=graphical-session.target
 # ConditionEnvironment requires systemd v247 to work correctly
 ConditionEnvironment=WAYLAND_DISPLAY
 
