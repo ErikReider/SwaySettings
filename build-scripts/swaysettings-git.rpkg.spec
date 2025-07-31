@@ -54,12 +54,19 @@ A gui for setting sway wallpaper, default apps, GTK themes, etc...
 %install
 %meson_install
 
+%post
+%systemd_user_post sway-wallpaper.service
+
+%preun
+%systemd_user_preun sway-wallpaper.service
+
 %files
 %doc README.md
 %{_bindir}/swaysettings
 %{_bindir}/sway-wallpaper
 %{_bindir}/sway-autostart
 %license COPYING
+%{_userunitdir}/sway-wallpaper.service
 %{_datadir}/glib-2.0/schemas/org.erikreider.swaysettings.gschema.xml
 %{_datadir}/appdata/org.erikreider.swaysettings.appdata.xml
 %{_datadir}/applications/org.erikreider.swaysettings.desktop
