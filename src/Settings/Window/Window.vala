@@ -125,7 +125,7 @@ namespace SwaySettings {
             default_width = 800;
             default_height = 576;
             width_request = 500;
-            height_request = 500;
+            height_request = 300;
 
             split_view.set_show_content (true);
             set_content (split_view);
