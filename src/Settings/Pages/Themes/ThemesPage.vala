@@ -7,6 +7,8 @@ namespace SwaySettings {
         Adw.Bin preferences_box;
 
         private static Settings settings = new Settings ("org.gnome.desktop.interface");
+        private static Settings ? dock_settings = null;
+        private static SettingsSchema ? dock_settings_schema = null;
 
         private const string DEFAULT_THEME = "Adwaita";
 
@@ -62,6 +64,22 @@ namespace SwaySettings {
             accent_preferences_box = new Adw.Bin ();
             accent_preferences_box.set_child (get_accent_widget ());
             main_box.append (accent_preferences_box);
+
+            // Accent Color
+            if (dock_settings == null) {
+                dock_settings_schema = SettingsSchemaSource.get_default ()
+                    .lookup ("org.erikreider.waydock", false);
+                if (dock_settings_schema != null) {
+                    dock_settings = new Settings.full (dock_settings_schema, null, null);
+                }
+            }
+            if (dock_settings != null && dock_settings_schema != null) {
+                Adw.Bin dock_preferences_box = new Adw.Bin ();
+                bool valid;
+                dock_preferences_box.set_child (get_dock_widget (out valid));
+                dock_preferences_box.set_visible (valid);
+                main_box.append (dock_preferences_box);
+            }
 
             // GTK Options
             preferences_box = new Adw.Bin ();
@@ -240,6 +258,53 @@ namespace SwaySettings {
                 prev_button = button;
             }
 
+            return pref_group;
+        }
+
+        private Adw.PreferencesGroup get_dock_widget (out bool valid) {
+            valid = false;
+
+            Adw.PreferencesGroup pref_group = new Adw.PreferencesGroup ();
+            pref_group.set_title ("Waydock");
+
+            // Position
+            return_val_if_fail (dock_settings_schema.has_key ("position"), pref_group);
+            string selected = dock_settings.get_string ("position");
+            // Create the widget
+            Adw.ComboRow position_row = new Adw.ComboRow ();
+            position_row.set_title ("Position");
+            ListStore list_store = new ListStore (typeof (Gtk.StringObject));
+            position_row.set_model (list_store);
+            // Populate the list
+            SettingsSchemaKey key = dock_settings_schema.get_key ("position");
+            Variant range = key.get_range();
+            if (range != null && range.get_type_string() == "(sv)"
+                && range.get_child_value (0).get_string () == "enum") {
+                Variant variant = range.get_child_value (1).get_variant ();
+                return_val_if_fail (variant.is_of_type (VariantType.STRING_ARRAY), pref_group);
+
+                string[] values = variant.dup_strv ();
+                for (int i = 0; i < values.length; i++) {
+                    unowned string enum_value = values[i];
+                    list_store.append (new Gtk.StringObject (enum_value));
+                    if (enum_value == selected) {
+                        position_row.set_selected (i);
+                    }
+                }
+            }
+            position_row.notify["selected-item"].connect (() => {
+                Object ? item = list_store.get_item (position_row.selected);
+                if (item is Gtk.StringObject) {
+                    string value = ((Gtk.StringObject) item).string;
+                    dock_settings.set_string ("position", value);
+                    return;
+                }
+                warn_if_reached ();
+            });
+            return_val_if_fail (list_store.n_items > 0, pref_group);
+
+            pref_group.add (position_row);
+            valid = true;
             return pref_group;
         }
 
