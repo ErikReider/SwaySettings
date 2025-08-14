@@ -72,6 +72,9 @@ namespace Wallpaper {
         private static SimpleAction action;
         private static Utils.Config current_config;
 
+        private static unowned ListModel monitors;
+        private static ListStore windows;
+
         /** Separates each group of monitors and parses them separately */
         private static Utils.Config begin_parse (owned string[] args) throws Error {
             OptionContext context = new OptionContext ();
@@ -179,10 +182,10 @@ namespace Wallpaper {
             };
 
 
-            List<weak Gtk.Window> windows = app.get_windows ().copy ();
-            int count = (int) windows.length ();
-            foreach (unowned Gtk.Window w in windows) {
-                unowned Window window = (Window) w;
+            uint n_items = windows.get_n_items ();
+            int count = (int) n_items;
+            for (int i = 0; i < count; i++) {
+                Window window = (Window) windows.get_item (i);
                 window.change_wallpaper.begin (current_config, (obj, res) => {
                     window.change_wallpaper.end (res);
                     if (AtomicInt.dec_and_test (ref count)) {
@@ -194,8 +197,8 @@ namespace Wallpaper {
 
             // Run all the animations at the same time, after all monitors
             // have loaded its new textures
-            foreach (unowned Gtk.Window w in windows) {
-                unowned Window window = (Window) w;
+            for (int i = 0; i < n_items; i++) {
+                Window window = (Window) windows.get_item (i);
                 window.run_animation ();
             }
 
@@ -203,15 +206,15 @@ namespace Wallpaper {
         }
 
         private static void init () {
+            windows = new ListStore (typeof (Window));
+
             Gdk.Display ? display = Gdk.Display.get_default ();
-            if (display == null) return;
+            assert_nonnull (display);
 
-            unowned ListModel monitors = display.get_monitors ();
-            monitors.items_changed.connect (() => {
-                init_windows (display, monitors);
-            });
+            monitors = display.get_monitors ();
+            monitors.items_changed.connect (monitors_changed);
 
-            init_windows (display, monitors);
+            monitors_changed (0, 0, monitors.get_n_items ());
 
             // Activate once all windows have been added
             action = new SimpleAction (Constants.WALLPAPER_ACTION_NAME,
@@ -222,25 +225,18 @@ namespace Wallpaper {
             app.activate_action (Constants.WALLPAPER_ACTION_NAME, current_config);
         }
 
-        private static void close_all_windows () {
-            foreach (var window in app.get_windows ()) {
+        private static void monitors_changed (uint position, uint removed, uint added) {
+            for (uint i = 0; i < removed; i++) {
+                Window window = (Window) windows.get_item (position + i);
                 window.close ();
+                windows.remove (position + i);
             }
-        }
 
-        private static void add_window (Gdk.Monitor monitor) {
-            Window win = new Window (app, monitor);
-            win.present ();
-        }
-
-        private static void init_windows (Gdk.Display display, ListModel monitors) {
-            close_all_windows ();
-
-            for (int i = 0; i < monitors.get_n_items (); i++) {
-                Object ? obj = monitors.get_item (i);
-                if (obj == null || !(obj is Gdk.Monitor)) continue;
-                Gdk.Monitor monitor = (Gdk.Monitor) obj;
-                add_window (monitor);
+            for (uint i = 0; i < added; i++) {
+                Gdk.Monitor monitor = (Gdk.Monitor) monitors.get_item (position + i);
+                Window win = new Window (app, monitor);
+                windows.insert (position + i, win);
+                win.present ();
             }
 
             if (app.has_action (Constants.WALLPAPER_ACTION_NAME)) {
