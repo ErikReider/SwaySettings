@@ -7,6 +7,9 @@ static int start_y = 0;
 static int offset_x = 0;
 static int offset_y = 0;
 
+private static unowned ListModel monitors;
+private static ListStore windows;
+
 public const uint ANIMATION_DURATION = 400;
 
 /** Separates each group of monitors and parses them separately */
@@ -70,43 +73,35 @@ public static int main (string[] args) {
 }
 
 private static void init () {
-    Gdk.Display ?display = Gdk.Display.get_default ();
-    if (display == null) return;
+    windows = new ListStore (typeof (ScreenshotWindow));
 
-    unowned ListModel monitors = display.get_monitors ();
-    monitors.items_changed.connect (() => {
-        init_windows (display, monitors);
-    });
+    Gdk.Display ? display = Gdk.Display.get_default ();
+    assert_nonnull (display);
 
-    init_windows (display, monitors);
+    monitors = display.get_monitors ();
+    monitors.items_changed.connect (monitors_changed);
+
+    monitors_changed (0, 0, monitors.get_n_items ());
 }
 
-private static void close_all_windows () {
-    foreach (var window in app.get_windows ()) {
+private static void monitors_changed (uint position, uint removed, uint added) {
+    for (uint i = 0; i < removed; i++) {
+        ScreenshotWindow window = (ScreenshotWindow) windows.get_item (position + i);
         window.close ();
+        windows.remove (position + i);
     }
-}
 
-private static void add_window (Gdk.Monitor monitor) {
-    ScreenshotWindow win = new ScreenshotWindow (app, monitor);
-    win.present ();
-}
-
-private static void init_windows (Gdk.Display display,
-                                  ListModel monitors) {
-    close_all_windows ();
-
-    for (int i = 0; i < monitors.get_n_items (); i++) {
-        Object ?obj = monitors.get_item (i);
-        if (obj == null || !(obj is Gdk.Monitor)) continue;
-        unowned Gdk.Monitor monitor = (Gdk.Monitor) obj;
-        add_window (monitor);
+    for (uint i = 0; i < added; i++) {
+        Gdk.Monitor monitor = (Gdk.Monitor) monitors.get_item (position + i);
+        ScreenshotWindow win = new ScreenshotWindow (app, monitor);
+        windows.insert (position + i, win);
+        win.present ();
     }
 }
 
 public static void show_all_screenshot_grids () {
-    foreach (var window in app.get_windows ()) {
-        ScreenshotWindow w = (ScreenshotWindow) window;
+    for (int i = 0; i < windows.n_items; i++) {
+        ScreenshotWindow w = (ScreenshotWindow) windows.get_item (i);
         w.show_screenshot_grid ();
         w.show ();
     }
@@ -114,8 +109,8 @@ public static void show_all_screenshot_grids () {
 
 public static void show_all_screenshot_lists () {
     bool has_screenshots = false;
-    foreach (var window in app.get_windows ()) {
-        ScreenshotWindow w = (ScreenshotWindow) window;
+    for (int i = 0; i < windows.n_items; i++) {
+        ScreenshotWindow w = (ScreenshotWindow) windows.get_item (i);
         if (w.list.num_screenshots == 0) {
             w.hide ();
         } else {
@@ -131,15 +126,15 @@ public static void show_all_screenshot_lists () {
 }
 
 public static void queue_draw_all () {
-    foreach (var window in app.get_windows ()) {
-        ScreenshotWindow w = (ScreenshotWindow) window;
+    for (int i = 0; i < windows.n_items; i++) {
+        ScreenshotWindow w = (ScreenshotWindow) windows.get_item (i);
         w.draw_grid ();
     }
 }
 
 public static void hide_all_except (ScreenshotWindow ref_window) {
-    foreach (var window in app.get_windows ()) {
-        ScreenshotWindow w = (ScreenshotWindow) window;
+    for (int i = 0; i < windows.n_items; i++) {
+        ScreenshotWindow w = (ScreenshotWindow) windows.get_item (i);
         if (w != ref_window) {
             if (w.list.num_screenshots == 0) {
                 w.hide ();
@@ -156,8 +151,8 @@ public static void hide_all_except (ScreenshotWindow ref_window) {
  */
 public static void try_hide_all (bool close_if_empty) {
     bool has_screenshots = false;
-    foreach (var window in app.get_windows ()) {
-        ScreenshotWindow w = (ScreenshotWindow) window;
+    for (int i = 0; i < windows.n_items; i++) {
+        ScreenshotWindow w = (ScreenshotWindow) windows.get_item (i);
         if (w.list.num_screenshots == 0) {
             w.hide ();
         } else {
