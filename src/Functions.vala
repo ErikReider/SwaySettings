@@ -180,8 +180,8 @@ namespace SwaySettings {
             var v_type = settings.settings_schema.get_key (name).get_value_type ();
             if (!v_type.equal (type)) {
                 stderr.printf (
-                    "Set GSettings error:" +
-                    " Set value type \"%s\" not equal to gsettings type \"%s\"\n",
+                    "Get GSettings error:" +
+                    " Get value type \"%s\" not equal to gsettings type \"%s\"\n",
                     type, v_type);
                 return null;
             }

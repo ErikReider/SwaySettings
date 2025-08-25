@@ -32,6 +32,7 @@ BuildRequires: pkgconfig(systemd)
 BuildRequires: systemd
 BuildRequires: scdoc
 Requires: dbus
+Requires: grim
 Requires: bluez
 Requires: libgtop2
 Requires: udisks2
@@ -65,6 +66,7 @@ A gui for setting sway wallpaper, default apps, GTK themes, etc...
 %{_bindir}/swaysettings
 %{_bindir}/sway-wallpaper
 %{_bindir}/sway-autostart
+%{_bindir}/swaysettings-screenshot
 %license COPYING
 %{_userunitdir}/sway-wallpaper.service
 %{_datadir}/glib-2.0/schemas/org.erikreider.swaysettings.gschema.xml

@@ -36,5 +36,31 @@
 				This is the theme to use when color-scheme is set to dark mode
 			</description>
 		</key>
+
+		<!-- Screenshot -->
+		<key name="screenshot-default-save-destination" type="s">
+			<default>"~/Pictures/Screenshots"</default>
+			<summary>The default save path</summary>
+			<description>
+				This is the path pointing towards the directory where screenshots will be saved.
+			</description>
+		</key>
+		<key name="screenshot-exit-on-save" type="b">
+			<default>true</default>
+			<summary>Exit after save</summary>
+			<description>
+				Whether or not the screenshot preview should be dismissed when saved.
+			</description>
+		</key>
+		<key name="screenshot-edit-command" type="s">
+			<default>"swappy -f -"</default>
+			<summary>Edit screenshot command</summary>
+			<description>
+				The command to run to edit the screenshot
+				Examples:
+				- "flatpak run be.alexandervanhee.gradia --"
+				- "swappy -f -"
+			</description>
+		</key>
 	</schema>
 </schemalist>

@@ -1,0 +1,39 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $ScreenshotList: Adw.Bin {
+  child: Gtk.Overlay overlay {
+    [overlay]
+    Gtk.Fixed fixed {
+      can-target: false;
+      can-focus: false;
+      focus-on-click: false;
+    }
+
+    child: Gtk.ScrolledWindow scrolled_window {
+      hscrollbar-policy: never;
+      propagate-natural-height: true;
+      min-content-height: -1;
+      valign: end;
+      halign: end;
+      vexpand: false;
+      hexpand: false;
+
+      child: Gtk.Viewport viewport {
+        scroll-to-focus: false;
+
+        child: Gtk.Box box {
+          orientation: vertical;
+          valign: end;
+          halign: end;
+          vexpand: false;
+          hexpand: false;
+
+          styles [
+            "screenshot-list",
+          ]
+        };
+      };
+    };
+  };
+}

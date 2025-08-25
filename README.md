@@ -69,6 +69,7 @@ makepkg -si
 - vala
 - meson
 - git
+- grim (for screenshotting)
 - gtk4
 - gtk4-layer-shell
 - libadwaita

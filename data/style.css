@@ -1,10 +1,7 @@
-/*
- * vim: ft=less
- */
-
 :root {
   --borders-light: rgba(0, 0, 0, 0.12);
   --borders-dark: rgba(255, 255, 255, 0.15);
+  --transition-time: 0.15s ease-in-out;
 }
 
 *:disabled image {
@@ -98,7 +95,7 @@
   border: none;
   min-width: 24px;
   min-height: 24px;
-  transition: all 0.15s ease-in-out;
+  transition: all var(--transition-time);
 }
 
 .img-remove-button:hover {
@@ -197,4 +194,58 @@
 
 .slate {
   --accent-bg-color: var(--accent-slate);
+}
+
+/* Screenshot Window */
+
+window.screenshot-window {
+  background: transparent;
+}
+
+.screenshot-list {
+  padding: 32px;
+}
+
+.screenshot-list .screenshot-preview {
+  margin: 16px 0;
+}
+
+.screenshot-preview {
+  transition: opacity var(--transition-time);
+  background: var(--window-bg-color);
+  border-radius: 16px;
+  margin: 32px;
+  box-shadow: 0 22px 26px 4px rgba(0, 0, 0, 0.56);
+}
+.screenshot-preview:disabled {
+  opacity: 0;
+}
+
+.screenshot-preview-header {
+  padding: 8px;
+}
+.screenshot-preview-header button.close {
+  /* Mimic the Adwaita close button: 34px size */
+  margin: 5px;
+  padding: 0px;
+  min-height: 24px;
+  min-width: 24px;
+}
+
+.screenshot-preview-picture {
+  transition: opacity var(--transition-time), filter var(--transition-time);
+}
+
+.screenshot-preview:hover .screenshot-preview-picture {
+  opacity: 0.5;
+  filter: blur(8px);
+}
+
+.screenshot-image-overlay {
+  transition: opacity var(--transition-time);
+  opacity: 0;
+}
+
+.screenshot-preview:hover .screenshot-image-overlay {
+  opacity: var(--dim-opacity);
 }

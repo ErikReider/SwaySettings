@@ -1,0 +1,48 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $ScreenshotPreview: Adw.Bin {
+  overflow: hidden;
+  vexpand: false;
+  hexpand: false;
+  valign: end;
+  halign: end;
+
+  styles [
+    "screenshot-preview",
+  ]
+
+  child: Gtk.Overlay overlay {
+    [overlay]
+    Gtk.Image {
+      icon-name: "text-editor-symbolic";
+      pixel-size: 32;
+      valign: fill;
+      halign: fill;
+      vexpand: true;
+      hexpand: true;
+
+      styles [
+        "screenshot-image-overlay",
+      ]
+    }
+
+    [overlay]
+    Gtk.CenterBox header_bar {
+      valign: start;
+      halign: fill;
+      vexpand: false;
+      hexpand: true;
+
+      styles [
+        "screenshot-preview-header",
+      ]
+    }
+
+    child: Gtk.Picture picture {
+      styles [
+        "screenshot-preview-picture",
+      ]
+    };
+  };
+}
