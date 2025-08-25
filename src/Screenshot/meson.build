@@ -3,10 +3,10 @@ executable(
   files(
     'Grim.vala',
     'Screenshot.vala',
-    'ScreenshotWindow.vala',
     'ScreenshotGrid.vala',
-    'ScreenshotPreview.vala',
     'ScreenshotList.vala',
+    'ScreenshotPreview.vala',
+    'ScreenshotWindow.vala',
   )
   + swaysettings_sources
   + shared_files,
@@ -21,5 +21,4 @@ executable(
     dep_math,
   ],
   install: true,
-  install_dir: get_option('libexecdir'),
 )

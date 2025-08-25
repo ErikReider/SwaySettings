@@ -60,6 +60,7 @@ A gui for setting sway wallpaper, default apps, GTK themes, etc...
 %{_bindir}/swaysettings
 %{_bindir}/sway-wallpaper
 %{_bindir}/sway-autostart
+%{_bindir}/swaysettings-screenshot
 %license COPYING
 %{_datadir}/glib-2.0/schemas/org.erikreider.swaysettings.gschema.xml
 %{_datadir}/appdata/org.erikreider.swaysettings.appdata.xml
