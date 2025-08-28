@@ -1,17 +1,18 @@
 # SwaySettings
 
-A GUI for configuring your sway desktop
+A GUI for configuring your sway desktop + some extra programs
 
 ## Features
 
+- Its own Freedesktop Portal
+- Floating screenshotting UI
+- Wallpaper application
 - Set and remove auto start apps
 - Change default apps
 - Change GTK theme settings (GTK theme is set per GTK4 color-scheme, ie dark and light mode)
 - Mouse and trackpad settings
 - Keyboard layout settings
 - Switch Wallpaper (selected wallpaper will be located at .cache/wallpaper)
-- Configure 
-[Sway Notification Center](https://github.com/ErikReider/SwayNotificationCenter)
 - sway-wallpaper (a swaybg replacement) which includes a slick fade transition 😎
 
 ## Install
