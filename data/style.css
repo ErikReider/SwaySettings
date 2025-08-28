@@ -249,3 +249,16 @@ window.screenshot-window {
 .screenshot-preview:hover .screenshot-image-overlay {
   opacity: var(--dim-opacity);
 }
+
+/* Locker */
+lockerwindow {
+  background: black;
+}
+
+.locker-wallpaper {
+  filter: blur(12px);
+}
+
+.locker-content {
+  background: rgba(0, 0, 0, 0.4);
+}

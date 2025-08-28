@@ -36,4 +36,9 @@ subdir('data')
 subdir('src')
 subdir('po')
 
+install_data(
+  'pam/swaysettings-locker',
+  install_dir : get_option('sysconfdir') / 'pam.d',
+)
+
 meson.add_install_script('build-aux/meson/postinstall.py')

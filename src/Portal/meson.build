@@ -16,9 +16,8 @@ executable(
     dep_gdk_pixbuf,
     dep_libadwaita,
     dep_gtk4_layer_shell,
-    dep_gee,
-    dep_gsettings_schemas,
-  ],
+  ]
+  + shared_deps,
   install: true,
-  install_dir: get_option('libexecdir')
+  install_dir: get_option('libexecdir'),
 )

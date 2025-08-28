@@ -20,5 +20,6 @@
       <file>ui/BluetoothDeviceRow.ui</file>
       <file>ui/ScreenshotList.ui</file>
       <file>ui/ScreenshotPreview.ui</file>
+      <file>ui/LockerWindow.ui</file>
   </gresource>
 </gresources>

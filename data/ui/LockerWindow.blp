@@ -1,0 +1,82 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $LockerWindow: Gtk.ApplicationWindow {
+  child: Overlay {
+    child: Picture picture {
+      can-shrink: false;
+      content-fit: cover;
+
+      styles [
+        "locker-wallpaper",
+      ]
+    };
+
+    [overlay]
+    Adw.Bin {
+      halign: fill;
+      valign: fill;
+      hexpand: true;
+      vexpand: true;
+
+      styles [
+        "locker-content",
+      ]
+
+      child: Box {
+        halign: center;
+        valign: center;
+        hexpand: false;
+        vexpand: false;
+        orientation: vertical;
+
+        Adw.Avatar avatar {
+          can-target: false;
+          size: 128;
+
+          styles [
+            "locker-avatar",
+          ]
+        }
+
+        Label real_name {
+          can-target: false;
+        }
+
+        Box entry_box {
+          halign: center;
+          valign: center;
+          hexpand: false;
+          vexpand: false;
+          orientation: horizontal;
+
+          PasswordEntry entry {
+            halign: center;
+            valign: center;
+            hexpand: false;
+            vexpand: false;
+            placeholder-text: "Password";
+            show-peek-icon: true;
+
+            styles [
+              "locker-entry",
+            ]
+          }
+
+          Button button {
+            halign: center;
+            valign: center;
+            hexpand: false;
+            vexpand: false;
+            can-focus: false;
+            label: "Unlock";
+
+            styles [
+              "locker-unlock",
+            ]
+          }
+        }
+      };
+    }
+  };
+}

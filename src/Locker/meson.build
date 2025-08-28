@@ -1,12 +1,10 @@
 executable(
-  'swaysettings-screenshot',
+  'swaysettings-locker',
   files(
-    'Grim.vala',
-    'Screenshot.vala',
-    'ScreenshotGrid.vala',
-    'ScreenshotList.vala',
-    'ScreenshotPreview.vala',
-    'ScreenshotWindow.vala',
+    './pam_helper.c',
+    './pam_helper.vala',
+    './Locker.vala',
+    './LockerWindow.vala',
   )
   + swaysettings_sources
   + shared_files,
@@ -16,6 +14,7 @@ executable(
     dep_gdk_pixbuf,
     dep_libadwaita,
     dep_gtk4_layer_shell,
+    cc.find_library('pam'),
   ]
   + shared_deps,
   install: true,
