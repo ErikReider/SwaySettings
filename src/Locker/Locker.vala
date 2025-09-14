@@ -123,12 +123,7 @@ class Main : Object {
         return app.run ();
     }
 
-    private static async void init () {
-        windows = new ListStore (typeof (LockerWindow));
-
-        Gdk.Display ?display = Gdk.Display.get_default ();
-        assert_nonnull (display);
-
+    private static async void init_lock () {
         if (should_lock) {
             GLib.assert (GtkSessionLock.is_supported ());
             instance = new GtkSessionLock.Instance ();
@@ -138,24 +133,36 @@ class Main : Object {
             instance.unlocked.connect (unlocked);
             instance.failed.connect (failed);
 
-            monitors = display.get_monitors ();
             monitors.items_changed.connect (monitors_changed);
+        }
 
-            uint n_items = monitors.get_n_items ();
-            int count = (int) n_items;
-            for (uint i = 0; i < n_items; i++) {
-                Gdk.Monitor monitor = (Gdk.Monitor) monitors.get_item (i);
-                LockerWindow win = new LockerWindow (app, monitor);
-                win.load_content.begin ((obj, res) => {
-                    win.load_content.end (res);
-                    if (AtomicInt.dec_and_test (ref count)) {
-                        init.callback ();
-                    }
-                });
-                windows.insert (i, win);
-            }
-            yield;
+        uint n_items = monitors.get_n_items ();
+        int count = (int) n_items;
+        for (uint i = 0; i < n_items; i++) {
+            Gdk.Monitor monitor = (Gdk.Monitor) monitors.get_item (i);
+            LockerWindow win = new LockerWindow (app, monitor);
+            win.load_content.begin ((obj, res) => {
+                win.load_content.end (res);
+                if (AtomicInt.dec_and_test (ref count)) {
+                    init_lock.callback ();
+                }
+            });
+            windows.insert (i, win);
+        }
+        yield;
+    }
 
+    private static async void init () {
+        windows = new ListStore (typeof (LockerWindow));
+
+        Gdk.Display ?display = Gdk.Display.get_default ();
+        assert_nonnull (display);
+
+        monitors = display.get_monitors ();
+
+        yield init_lock ();
+
+        if (should_lock) {
             instance.lock ();
             for (uint i = 0; i < windows.get_n_items (); i++) {
                 LockerWindow win = (LockerWindow) windows.get_item (i);
@@ -163,19 +170,16 @@ class Main : Object {
             }
         } else {
             // For debugging, doesn't start as a session-lock session
-            unowned ListModel monitors = display.get_monitors ();
-            GLib.assert (monitors.get_n_items () > 0);
-            Gdk.Monitor monitor = (Gdk.Monitor) monitors.get_item (0);
-            LockerWindow win = new LockerWindow (app, monitor);
-            win.close_request.connect (() => {
-                unlocked ();
-                return false;
-            });
-            win.load_content.begin ((obj, res) => {
-                win.load_content.end (res);
+            locked ();
+            for (uint i = 0; i < windows.get_n_items (); i++) {
+                LockerWindow win = (LockerWindow) windows.get_item (i);
+                win.close_request.connect (() => {
+                    unlocked ();
+                    app.quit ();
+                    return false;
+                });
                 win.present ();
-                locked ();
-            });
+            }
         }
     }
 
