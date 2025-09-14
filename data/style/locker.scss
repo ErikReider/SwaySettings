@@ -1,6 +1,6 @@
 @import "./base.scss";
 
-$drop-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+$drop-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
 $avatar-size: 128px;
 $blur-fade-ms: 500ms;
 $blur-fade-ease: ease-out;
@@ -29,6 +29,7 @@ lockerwindow {
 
   label {
     text-shadow: $drop-shadow;
+    color: white;
   }
 
   .locker-time-box {
@@ -55,17 +56,21 @@ lockerwindow {
     }
 
     .locker-name {
+      font-size: 18px;
       margin: 6px;
     }
 
     box {
+      margin: 32px 0;
+
       .locker-entry {
-        // box-shadow: $drop-shadow;
+        box-shadow: $drop-shadow;
         margin: 4px;
+        border-radius: 100px;
       }
 
       .locker-unlock {
-        // box-shadow: $drop-shadow;
+        box-shadow: $drop-shadow;
         margin: 4px;
       }
     }
