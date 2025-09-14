@@ -47,7 +47,7 @@ foreach file : scss_files
     build_always_stale: true,
     input : file,
     output : fs.name(fs.replace_suffix(file, '.css')),
-    install: true,
+    install: false,
     install_dir: config_path,
     command : [
       sassc,
