@@ -1,7 +1,22 @@
+private class LockData : Object {
+    public Gtk.PasswordEntryBuffer pwd_buffer { get; construct set; }
+    public bool show_password { get; private set; }
+
+    construct {
+        pwd_buffer = new Gtk.PasswordEntryBuffer ();
+        show_password = false;
+    }
+
+    public void toggle_show_password () {
+        show_password = !show_password;
+    }
+}
+
 [GtkTemplate (ui = "/org/erikreider/swaysettings/ui/LockerWindow.ui")]
 public class LockerWindow : Gtk.ApplicationWindow {
     public unowned Gdk.Monitor monitor { get; construct set; }
 
+    private static LockData lock_data = new LockData ();
     private const string PASSWORD_SHOW_ICON_NAME = "eye-open-negative-filled-symbolic";
     private const string PASSWORD_HIDE_ICON_NAME = "eye-not-looking-symbolic";
 
@@ -40,14 +55,23 @@ public class LockerWindow : Gtk.ApplicationWindow {
             monitor: monitor,
             css_name: "lockerwindow");
 
-        button.clicked.connect (password_check);
         notify["is-active"].connect (() => {
             revealer.set_reveal_child (is_active);
             entry.grab_focus_without_selecting ();
             entry.set_position (-1);
         });
 
+        entry.set_buffer (lock_data.pwd_buffer);
+        set_password_visibility ();
+        entry.icon_release.connect ((pos) => {
+            if (pos == Gtk.EntryIconPosition.SECONDARY) {
+                lock_data.toggle_show_password ();
+            }
+        });
+        lock_data.notify["show-password"].connect (set_password_visibility);
         entry.activate.connect (() => button.clicked ());
+
+        button.clicked.connect (password_check);
 
         set_date_time ();
         time_object.update.connect (set_date_time);
@@ -55,6 +79,12 @@ public class LockerWindow : Gtk.ApplicationWindow {
         map.connect (() => {
             add_css_class ("locked");
         });
+    }
+
+    private void set_password_visibility () {
+        entry.set_visibility (lock_data.show_password);
+        entry.secondary_icon_name = lock_data.show_password
+            ? PASSWORD_HIDE_ICON_NAME : PASSWORD_SHOW_ICON_NAME;
     }
 
     private void set_date_time () {
