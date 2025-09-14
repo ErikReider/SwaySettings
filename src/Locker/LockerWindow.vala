@@ -2,6 +2,9 @@
 public class LockerWindow : Gtk.ApplicationWindow {
     public unowned Gdk.Monitor monitor { get; construct set; }
 
+    private const string PASSWORD_SHOW_ICON_NAME = "eye-open-negative-filled-symbolic";
+    private const string PASSWORD_HIDE_ICON_NAME = "eye-not-looking-symbolic";
+
     [GtkChild]
     unowned Gtk.Picture picture;
 

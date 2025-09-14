@@ -65,6 +65,10 @@ public static int main (string[] args) {
             css_provider,
             Gtk.STYLE_PROVIDER_PRIORITY_USER);
 
+        // Init resources
+        var theme = Gtk.IconTheme.get_for_display (Gdk.Display.get_default ());
+        theme.add_resource_path ("/org/erikreider/swaysettings/icons");
+
         return app.run ();
     } catch (Error e) {
         stderr.printf ("Application error: %s\n", e.message);

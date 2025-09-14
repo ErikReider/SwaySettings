@@ -7,6 +7,9 @@
       <file preprocess="xml-stripblanks">icons/scalable/actions/screenshooter-symbolic.svg</file>
       <file preprocess="xml-stripblanks">icons/scalable/actions/search-folder-symbolic.svg</file>
       <file preprocess="xml-stripblanks">icons/scalable/actions/arrow-circular-top-right-symbolic.svg</file>
+      <file preprocess="xml-stripblanks">icons/scalable/actions/right-smaller-symbolic.svg</file>
+      <file preprocess="xml-stripblanks">icons/scalable/actions/eye-open-negative-filled-symbolic.svg</file>
+      <file preprocess="xml-stripblanks">icons/scalable/actions/eye-not-looking-symbolic.svg</file>
 
       <file>ui/OrderListSelector.ui</file>
       <file>ui/KeyboardInputSelector.ui</file>
