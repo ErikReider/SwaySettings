@@ -9,14 +9,25 @@ public class LockerWindow : Gtk.ApplicationWindow {
     unowned Gtk.Picture picture;
 
     [GtkChild]
+    unowned Gtk.Revealer revealer;
+
+    [GtkChild]
+    unowned Gtk.Label time_label;
+    [GtkChild]
+    unowned Gtk.Label date_label;
+
+    [GtkChild]
     unowned Adw.Avatar avatar;
     [GtkChild]
     unowned Gtk.Label real_name;
 
     [GtkChild]
-    unowned Gtk.PasswordEntry entry;
+    unowned Gtk.Entry entry;
     [GtkChild]
     unowned Gtk.Button button;
+
+    [GtkChild]
+    unowned Gtk.Label status_label;
 
     private Cancellable load_cancellable = new Cancellable ();
     private bool loaded_user_data = false;
@@ -30,10 +41,25 @@ public class LockerWindow : Gtk.ApplicationWindow {
             css_name: "lockerwindow");
 
         button.clicked.connect (password_check);
+        notify["is-active"].connect (() => {
+            revealer.set_reveal_child (is_active);
+            entry.grab_focus_without_selecting ();
+            entry.set_position (-1);
+        });
 
         entry.activate.connect (() => button.clicked ());
 
-        picture.set_can_shrink (!should_lock);
+        set_date_time ();
+        time_object.update.connect (set_date_time);
+
+        map.connect (() => {
+            add_css_class ("locked");
+        });
+    }
+
+    private void set_date_time () {
+        time_label.set_text (time_object.get_time ());
+        date_label.set_text (time_object.get_date ());
     }
 
     public async void load_content () {

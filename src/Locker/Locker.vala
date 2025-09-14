@@ -1,5 +1,37 @@
 using Posix;
 
+public class TimeObj : Object {
+    private DateTime date_time;
+
+    public signal void update ();
+
+    public TimeObj () {
+        timeout ();
+    }
+
+    private void timeout () {
+        date_time = new DateTime.now_local ();
+
+        // Compute ms until the next minute boundary
+        int sec  = date_time.get_second ();
+        int usec = date_time.get_microsecond ();
+        uint delay_ms = (60 - sec) * 1000 - usec / 1000;
+        update ();
+
+        Timeout.add_once (delay_ms, timeout);
+    }
+
+    public string get_time () {
+        return date_time.format ("%H:%M");
+    }
+
+    public string get_date () {
+        return date_time.format ("%d %b");
+    }
+}
+
+static TimeObj time_object;
+
 static Settings self_settings;
 static Gtk.Application app;
 static UserMgr user_mgr;
@@ -60,6 +92,7 @@ class Main : Object {
         Adw.init ();
 
         user_mgr = new UserMgr ();
+        time_object = new TimeObj ();
 
         // TODO: Do this instead:
         // https://discourse.gnome.org/t/having-trouble-getting-my-schema-to-work-in-gtk4-tutorial-example/8541/6
