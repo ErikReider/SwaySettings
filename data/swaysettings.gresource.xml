@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
   <gresource prefix="/org/erikreider/swaysettings">
-      <file compressed="true">style.css</file>
+      <file compressed="true">settings-window.css</file>
+      <file compressed="true">screenshot.css</file>
+      <file compressed="true">locker.css</file>
 
       <file preprocess="xml-stripblanks">icons/scalable/actions/arrows-questionmark-symbolic.svg</file>
       <file preprocess="xml-stripblanks">icons/scalable/actions/screenshooter-symbolic.svg</file>

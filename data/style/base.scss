@@ -1,0 +1,9 @@
+:root {
+  --borders-light: rgba(0, 0, 0, 0.12);
+  --borders-dark: rgba(255, 255, 255, 0.15);
+  --transition-time: 0.15s ease-in-out;
+}
+
+*:disabled image {
+  opacity: var(--disabled-opacity);
+}

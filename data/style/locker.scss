@@ -1,0 +1,73 @@
+@import "./base.scss";
+
+$drop-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+$avatar-size: 128px;
+$blur-fade-ms: 500ms;
+$blur-fade-ease: ease-out;
+$blur-amount: 20px;
+
+@keyframes blur-fade-in {
+  0% {
+    filter: blur(0);
+  }
+  100% {
+    filter: blur($blur-amount);
+  }
+}
+
+lockerwindow {
+  background: transparent;
+
+  &.locked .locker-wallpaper {
+    animation-name: blur-fade-in;
+    animation-iteration-count: 1;
+    animation-timing-function: $blur-fade-ease;
+    animation-timing-function: $blur-fade-ease;
+    animation-duration: $blur-fade-ms;
+    filter: blur($blur-amount);
+  }
+
+  label {
+    text-shadow: $drop-shadow;
+  }
+
+  .locker-time-box {
+    margin: 64px 0;
+
+    .locker-time {
+      font-size: 128px;
+      font-weight: bold;
+    }
+
+    .locker-date {
+      font-size: 32px;
+      font-weight: bold;
+    }
+  }
+
+  .locker-content {
+    background: rgba(0, 0, 0, 0.2);
+
+    .locker-avatar {
+      filter: drop-shadow($drop-shadow);
+      margin: 6px;
+      -gtk-icon-size: $avatar-size;
+    }
+
+    .locker-name {
+      margin: 6px;
+    }
+
+    box {
+      .locker-entry {
+        // box-shadow: $drop-shadow;
+        margin: 4px;
+      }
+
+      .locker-unlock {
+        // box-shadow: $drop-shadow;
+        margin: 4px;
+      }
+    }
+  }
+}

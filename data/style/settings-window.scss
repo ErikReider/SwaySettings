@@ -1,12 +1,4 @@
-:root {
-  --borders-light: rgba(0, 0, 0, 0.12);
-  --borders-dark: rgba(255, 255, 255, 0.15);
-  --transition-time: 0.15s ease-in-out;
-}
-
-*:disabled image {
-  opacity: var(--disabled-opacity);
-}
+@import "./base.scss";
 
 .thumbnail-image picture {
   background-color: black;
@@ -24,9 +16,9 @@
 
 .theme-preview-item .window {
   border-radius: 6px;
-  box-shadow: 0 1px 4px 1px alpha(black, 0.13),
-    0 1px 10px 5px alpha(black, 0.09), 0 3px 16px 8px alpha(black, 0.04),
-    0 0 0 1px alpha(black, 0.05);
+  box-shadow: 0 1px 4px 1px rgba(black, 0.13),
+    0 1px 10px 5px rgba(black, 0.09), 0 3px 16px 8px rgba(black, 0.04),
+    0 0 0 1px rgba(black, 0.05);
 }
 
 .theme-preview-item .window .header-bar {
@@ -43,7 +35,7 @@
 
 .theme-preview-item .window.light {
   background-color: #fafafa;
-  color: alpha(black, 0.8);
+  color: rgba(black, 0.8);
 }
 
 .theme-preview-item .window.front.light .header-bar {
@@ -75,12 +67,12 @@
 
 .theme-preview-item:focus:focus-visible,
 .background-flowbox-child:focus:focus-visible {
-  box-shadow: 0 0 0 3px alpha(var(--accent-bg-color), 0.3);
+  box-shadow: 0 0 0 3px rgba(var(--accent-bg-color), 0.3);
 }
 
 .theme-preview-item:checked:focus:focus-visible,
 .background-flowbox-child:selected:focus:focus-visible {
-  box-shadow: 0 0 0 3px var(--accent-bg-color), 0 0 0 6px alpha(var(--accent-bg-color), 0.3);
+  box-shadow: 0 0 0 3px var(--accent-bg-color), 0 0 0 6px rgba(var(--accent-bg-color), 0.3);
 }
 
 .img-remove-button {
@@ -194,71 +186,4 @@
 
 .slate {
   --accent-bg-color: var(--accent-slate);
-}
-
-/* Screenshot Window */
-
-window.screenshot-window {
-  background: transparent;
-}
-
-.screenshot-list {
-  padding: 32px;
-}
-
-.screenshot-list .screenshot-preview {
-  margin: 16px 0;
-}
-
-.screenshot-preview {
-  transition: opacity var(--transition-time);
-  background: var(--window-bg-color);
-  border-radius: 16px;
-  margin: 32px;
-  box-shadow: 0 22px 26px 4px rgba(0, 0, 0, 0.56);
-}
-.screenshot-preview:disabled {
-  opacity: 0;
-}
-
-.screenshot-preview-header {
-  padding: 8px;
-}
-.screenshot-preview-header button.close {
-  /* Mimic the Adwaita close button: 34px size */
-  margin: 5px;
-  padding: 0px;
-  min-height: 24px;
-  min-width: 24px;
-}
-
-.screenshot-preview-picture {
-  transition: opacity var(--transition-time), filter var(--transition-time);
-}
-
-.screenshot-preview:hover .screenshot-preview-picture {
-  opacity: 0.5;
-  filter: blur(8px);
-}
-
-.screenshot-image-overlay {
-  transition: opacity var(--transition-time);
-  opacity: 0;
-}
-
-.screenshot-preview:hover .screenshot-image-overlay {
-  opacity: var(--dim-opacity);
-}
-
-/* Locker */
-lockerwindow {
-  background: black;
-}
-
-.locker-wallpaper {
-  filter: blur(12px);
-}
-
-.locker-content {
-  background: rgba(0, 0, 0, 0.4);
 }
