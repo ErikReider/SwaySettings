@@ -189,15 +189,19 @@ class Main : Object {
         yield;
     }
 
+    private static bool inited = false;
     private static async void init () {
-        windows = new ListStore (typeof (LockerWindow));
+        if (!inited) {
+            windows = new ListStore (typeof (LockerWindow));
 
-        Gdk.Display ?display = Gdk.Display.get_default ();
-        assert_nonnull (display);
+            Gdk.Display ?display = Gdk.Display.get_default ();
+            assert_nonnull (display);
 
-        monitors = display.get_monitors ();
+            monitors = display.get_monitors ();
 
-        yield init_lock ();
+            yield init_lock ();
+            inited = true;
+        }
 
         if (should_lock) {
             instance.lock ();
@@ -240,19 +244,22 @@ class Main : Object {
     }
 
     private static void locked () {
-        print ("LOCKED!\n");
-
         // Kill the parent if daemonized
         signal_daemon ();
     }
 
     private static void unlocked () {
         app.release ();
-        print ("UNLOCKED!\n");
     }
 
-    private static void failed () {
-        print ("FAILED!\n");
+    private static int lock_tries = 3;
+    private static async void failed () {
+        GLib.stderr.printf ("Failed to lock. Retrying\n");
+        if (lock_tries > 0) {
+            lock_tries--;
+
+            yield init ();
+        }
     }
 
     //
