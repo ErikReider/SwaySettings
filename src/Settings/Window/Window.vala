@@ -140,7 +140,7 @@ namespace SwaySettings {
                 new Adw.BreakpointCondition.length (
                     Adw.BreakpointConditionLengthType.MAX_WIDTH, 650,
                     Adw.LengthUnit.SP);
-            Adw.Breakpoint breakpoint = new Adw.Breakpoint (condition);
+            Adw.Breakpoint breakpoint = new Adw.Breakpoint (condition.copy ());
             breakpoint.add_setter (split_view, "collapsed", true);
             add_breakpoint (breakpoint);
 
