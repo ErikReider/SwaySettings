@@ -59,6 +59,11 @@ public class LockerWindow : Gtk.ApplicationWindow {
             revealer.set_reveal_child (is_active);
             entry.grab_focus_without_selecting ();
             entry.set_position (-1);
+            if (is_active) {
+                add_css_class ("focused");
+            } else {
+                remove_css_class ("focused");
+            }
         });
 
         entry.set_buffer (lock_data.pwd_buffer);
