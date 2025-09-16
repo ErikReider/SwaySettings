@@ -1,4 +1,6 @@
 #include <glib.h>
+#include <gtk-4.0/gtk/gtk.h>
+#include <gtk/gtkpasswordentrybuffer.h>
 #include <pwd.h>
 #include <security/_pam_types.h>
 #include <security/pam_appl.h>
@@ -15,7 +17,9 @@ enum pam_status {
 };
 
 struct data {
-	const char *password;
+	GtkPasswordEntryBuffer *pwd_buffer;
+	GList **messages;
+	GList **errors;
 };
 
 static int conv_function(int num_msg, const struct pam_message **msg,
@@ -27,13 +31,16 @@ static int conv_function(int num_msg, const struct pam_message **msg,
 	}
 
 	struct data *data = appdata_ptr;
+	const char *pwd =
+		gtk_entry_buffer_get_text(GTK_ENTRY_BUFFER(data->pwd_buffer));
+
 	for (int i = 0; i < num_msg; ++i) {
 		resp[i]->resp_retcode = 0;
 
 		switch (msg[i]->msg_style) {
 		case PAM_PROMPT_ECHO_OFF:
 		case PAM_PROMPT_ECHO_ON:
-			resp[i]->resp = strdup(data->password);
+			resp[i]->resp = strdup(pwd);
 			if (resp[i]->resp == NULL) {
 				g_critical("Could not duplicate string");
 				return PAM_ABORT;
@@ -42,9 +49,11 @@ static int conv_function(int num_msg, const struct pam_message **msg,
 		case PAM_ERROR_MSG:
 			// TODO: Display this
 			g_critical("PAM error message: %s", msg[i]->msg);
+			(*data->errors) = g_list_append(*data->errors, strdup(msg[i]->msg));
 			break;
 		case PAM_TEXT_INFO:
 			g_info("PAM info message: %s", msg[i]->msg);
+			(*data->messages) = g_list_append(*data->messages, strdup(msg[i]->msg));
 			break;
 		default:
 			g_critical("PAM conv: unhandled message style: %i",
@@ -55,7 +64,8 @@ static int conv_function(int num_msg, const struct pam_message **msg,
 	return PAM_SUCCESS;
 }
 
-enum pam_status _check_password(const char *password) {
+enum pam_status _check_password(GtkPasswordEntryBuffer *pwd_buffer,
+								GList **messages, GList **errors) {
 	pam_handle_t *pam_handle = NULL;
 	struct passwd *pwd = getpwuid(getuid());
 	if (!pwd) {
@@ -64,8 +74,11 @@ enum pam_status _check_password(const char *password) {
 	}
 
 	struct data data = {
-		.password = password,
+		.pwd_buffer = pwd_buffer,
+		.messages = messages,
+		.errors = errors,
 	};
+
 	struct pam_conv conv = {
 		.conv = conv_function,
 		.appdata_ptr = &data,

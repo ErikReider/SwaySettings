@@ -1,14 +1,36 @@
-private class LockData : Object {
+public class LockData : Object {
     public Gtk.PasswordEntryBuffer pwd_buffer { get; construct set; }
     public bool show_password { get; private set; }
+
+    public List<string> messages;
+    public List<string> errors;
+
+    public signal void pwd_checked ();
 
     construct {
         pwd_buffer = new Gtk.PasswordEntryBuffer ();
         show_password = false;
+        messages = new List<string> ();
+        errors = new List<string> ();
     }
 
     public void toggle_show_password () {
         show_password = !show_password;
+    }
+
+    public void clear_messages () {
+        // Remove all of the previous messages
+        while (!messages.is_empty ()) {
+            unowned List<string> link = messages.nth (0);
+            messages.delete_link (link);
+        }
+        warn_if_fail (messages.is_empty ());
+
+        while (!errors.is_empty ()) {
+            unowned List<string> link = errors.nth (0);
+            errors.delete_link (link);
+        }
+        warn_if_fail (errors.is_empty ());
     }
 }
 
@@ -42,7 +64,9 @@ public class LockerWindow : Gtk.ApplicationWindow {
     unowned Gtk.Button button;
 
     [GtkChild]
-    unowned Gtk.Label status_label;
+    unowned Gtk.Revealer status_revealer;
+    [GtkChild]
+    unowned Gtk.Box status;
 
     private Cancellable load_cancellable = new Cancellable ();
     private bool loaded_user_data = false;
@@ -56,10 +80,11 @@ public class LockerWindow : Gtk.ApplicationWindow {
             css_name: "lockerwindow");
 
         notify["is-active"].connect (() => {
-            revealer.set_reveal_child (is_active);
+            bool active = !should_lock ? true : is_active;
+            revealer.set_reveal_child (active);
             entry.grab_focus_without_selecting ();
             entry.set_position (-1);
-            if (is_active) {
+            if (active) {
                 add_css_class ("focused");
             } else {
                 remove_css_class ("focused");
@@ -81,9 +106,44 @@ public class LockerWindow : Gtk.ApplicationWindow {
         set_date_time ();
         time_object.update.connect (set_date_time);
 
+        lock_data.pwd_checked.connect (set_status);
+        set_status ();
+
         map.connect (() => {
             add_css_class ("locked");
         });
+    }
+
+    private Adw.Banner get_message_banner (string message, bool error) {
+        var banner = new Adw.Banner (message);
+        banner.set_revealed (true);
+        if (error) {
+            banner.add_css_class ("error");
+        }
+        return banner;
+    }
+
+    private void set_status () {
+        // Remove the previous status widgets
+        unowned Gtk.Widget widget = null;
+        while ((widget = status.get_first_child ()) != null) {
+            status.remove (widget);
+        }
+        status_revealer.set_reveal_child (false);
+
+        if (!lock_data.errors.is_empty ()) {
+            foreach (var err in lock_data.errors) {
+                status.append (get_message_banner (err, true));
+            }
+            status_revealer.set_reveal_child (true);
+        }
+
+        if (!lock_data.messages.is_empty ()) {
+            foreach (var msg in lock_data.messages) {
+                status.append (get_message_banner (msg, false));
+            }
+            status_revealer.set_reveal_child (true);
+        }
     }
 
     private void set_password_visibility () {
@@ -146,36 +206,44 @@ public class LockerWindow : Gtk.ApplicationWindow {
     }
 
     private void password_check () {
-        string password = entry.get_text ();
-        return_if_fail (password.length > 0);
+        if (lock_data.pwd_buffer.length <= 0) {
+            return;
+        }
 
         set_busy (true);
 
-        check_password.begin (password, (obj, res) => {
+        lock_data.clear_messages ();
+        status_revealer.set_reveal_child (false);
+
+        check_password.begin (lock_data, (obj, res) => {
             password_checked (check_password.end (res));
         });
     }
 
     private void password_checked (pam_status status) {
+        set_busy (false);
+
         switch (status) {
             case pam_status.PAM_STATUS_ERROR:
+                // TODO:
                 critical ("PAM failed!");
-                set_busy (false);
                 break;
             case pam_status.PAM_STATUS_AUTH_FAILED:
-                // TODO:
                 critical ("PAM Auth failed:");
-                set_busy (false);
+                lock_data.messages.append ("Login Failed");
                 break;
             case pam_status.PAM_STATUS_AUTH_SUCESS:
-                set_busy (false);
                 if (should_lock) {
                     instance.unlock ();
                 } else {
                     app.quit ();
                 }
-                break;
+                return;
         }
+
+        entry.grab_focus ();
+
+        lock_data.pwd_checked ();
     }
 
     private void set_busy (bool busy) {

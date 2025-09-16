@@ -108,10 +108,24 @@ template $LockerWindow: Gtk.ApplicationWindow {
           }
         };
 
-        end-widget: Label status_label {
-          styles [
-            "locker-status-label",
-          ]
+        end-widget: Revealer status_revealer {
+          reveal-child: false;
+          transition-type: crossfade;
+
+          child: ScrolledWindow {
+            hscrollbar-policy: never;
+            propagate-natural-height: true;
+
+            child: Viewport {
+              child: Box status {
+                orientation: vertical;
+
+                styles [
+                  "locker-status",
+                ]
+              };
+            };
+          };
         };
       }
     }

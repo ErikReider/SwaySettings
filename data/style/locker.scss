@@ -2,6 +2,7 @@
 
 $drop-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
 $avatar-size: 128px;
+$date-fg-color: rgba(white, 0.5);
 $blur-fade-ms: 300ms;
 $blur-fade-ease: ease-out;
 $blur-amount: 10px;
@@ -19,20 +20,21 @@ lockerwindow {
 
   label {
     text-shadow: $drop-shadow;
-    color: rgba(white, 0.5);
   }
 
   .locker-time-box {
-    margin: 64px 0;
+    margin-top: 64px;
 
     .locker-time {
       font-size: 128px;
       font-weight: bold;
+      color: $date-fg-color;
     }
 
     .locker-date {
       font-size: 32px;
       font-weight: bold;
+      color: $date-fg-color;
     }
   }
 
@@ -50,8 +52,8 @@ lockerwindow {
       margin: 6px;
     }
 
-    box {
-      margin: 32px 0;
+    & > box {
+      margin-top: 32px;
 
       .locker-entry {
         box-shadow: $drop-shadow;
@@ -66,6 +68,22 @@ lockerwindow {
       .locker-unlock {
         box-shadow: $drop-shadow;
         margin: 4px;
+      }
+    }
+
+    .locker-status {
+      margin: 4px 0;
+
+      &.error banner widget {
+        color: var(--error_fg_color);
+      }
+
+      banner widget {
+        background: transparent;
+        color: var(--window_fg_color);
+        padding: 0 32px;
+        margin: 4px;
+        border-radius: 100px;
       }
     }
   }
