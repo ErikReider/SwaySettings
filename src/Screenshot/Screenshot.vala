@@ -59,7 +59,7 @@ public static int main (string[] args) {
         // Load custom CSS
         Gtk.CssProvider css_provider = new Gtk.CssProvider ();
         css_provider.load_from_resource (
-            "/org/erikreider/swaysettings/screenshot.css");
+            "/org/erikreider/swaysettings/style/screenshot.css");
         Gtk.StyleContext.add_provider_for_display (
             Gdk.Display.get_default (),
             css_provider,
