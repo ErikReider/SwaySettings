@@ -7,20 +7,11 @@ scss_files = [
   'locker.scss',
 ]
 foreach file : scss_files
-  custom_target(
-    'SCSS Compilation @0@'.format(file),
-    build_by_default: true,
-    build_always_stale: true,
-    input : file,
-    output : fs.name(fs.replace_suffix(file, '.css')),
-    install: false,
-    install_dir: config_path,
-    command : [
-      sassc,
-      '-t',
-      'expanded',
-      '@INPUT@',
-      '@OUTPUT@'
-    ],
+  run_command(
+    sassc,
+    '-t', 'expanded',
+    file,
+    fs.name(fs.replace_suffix(file, '.css')),
+    check: true,
   )
 endforeach
