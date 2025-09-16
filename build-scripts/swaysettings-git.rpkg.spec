@@ -31,6 +31,8 @@ BuildRequires: systemd-devel
 BuildRequires: pkgconfig(systemd)
 BuildRequires: systemd
 BuildRequires: scdoc
+BuildRequires: pkgconfig(pam)
+BuildRequires: sassc
 Requires: dbus
 Requires: grim
 Requires: bluez
@@ -39,6 +41,7 @@ Requires: udisks2
 Requires: glib2
 Requires: accountsservice
 Requires: gtk4-layer-shell
+Requires: pam
 
 %{?systemd_requires}
 
@@ -67,6 +70,7 @@ A gui for setting sway wallpaper, default apps, GTK themes, etc...
 %{_bindir}/sway-wallpaper
 %{_bindir}/sway-autostart
 %{_bindir}/swaysettings-screenshot
+%{_bindir}/swaysettings-locker
 %license COPYING
 %{_userunitdir}/sway-wallpaper.service
 %{_datadir}/glib-2.0/schemas/org.erikreider.swaysettings.gschema.xml
@@ -74,6 +78,7 @@ A gui for setting sway wallpaper, default apps, GTK themes, etc...
 %{_datadir}/applications/org.erikreider.swaysettings.desktop
 %{_datadir}/icons/hicolor/scalable/apps/org.erikreider.swaysettings.svg
 %{_datadir}/icons/hicolor/symbolic/apps/org.erikreider.swaysettings-symbolic.svg
+%config(noreplace) %{_sysconfdir}/pam.d/swaysettings-locker
 # Portal
 %{_libexecdir}/xdg-desktop-portal-swaysettings
 %{_datadir}/dbus-1/services/org.freedesktop.impl.portal.desktop.swaysettings.service

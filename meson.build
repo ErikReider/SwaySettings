@@ -6,6 +6,8 @@ project(
   default_options: [ 'warning_level=2',],
 )
 
+fs = import('fs')
+
 add_project_arguments(
     ['--vapidir', join_paths(meson.current_source_dir(), 'vapi')],
     language: 'vala'
@@ -16,6 +18,8 @@ i18n = import('i18n')
 swaysettings_sources = []
 
 dep_systemd = dependency('systemd')
+
+config_path = join_paths(get_option('sysconfdir'), 'xdg', 'swaysettings')
 
 # Systemd service unit
 if dep_systemd.found()
@@ -35,5 +39,10 @@ configure_file(
 subdir('data')
 subdir('src')
 subdir('po')
+
+install_data(
+  'pam/swaysettings-locker',
+  install_dir : get_option('sysconfdir') / 'pam.d',
+)
 
 meson.add_install_script('build-aux/meson/postinstall.py')

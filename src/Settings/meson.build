@@ -12,7 +12,6 @@ swaysettings_settings_sources = files([
   'Page/IpcPage.vala',
   'Page/Page.vala',
   'Page/InputPage.vala',
-  'UserMgr/UserMgr.vala',
   'InputSettings/InputSettings.vala',
 ])
 
@@ -30,16 +29,13 @@ executable(
     dep_gdk_pixbuf,
     dep_libadwaita,
     dep_json_glib,
-    dep_gee,
     dep_granite7,
     dep_libxml,
-    dep_accountsservice,
     dep_udisks2,
     dep_libgtop,
     dep_libpulse,
     dep_libpulse_mainloop_glib,
-    dep_math,
-    dep_gsettings_schemas,
-  ],
+  ]
+  + shared_deps,
   install: true,
 )

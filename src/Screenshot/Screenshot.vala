@@ -59,11 +59,15 @@ public static int main (string[] args) {
         // Load custom CSS
         Gtk.CssProvider css_provider = new Gtk.CssProvider ();
         css_provider.load_from_resource (
-            "/org/erikreider/swaysettings/style.css");
+            "/org/erikreider/swaysettings/style/screenshot.css");
         Gtk.StyleContext.add_provider_for_display (
             Gdk.Display.get_default (),
             css_provider,
             Gtk.STYLE_PROVIDER_PRIORITY_USER);
+
+        // Init resources
+        var theme = Gtk.IconTheme.get_for_display (Gdk.Display.get_default ());
+        theme.add_resource_path ("/org/erikreider/swaysettings/icons");
 
         return app.run ();
     } catch (Error e) {

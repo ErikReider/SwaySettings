@@ -5,15 +5,15 @@ A GUI for configuring your sway desktop + some extra programs
 ## Features
 
 - Its own Freedesktop Portal
-- Floating screenshotting UI
-- Wallpaper application
+- Floating screenshotting UI (`swaysettings-screenshot`)
+- Wallpaper application (`sway-wallpaper`, a swaybg replacement which includes a slick fade transition 😎)
+- Lock Screen application (`swaysettings-locker`)
 - Set and remove auto start apps
 - Change default apps
 - Change GTK theme settings (GTK theme is set per GTK4 color-scheme, ie dark and light mode)
 - Mouse and trackpad settings
 - Keyboard layout settings
 - Switch Wallpaper (selected wallpaper will be located at .cache/wallpaper)
-- sway-wallpaper (a swaybg replacement) which includes a slick fade transition 😎
 
 ## Install
 
@@ -52,6 +52,12 @@ org.freedesktop.impl.portal.ScreenCast=wlr
 org.freedesktop.impl.portal.Screenshot=wlr
 org.freedesktop.impl.portal.Secret=gnome-keyring;
 ```
+
+### SwaySettings Lockscreen Usage
+
+The lock screen can be launched by running `swaysettings-locker`.
+The locker can be daemonized when fully locked by passing the `--daemonize` argument:
+`swaysettings-locker --daemonize`
 
 ### Arch
 

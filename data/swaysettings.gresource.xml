@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
   <gresource prefix="/org/erikreider/swaysettings">
-      <file compressed="true">style.css</file>
+      <file compressed="true">style/settings-window.css</file>
+      <file compressed="true">style/screenshot.css</file>
+      <file compressed="true">style/locker.css</file>
 
       <file preprocess="xml-stripblanks">icons/scalable/actions/arrows-questionmark-symbolic.svg</file>
       <file preprocess="xml-stripblanks">icons/scalable/actions/screenshooter-symbolic.svg</file>
       <file preprocess="xml-stripblanks">icons/scalable/actions/search-folder-symbolic.svg</file>
       <file preprocess="xml-stripblanks">icons/scalable/actions/arrow-circular-top-right-symbolic.svg</file>
+      <file preprocess="xml-stripblanks">icons/scalable/actions/right-smaller-symbolic.svg</file>
+      <file preprocess="xml-stripblanks">icons/scalable/actions/eye-open-negative-filled-symbolic.svg</file>
+      <file preprocess="xml-stripblanks">icons/scalable/actions/eye-not-looking-symbolic.svg</file>
 
       <file>ui/OrderListSelector.ui</file>
       <file>ui/KeyboardInputSelector.ui</file>
@@ -20,5 +25,6 @@
       <file>ui/BluetoothDeviceRow.ui</file>
       <file>ui/ScreenshotList.ui</file>
       <file>ui/ScreenshotPreview.ui</file>
+      <file>ui/LockerWindow.ui</file>
   </gresource>
 </gresources>

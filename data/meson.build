@@ -32,6 +32,8 @@ if appstream_util.found()
   )
 endif
 
+subdir('style')
+
 # GSchema
 compile_schemas = find_program('glib-compile-schemas', required: true)
 if compile_schemas.found()
