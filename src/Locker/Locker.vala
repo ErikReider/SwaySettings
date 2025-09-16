@@ -243,7 +243,41 @@ class Main : Object {
         }
     }
 
-    private static void locked () {
+    private static async void locked () {
+        // Wait for all windows to be mapped before daemonizing
+        uint timeout_id = 0;
+        uint n_items = monitors.get_n_items ();
+        int count = (int) n_items;
+        for (uint i = 0; i < n_items; i++) {
+            LockerWindow win = (LockerWindow) windows.get_item (i);
+            if (win.get_mapped () && win.get_realized ()) {
+                count--;
+                continue;
+            }
+
+            ulong map_id = 0;
+            map_id = win.map.connect (() => {
+                win.disconnect (map_id);
+                if (timeout_id == 0) {
+                    return;
+                }
+
+                if (AtomicInt.dec_and_test (ref count)) {
+                    // All windows are mapped, cancel the timeout
+                    if (timeout_id > 0) {
+                        Source.remove (timeout_id);
+                        timeout_id = 0;
+                    }
+                    locked.callback ();
+                }
+            });
+        }
+        timeout_id = Timeout.add_seconds_once (1, () => {
+            timeout_id = 0;
+            locked.callback ();
+        });
+        yield;
+
         // Kill the parent if daemonized
         signal_daemon ();
     }
