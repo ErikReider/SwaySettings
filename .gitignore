@@ -9,3 +9,5 @@ gdb*
 SwaySettings
 swaysettings-*
 build-scripts/src*
+
+!pam/*
