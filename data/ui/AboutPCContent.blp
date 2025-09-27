@@ -50,8 +50,10 @@ template $SwaySettingsAboutPCContent: Adw.Bin {
     }
 
     Gtk.ListBox storage_list_box {
+      selection-mode: none;
+
       styles [
-        "background"
+        "boxed-list-separate"
       ]
     }
   };
