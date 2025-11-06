@@ -148,12 +148,12 @@ namespace SwaySettings {
             sidebar_listbox.add_css_class ("navigation-sidebar");
             sidebar_listbox.set_activate_on_single_click (true);
             sidebar_listbox.set_selection_mode (Gtk.SelectionMode.SINGLE);
-            sidebar_listbox.row_selected.connect ((row) => {
+            sidebar_listbox.row_activated.connect ((row) => {
                 if (row == null) return;
                 SettingsItem settings_item =
                     ((ISidebarListItem) row).settings_item;
                 if (current_page_name == settings_item.internal_name) {
-                    debug ("Ignoring change to same page...");
+                    split_view.set_show_content (true);
                     return;
                 }
                 current_page_name = settings_item.internal_name;
@@ -234,8 +234,7 @@ namespace SwaySettings {
                         sidebar_listbox.append (item);
                         // Start in the System page
                         if (settings_item.page_type == PageType.ABOUT_PC) {
-
-                            sidebar_listbox.select_row (item);
+                            item.activate ();
                         }
                     }
                 }
