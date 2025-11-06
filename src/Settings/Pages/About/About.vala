@@ -14,12 +14,6 @@ namespace SwaySettings {
     }
 
     public class AboutPC : PageScroll {
-        public override int clamp_max {
-            get {
-                return 1200;
-            }
-        }
-
         public AboutPC (SettingsItem item,
                         Adw.NavigationPage page) {
             base (item, page);
