@@ -55,6 +55,20 @@ namespace Utils {
             }
         }
 
+        public Gtk.ContentFit to_content_fit () {
+            switch (this) {
+                default:
+                case FILL:
+                    return Gtk.ContentFit.FILL;
+                case STRETCH:
+                    return Gtk.ContentFit.COVER;
+                case FIT:
+                    return Gtk.ContentFit.CONTAIN;
+                case CENTER:
+                    return Gtk.ContentFit.SCALE_DOWN;
+            }
+        }
+
         public static ScaleModes parse_mode (string ? value) {
             switch (value) {
                 default:

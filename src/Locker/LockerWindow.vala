@@ -183,6 +183,9 @@ public class LockerWindow : Gtk.ApplicationWindow {
 
         picture.set_paintable (texture);
 
+        Utils.ScaleModes scale = Utils.get_scale_mode_gschema (self_settings);
+        picture.set_content_fit (scale.to_content_fit ());
+
         // User Data
         changed_id = user_mgr.changed.connect (() => {
             if (loaded_user_data) {
