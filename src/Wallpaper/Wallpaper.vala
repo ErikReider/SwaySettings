@@ -72,6 +72,9 @@ namespace Wallpaper {
         private static SimpleAction action;
         private static Utils.Config current_config;
 
+        private static Cancellable action_cancellable;
+        private static ulong action_cancellable_id;
+
         private static unowned ListModel monitors;
         private static ListStore windows;
 
@@ -171,41 +174,60 @@ namespace Wallpaper {
         }
 
         private static async void action_activated (Variant ? param) {
-            if (param == null || param.get_type_string () != Constants.WALLPAPER_ACTION_FORMAT) return;
-
-            action.activate.disconnect (action_activated);
-
-            current_config = Utils.Config () {
-                path = param.get_child_value (0).get_string (),
-                scale_mode = param.get_child_value (1).get_int32 (),
-                color = param.get_child_value (2).get_string (),
-            };
-
-
-            uint n_items = windows.get_n_items ();
-            int count = (int) n_items;
-            for (int i = 0; i < count; i++) {
-                Window window = (Window) windows.get_item (i);
-                window.change_wallpaper.begin (current_config, (obj, res) => {
-                    window.change_wallpaper.end (res);
-                    if (AtomicInt.dec_and_test (ref count)) {
-                        action_activated.callback ();
-                    }
-                });
-            }
-            yield;
-
-            // Run all the animations at the same time, after all monitors
-            // have loaded its new textures
-            for (int i = 0; i < n_items; i++) {
-                Window window = (Window) windows.get_item (i);
-                window.run_animation ();
+            if (param == null || param.get_type_string () != Constants.WALLPAPER_ACTION_FORMAT) {
+                return;
             }
 
-            action.activate.connect (action_activated);
+            if (!action_cancellable.is_cancelled ()) {
+                action_cancellable.cancel ();
+                action_cancellable.reset ();
+            }
+
+            Cancellable[] windows_cancellable = {};
+            try {
+                action_cancellable.set_error_if_cancelled ();
+
+                current_config = Utils.Config () {
+                    path = param.get_child_value (0).get_string (),
+                    scale_mode = param.get_child_value (1).get_int32 (),
+                    color = param.get_child_value (2).get_string (),
+                };
+
+
+                uint n_items = windows.get_n_items ();
+                int count = (int) n_items;
+                for (int i = 0; i < count; i++) {
+                    Cancellable c = new Cancellable ();
+                    windows_cancellable += c;
+
+                    Window window = (Window) windows.get_item (i);
+                    window.change_wallpaper.begin (current_config, c, (obj, res) => {
+                        window.change_wallpaper.end (res);
+                        if (AtomicInt.dec_and_test (ref count)) {
+                            action_activated.callback ();
+                        }
+                    });
+                }
+                yield;
+
+                // Run all the animations at the same time, after all monitors
+                // have loaded its new textures
+                for (int i = 0; i < n_items; i++) {
+                    Window window = (Window) windows.get_item (i);
+                    window.run_animation ();
+                }
+            } catch (Error e) {
+                // Cancel all the window wallpaper loading tasks
+                foreach (Cancellable cancellable in windows_cancellable) {
+                    cancellable.cancel ();
+                }
+            }
         }
 
         private static void init () {
+            action_cancellable = new Cancellable ();
+            action_cancellable_id = 0;
+
             windows = new ListStore (typeof (Window));
 
             Gdk.Display ? display = Gdk.Display.get_default ();
@@ -226,6 +248,11 @@ namespace Wallpaper {
         }
 
         private static void monitors_changed (uint position, uint removed, uint added) {
+            if (!action_cancellable.is_cancelled ()) {
+                action_cancellable.cancel ();
+                action_cancellable.reset ();
+            }
+
             for (uint i = 0; i < removed; i++) {
                 Window window = (Window) windows.get_item (position + i);
                 window.close ();

@@ -38,43 +38,60 @@ namespace Wallpaper {
             GtkLayerShell.set_anchor (this, GtkLayerShell.Edge.RIGHT, true);
         }
 
-        public async void change_wallpaper (owned Utils.Config config) {
+        public async void change_wallpaper (owned Utils.Config config, Cancellable cancellable) {
             loading_texture = true;
 
-            old_background_info = background_info;
-            if (background_info == null) {
-                background_info = BackgroundInfo ();
-            }
-            background_info.config = config;
+            cancellable.connect (() => {
+                pixbuf_cancellable.cancel ();
+            });
 
-            if (background_info.config.path != null
-                && background_info.config.path.length > 0) {
+            BackgroundInfo ?saved_background_info = background_info;
+            BackgroundInfo ?new_background_info = background_info;
+            if (new_background_info == null) {
+                new_background_info = BackgroundInfo ();
+            }
+            new_background_info.config = config;
+
+            if (new_background_info.config.path != null
+                && new_background_info.config.path.length > 0) {
                 // Cancel previous download, reset the state and download again
                 pixbuf_cancellable.cancel ();
                 pixbuf_cancellable.reset ();
 
                 try {
-                    File file = File.new_for_path (background_info.config.path);
+                    File file = File.new_for_path (new_background_info.config.path);
                     uint hash = file.hash ();
-                    if (old_background_info?.config?.path == background_info.config.path
+                    if (old_background_info?.config?.path == new_background_info.config.path
                         && old_background_info?.file_hash == hash) {
                         return;
                     }
                     InputStream stream = yield file.read_async (Priority.DEFAULT,
                                                                 pixbuf_cancellable);
+                    if (pixbuf_cancellable.is_cancelled ()) {
+                        pixbuf_cancellable.reset ();
+                        loading_texture = false;
+                        return;
+                    }
                     Gdk.Pixbuf pixbuf = yield new Gdk.Pixbuf.from_stream_at_scale_async (
                         stream, monitor.geometry.width, monitor.geometry.height,
                         true, pixbuf_cancellable);
+                    if (pixbuf_cancellable.is_cancelled ()) {
+                        pixbuf_cancellable.reset ();
+                        loading_texture = false;
+                        return;
+                    }
 
-                    background_info.texture = Gdk.Texture.for_pixbuf (pixbuf);
-                    background_info.width = pixbuf.width;
-                    background_info.height = pixbuf.height;
-                    background_info.file_hash = hash;
+                    new_background_info.texture = Gdk.Texture.for_pixbuf (pixbuf);
+                    new_background_info.width = pixbuf.width;
+                    new_background_info.height = pixbuf.height;
+                    new_background_info.file_hash = hash;
                 } catch (Error e) {
                     stderr.printf ("Setting wallpaper error: %s\n", e.message);
                 }
             }
 
+            old_background_info = saved_background_info;
+            background_info = new_background_info;
             debug ("Old background: %s\n", old_background_info?.to_string ());
             debug ("New background: %s\n", background_info?.to_string ());
         }
