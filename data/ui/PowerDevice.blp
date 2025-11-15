@@ -1,0 +1,54 @@
+using Gtk 4.0;
+
+template $SwaySettingsPowerDevice: ListBoxRow {
+  selectable: false;
+  activatable: false;
+
+  child: Box {
+    orientation: horizontal;
+    spacing: 8;
+
+    Image icon {
+      pixel-size: 48;
+    }
+
+    Box {
+      orientation: vertical;
+
+      Label device_name {
+        xalign: 0;
+        vexpand: true;
+      }
+
+      Box {
+        vexpand: true;
+        orientation: horizontal;
+
+        Label battery_charging_state {
+          xalign: 0;
+        }
+
+        Separator separator {
+          orientation: horizontal;
+          // TODO: hexpand
+          valign: center;
+          width-request: 8;
+          margin-start: 8;
+          margin-end: 8;
+        }
+
+        Image battery_icon {
+          pixel-size: 24;
+        }
+
+        Label battery_percent {
+          xalign: 0;
+        }
+
+        Label battery_time {
+          xalign: 0;
+        }
+      }
+    }
+  };
+}

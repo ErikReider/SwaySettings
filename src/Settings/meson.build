@@ -35,6 +35,7 @@ executable(
     dep_libgtop,
     dep_libpulse,
     dep_libpulse_mainloop_glib,
+    dep_upower_glib,
   ]
   + shared_deps,
   install: true,

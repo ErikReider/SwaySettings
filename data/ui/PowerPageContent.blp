@@ -1,0 +1,100 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $SwaySettingsPowerPageContent: Adw.Bin {
+  child: Stack stack {
+    hhomogeneous: true;
+    vhomogeneous: true;
+    transition-type: crossfade;
+    transition-duration: 200;
+    vexpand: true;
+
+    StackPage {
+      name: "placeholder";
+
+      child: Box {
+        halign: center;
+        valign: center;
+        hexpand: true;
+        vexpand: true;
+        orientation: vertical;
+        spacing: 12;
+        sensitive: false;
+
+        Image {
+          pixel-size: 96;
+          icon-name: "power-page-symbolic";
+          use-fallback: true;
+        }
+
+        Label text_empty_label {
+          label: "No Power Daemon Running";
+        }
+      };
+    }
+
+    StackPage {
+      name: "page";
+
+      child: Gtk.Box main_box {
+        orientation: vertical;
+        spacing: 32;
+        halign: fill;
+
+        Adw.PreferencesGroup battery_group {
+          visible: false;
+          title: "Battery";
+        }
+
+        Adw.PreferencesGroup battery_options_group {
+          visible: false;
+          title: "Battery Options";
+          // TODO: Battery threshold toggle
+          // TODO: Battery threshold slider setting
+        }
+
+        Adw.PreferencesGroup devices_group {
+          visible: false;
+          title: "Connected Devices";
+
+          $SwaySettingsPowerDeviceList devices_list {}
+        }
+
+        Adw.PreferencesGroup power_mode_group {
+          visible: false;
+          title: "Power Mode";
+
+          ListBox modes_listbox {
+            selection-mode: none;
+
+            styles [
+              "boxed-list",
+            ]
+          }
+
+          ListBox power_info_listbox {
+            selection-mode: none;
+            margin-top: 12;
+
+            styles [
+              "boxed-list",
+            ]
+
+            ListBoxRow {
+              selectable: false;
+              activatable: false;
+
+              Box {
+                orientation: vertical;
+
+                $SwaySettingsPowerInfoBanner degraded_banner {}
+
+                $SwaySettingsPowerInfoBanner power_mode_banner {}
+              }
+            }
+          }
+        }
+      };
+    }
+  };
+}

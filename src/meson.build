@@ -16,6 +16,7 @@ dep_libgtop = dependency('libgtop-2.0')
 dep_gtk4_layer_shell = dependency('gtk4-layer-shell-0', version: '>= 1.2.0')
 dep_libpulse = dependency('libpulse')
 dep_libpulse_mainloop_glib = dependency('libpulse-mainloop-glib')
+dep_upower_glib = dependency('upower-glib', version: '>= 1.90.0')
 
 shared_deps = [
   vala.find_library('posix'),

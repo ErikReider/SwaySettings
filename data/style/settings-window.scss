@@ -187,3 +187,14 @@
 .slate {
   --accent-bg-color: var(--accent-slate);
 }
+
+.power-info-banner {
+    padding: 8px;
+}
+.power-device {
+    padding: 8px;
+
+    separator {
+        background: var(--card-fg-color);
+    }
+}

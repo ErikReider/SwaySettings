@@ -4,6 +4,7 @@ namespace SwaySettings {
     public enum PageType {
         USERS,
         ABOUT_PC,
+        POWER,
         WALLPAPER,
         APPEARANCE,
         STARTUP_APPS,
@@ -22,6 +23,8 @@ namespace SwaySettings {
                     return "Users";
                 case ABOUT_PC:
                     return "About This PC";
+                case POWER:
+                    return "Power";
                 case WALLPAPER:
                     return "Wallpaper";
                 case APPEARANCE:
@@ -54,6 +57,8 @@ namespace SwaySettings {
                     return "users";
                 case ABOUT_PC:
                     return "about";
+                case POWER:
+                    return "power";
                 case WALLPAPER:
                     return "wallpaper";
                 case APPEARANCE:
@@ -105,6 +110,7 @@ namespace SwaySettings {
                 SettingsItem ("computer-symbolic", PageType.ABOUT_PC),
                 SettingsItem ("bluetooth-symbolic", PageType.BLUETOOTH),
                 SettingsItem ("audio-speakers-symbolic", PageType.SOUND),
+                SettingsItem ("power-page-symbolic", PageType.POWER),
             }),
             SettingsCategory ("Customization", {
                 SettingsItem ("preferences-desktop-wallpaper-symbolic",
@@ -246,6 +252,9 @@ namespace SwaySettings {
             switch (item.page_type) {
                 case ABOUT_PC:
                     page = new AboutPC (item, content_page);
+                    break;
+                case POWER:
+                    page = new PowerPage (item, content_page);
                     break;
                 case WALLPAPER:
                     page = new BackgroundPage (item, content_page);
