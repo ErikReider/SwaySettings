@@ -29,4 +29,5 @@ swaysettings_settings_sources += files([
   'PowerPage/PowerDeviceList.vala',
   'PowerPage/PowerBatteryState.vala',
   'PowerPage/PPD.vala',
+  'PowerPage/UPower.vala',
 ])

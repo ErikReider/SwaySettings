@@ -13,6 +13,8 @@ add_project_arguments(
     language: 'vala'
 )
 
+add_global_arguments('-DGETTEXT_PACKAGE="@0@"'.format (meson.project_name()), language:'c')
+
 i18n = import('i18n')
 
 swaysettings_sources = []

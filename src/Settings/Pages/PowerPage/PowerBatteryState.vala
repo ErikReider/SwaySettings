@@ -1,9 +1,10 @@
 namespace SwaySettings {
     private class PowerBatteryState {
-        public static string ? get_battery_state (Up.DeviceState state) {
+        public static string ?get_battery_state (Up.DeviceState state) {
             switch (state) {
-                case CHARGING:
                 case PENDING_CHARGE:
+                    return "Charge limit reached, not charging";
+                case CHARGING:
                     return "Charging";
                 case DISCHARGING:
                 case PENDING_DISCHARGE:
@@ -15,6 +16,77 @@ namespace SwaySettings {
                 default:
                     return null;
             }
+        }
+
+        public static string get_battery_percent (Up.Device device, bool show_extra) {
+            if (device.battery_level != Up.DeviceLevel.NONE) {
+                return Up.Device.level_to_string (device.battery_level);
+            }
+
+            string percent = "%.0f%%".printf (device.percentage);
+            if (show_extra) {
+                switch (device.state) {
+                    case Up.DeviceState.FULLY_CHARGED:
+                    case Up.DeviceState.PENDING_CHARGE:
+                        return "%s Full".printf (percent);
+                    case Up.DeviceState.EMPTY:
+                        return "%s Empty".printf (percent);
+                    default:
+                        break;
+                }
+            }
+            return percent;
+        }
+
+        public static string ?get_battery_status (Up.Device device) {
+            string[] status_items = {};
+
+            string ?status = null;
+            string ?time = null;
+            string ?energy_rate = null;
+            switch (device.state) {
+                case Up.DeviceState.PENDING_CHARGE:
+                    status = get_battery_state (device.state);
+                    break;
+                case Up.DeviceState.CHARGING:
+                    status = get_battery_state (device.state);
+                    time = "%s until fully charged".printf (parse_time (device.time_to_full));
+                    break;
+                case Up.DeviceState.DISCHARGING:
+                case Up.DeviceState.PENDING_DISCHARGE:
+                    status = get_battery_state (device.state);
+                    if (device.energy_rate > 0) {
+                        energy_rate = "%.0lf W".printf (device.energy_rate);
+                    }
+                    time = "%s remaining".printf (parse_time (device.time_to_empty));
+                    break;
+                case Up.DeviceState.FULLY_CHARGED:
+                    status = get_battery_state (device.state);
+                    break;
+                case Up.DeviceState.EMPTY:
+                    status = get_battery_state (device.state);
+                    if (device.energy_rate > 0) {
+                        energy_rate = "%.0lf W".printf (device.energy_rate);
+                    }
+                    time = "%s remaining".printf (parse_time (device.time_to_empty));
+                    break;
+                default:
+                    break;
+            }
+
+            if (status != null) {
+                status_items += status;
+            }
+            if (energy_rate != null) {
+                status_items += energy_rate;
+            }
+            if (time != null) {
+                status_items += time;
+            }
+            if (status_items.length == 0) {
+                return null;
+            }
+            return string.joinv (" - ", status_items);
         }
 
         public static string get_device_icon_name (Up.DeviceKind kind, bool use_symbolic) {
@@ -124,6 +196,28 @@ namespace SwaySettings {
             }
 
             return "battery-symbolic";
+        }
+
+        private static string parse_time (int64 sec) {
+            int minutes = (int) ((sec / 60.0) + 0.5);
+            if (minutes <= 0) {
+                return "Unknown time";
+            }
+
+            if (minutes < 60) {
+                return ngettext ("%i minute", "%i minutes", minutes).printf (minutes);
+            }
+
+            int hours = minutes / 60;
+            minutes %= 60;
+
+            if (minutes == 0) {
+                return ngettext ("%i hour", "%i hour", hours).printf (hours);
+            }
+
+            return "%s %s".printf (
+                ngettext ("%i hour", "%i hour", hours).printf (hours),
+                ngettext ("%i minute", "%i minutes", minutes).printf (minutes));
         }
     }
 }

@@ -41,16 +41,73 @@ template $SwaySettingsPowerPageContent: Adw.Bin {
         spacing: 32;
         halign: fill;
 
-        Adw.PreferencesGroup battery_group {
+        Box battery_group {
           visible: false;
-          title: "Battery";
+          orientation: vertical;
+          margin-top: 32;
+          spacing: 8;
+
+          Box {
+            orientation: horizontal;
+            spacing: 4;
+
+            Image battery_group_icon {
+              pixel-size: 32;
+            }
+
+            Label battery_group_percent {
+              xalign: 0;
+
+              styles [
+                "title-1",
+              ]
+            }
+          }
+
+          Label battery_group_status {
+            xalign: 0;
+          }
+
+          ProgressBar battery_group_progress {}
         }
 
-        Adw.PreferencesGroup battery_options_group {
+        Adw.PreferencesGroup battery_health_group {
           visible: false;
-          title: "Battery Options";
+          title: "Battery Health";
           // TODO: Battery threshold toggle
           // TODO: Battery threshold slider setting
+          Adw.ActionRow {
+            title: "Health";
+
+            Label health_status_label {
+              xalign: 0;
+            }
+          }
+
+          Adw.ActionRow {
+            title: "Maximum Capacity";
+
+            Label health_capacity_label {
+              xalign: 0;
+            }
+          }
+
+          Adw.ActionRow health_cycles_row {
+            title: "Cycle Count";
+
+            Label health_cycles_label {
+              xalign: 0;
+            }
+          }
+
+          Adw.SwitchRow threshold_toggle {
+            title: "Charge Limit";
+          }
+        }
+
+        Adw.PreferencesGroup options_group {
+          visible: false;
+          title: "Options";
         }
 
         Adw.PreferencesGroup devices_group {

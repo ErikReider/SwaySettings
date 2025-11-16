@@ -23,6 +23,9 @@ namespace SwaySettings {
         }
 
         public void add_device (owned Up.Device device) {
+            if (device.power_supply) {
+                return;
+            }
             model.append (device);
             n_devices++;
         }

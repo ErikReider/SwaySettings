@@ -1,7 +1,6 @@
 namespace Power {
     public const string POWER_PROFILES_DAEMON_NAME = "net.hadess.PowerProfiles";
-    public const string POWER_PROFILES_DAEMON_PATH =
-        "/net/hadess/PowerProfiles";
+    public const string POWER_PROFILES_DAEMON_PATH = "/net/hadess/PowerProfiles";
 
     enum PowerProfiles {
         PERFORMANCE,

@@ -42,7 +42,7 @@ namespace SwaySettings {
             icon.set_from_icon_name (PowerBatteryState.get_device_icon_name (device.kind, false));
             device_name.set_text (device.model);
 
-            string ?state = PowerBatteryState.get_battery_state (device.state);
+            string ?state = PowerBatteryState.get_battery_status (device);
             battery_charging_state.set_text (state);
             battery_charging_state.set_visible (state != null);
 

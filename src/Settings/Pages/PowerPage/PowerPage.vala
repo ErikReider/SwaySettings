@@ -33,9 +33,32 @@ namespace SwaySettings {
         unowned Gtk.Box main_box;
 
         [GtkChild]
-        unowned Adw.PreferencesGroup battery_group;
+        unowned Gtk.Box battery_group;
         [GtkChild]
-        unowned Adw.PreferencesGroup battery_options_group;
+        unowned Gtk.Image battery_group_icon;
+        [GtkChild]
+        unowned Gtk.Label battery_group_percent;
+        [GtkChild]
+        unowned Gtk.Label battery_group_status;
+        [GtkChild]
+        unowned Gtk.ProgressBar battery_group_progress;
+
+        [GtkChild]
+        unowned Adw.PreferencesGroup battery_health_group;
+        [GtkChild]
+        unowned Gtk.Label health_status_label;
+        [GtkChild]
+        unowned Gtk.Label health_capacity_label;
+        [GtkChild]
+        unowned Adw.ActionRow health_cycles_row;
+        [GtkChild]
+        unowned Gtk.Label health_cycles_label;
+        [GtkChild]
+        unowned Adw.SwitchRow threshold_toggle;
+        ulong threshold_toggle_toggle_id = 0;
+
+        [GtkChild]
+        unowned Adw.PreferencesGroup options_group;
 
         [GtkChild]
         unowned Adw.PreferencesGroup devices_group;
@@ -54,6 +77,12 @@ namespace SwaySettings {
         [GtkChild]
         unowned PowerInfoBanner power_mode_banner;
 
+        Up.Device display_device = null;
+        ulong display_device_notify_id = 0;
+        Up.Device ?ref_display_device = null;
+        Up.DeviceProxy ?ref_display_device_proxy = null;
+        ulong ref_display_device_notify_id = 0;
+
         construct {
             modes_listbox.set_sort_func ((a, b) => {
                 unowned PowerModeRow row_a = (PowerModeRow) a;
@@ -70,7 +99,6 @@ namespace SwaySettings {
                 profile_daemon_disappear);
 
             setup_upower.begin ();
-
         }
 
         private void setup_ui_post () {
@@ -98,24 +126,138 @@ namespace SwaySettings {
                 }
             }
 
-            setup_upower_ui ();
-            yield setup_upower_devices ();
+            setup_display_device ();
+
+            setup_upower_battery.begin ();
+            setup_upower_devices.begin ();
         }
 
-        private void setup_upower_ui () {
-            // TODO: Low power threshold
-            // TODO: Auto enable low power mode at percentage
+        private void setup_display_device () {
+            if (ref_display_device != null) {
+                if (ref_display_device_notify_id > 0) {
+                    ref_display_device.disconnect (ref_display_device_notify_id);
+                    ref_display_device_notify_id = 0;
+                }
+            }
+            if (display_device != null) {
+                if (display_device_notify_id > 0) {
+                    display_device.disconnect (display_device_notify_id);
+                    display_device_notify_id = 0;
+                }
+            }
+
+            display_device = up_client.get_display_device ();
+            ref_display_device = null;
+            foreach (unowned Up.Device device in up_client.get_devices2 ()) {
+                if (device.kind == Up.DeviceKind.BATTERY && device.power_supply) {
+                    ref_display_device = device;
+                    ref_display_device_notify_id = ref_display_device.notify.connect (() => {
+                        setup_upower_battery_health ();
+                    });
+                    ref_display_device_proxy = Up.get_device_proxy (ref_display_device);
+                    break;
+                }
+            }
+
+            display_device_notify_id = display_device.notify.connect (() => {
+                setup_upower_battery_status ();
+            });
+        }
+
+        private async void setup_upower_battery () {
+            // TODO: swaysettings UPower daemon:
+            //  - Auto set low power when reach threshold
+            //  - Auto set profile depending on if charging or not
+            //  - Above handle if no battery is present
+            //  - Notify when devices and battery reach multiple thresholds (25%, 10%, etc...)
             // TODO: Battery graph
-            // TODO: Battery Health
             // TODO: Battery profile selector for plugged in and on battery
-            battery_group.set_visible (up_client != null && up_client.on_battery);
-            battery_options_group.set_visible (up_client != null && up_client.on_battery);
+            battery_group.set_visible (up_client != null);
+            options_group.set_visible (up_client != null);
+            battery_health_group.set_visible (up_client != null);
 
             if (up_client == null) {
                 setup_ui_post ();
                 return;
             }
+
+            setup_upower_battery_status ();
+            setup_upower_battery_health ();
+
+            options_group.set_visible (display_device.is_present);
+            // TODO:
+            options_group.set_visible (false);
+
             setup_ui_post ();
+        }
+
+        private void setup_upower_battery_status () {
+            // TODO: Support multiple batteries and UPS
+
+            battery_group.set_visible (display_device.is_present);
+
+            // Percent
+            battery_group_percent.set_text (
+                PowerBatteryState.get_battery_percent (display_device, true));
+
+            // Icon
+            battery_group_icon.set_from_icon_name (display_device.icon_name);
+
+            // Status
+            string ?state = PowerBatteryState.get_battery_status (display_device);
+            battery_group_status.set_text (state);
+            battery_group_status.set_visible (state != null);
+
+            // Progress
+            double percent = display_device.percentage;
+            uint percent_max = 100;
+            if (ref_display_device != null
+                && ref_display_device.charge_threshold_supported
+                && ref_display_device.charge_threshold_enabled) {
+                percent_max = ref_display_device.charge_end_threshold;
+            }
+            battery_group_progress.set_fraction (percent / percent_max);
+        }
+
+        private void setup_upower_battery_health () {
+            battery_health_group.set_visible (false);
+
+            if (ref_display_device == null) {
+                return;
+            }
+
+            battery_health_group.set_visible (display_device.is_present);
+
+            // Health state
+            health_status_label.set_text (ref_display_device.capacity_level);
+
+            // Max capacity
+            health_capacity_label.set_text ("%.0lf%%".printf (ref_display_device.capacity));
+
+            // Cycles
+            health_cycles_row.set_visible (ref_display_device.charge_cycles > -1);
+            health_cycles_label.set_text (ref_display_device.charge_cycles.to_string ());
+
+            // Charge threshold
+            bool has_threshold = ref_display_device.charge_threshold_supported
+                && ref_display_device_proxy != null;
+            threshold_toggle.set_visible (has_threshold);
+            if (threshold_toggle_toggle_id > 0) {
+                threshold_toggle.disconnect (threshold_toggle_toggle_id);
+                threshold_toggle_toggle_id = 0;
+            }
+            if (has_threshold) {
+                threshold_toggle.set_active (ref_display_device.charge_threshold_enabled);
+                threshold_toggle_toggle_id = threshold_toggle.notify["active"].connect (() => {
+                    if (threshold_toggle.active != ref_display_device.charge_threshold_enabled) {
+                        try {
+                            ref_display_device_proxy.enable_charge_threshold (threshold_toggle.active);
+                        } catch (Error e) {
+                            critical (e.message);
+                        }
+                    }
+                });
+            }
         }
 
         private async void setup_upower_devices () {
@@ -125,7 +267,6 @@ namespace SwaySettings {
                 return;
             }
 
-            // TODO:
             // Connected devices
             GenericArray<Up.Device> ?devices;
             try {
@@ -143,17 +284,19 @@ namespace SwaySettings {
 
             up_client.device_added.connect ((device) => {
                 devices_list.add_device (device);
-                devices_group.set_visible (true);
+                devices_group.set_visible (devices_list.n_devices > 0);
+                setup_display_device ();
             });
             up_client.device_removed.connect ((object_path) => {
                 devices_list.remove_device (object_path);
                 devices_group.set_visible (devices_list.n_devices > 0);
+                setup_display_device ();
             });
 
-            devices_group.set_visible (true);
             foreach (Up.Device device in devices) {
                 devices_list.add_device (device);
             }
+            devices_group.set_visible (devices_list.n_devices > 0);
 
             setup_ui_post ();
         }
