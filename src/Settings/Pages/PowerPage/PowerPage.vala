@@ -70,6 +70,8 @@ namespace SwaySettings {
 
         [GtkChild]
         unowned Gtk.ListBox modes_listbox;
+        ListStore modes_liststore;
+
         [GtkChild]
         unowned Gtk.ListBox power_info_listbox;
         [GtkChild]
@@ -84,11 +86,12 @@ namespace SwaySettings {
         ulong ref_display_device_notify_id = 0;
 
         construct {
-            modes_listbox.set_sort_func ((a, b) => {
-                unowned PowerModeRow row_a = (PowerModeRow) a;
-                unowned PowerModeRow row_b = (PowerModeRow) b;
-                return row_a.profile > row_b.profile ? 1 : -1;
+            modes_liststore = new ListStore (typeof (PowerModeRow));
+            modes_listbox.bind_model (modes_liststore, (obj) => {
+                PowerModeRow row = (PowerModeRow) obj;
+                return row;
             });
+
             stack.set_visible_child_name (STACK_PAGE);
 
             Bus.watch_name (
@@ -166,10 +169,10 @@ namespace SwaySettings {
 
         private async void setup_upower_battery () {
             // TODO: swaysettings UPower daemon:
-            //  - Auto set low power when reach threshold
-            //  - Auto set profile depending on if charging or not
-            //  - Above handle if no battery is present
-            //  - Notify when devices and battery reach multiple thresholds (25%, 10%, etc...)
+            // - Auto set low power when reach threshold
+            // - Auto set profile depending on if charging or not
+            // - Above handle if no battery is present
+            // - Notify when devices and battery reach multiple thresholds (25%, 10%, etc...)
             // TODO: Battery graph
             // TODO: Battery profile selector for plugged in and on battery
             battery_group.set_visible (up_client != null);
@@ -350,23 +353,38 @@ namespace SwaySettings {
 
             Power.PowerProfiles active_profile =
                 Power.PowerProfiles.parse (profile_daemon.active_profile);
-            unowned PowerModeRow ?previous_row = null;
-            foreach (unowned var profile in profile_daemon.profiles) {
-                if (!profile.contains ("Profile")) {
-                    critical ("Profile doesn't contain key \"Profile\"");
-                    continue;
+            if (modes_liststore.n_items == 0) {
+                unowned PowerModeRow ?previous_row = null;
+                foreach (unowned var profile in profile_daemon.profiles) {
+                    if (!profile.contains ("Profile")) {
+                        critical ("Profile doesn't contain key \"Profile\"");
+                        continue;
+                    }
+                    unowned Variant profile_variant = profile.get ("Profile");
+                    if (!profile_variant.is_of_type (VariantType.STRING)) {
+                        critical ("Profile value isn't type \"STRING\"");
+                        continue;
+                    }
+                    PowerModeRow row = new PowerModeRow (profile_variant.dup_string (),
+                                                         active_profile);
+                    row.activated.connect (change_profile);
+                    row.set_check_button_group (previous_row);
+                    previous_row = row;
+                    modes_liststore.append (row);
                 }
-                unowned Variant profile_variant = profile.get ("Profile");
-                if (!profile_variant.is_of_type (VariantType.STRING)) {
-                    critical ("Profile value isn't type \"STRING\"");
-                    continue;
+                modes_liststore.sort ((a, b) => {
+                    unowned PowerModeRow row_a = (PowerModeRow) a;
+                    unowned PowerModeRow row_b = (PowerModeRow) b;
+                    return row_a.profile > row_b.profile ? 1 : -1;
+                });
+            } else {
+                // Set the active row on external change
+                for (uint i = 0; i < modes_liststore.n_items; i++) {
+                    PowerModeRow row = (PowerModeRow) modes_liststore.get_item (i);
+                    if (row.set_active (active_profile)) {
+                        break;
+                    }
                 }
-                var row = new PowerModeRow (profile_variant.dup_string (),
-                                            active_profile);
-                row.activated.connect (change_profile);
-                row.set_check_button_group (previous_row);
-                previous_row = row;
-                modes_listbox.append (row);
             }
 
             bool show_info_row = false;

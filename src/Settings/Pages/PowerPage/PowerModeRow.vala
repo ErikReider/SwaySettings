@@ -23,5 +23,11 @@ namespace SwaySettings {
         public void set_check_button_group (PowerModeRow ?row) {
             this.check_button.set_group (row?.check_button);
         }
+
+        public bool set_active (Power.PowerProfiles profile) {
+            bool active = profile == this.profile;
+            check_button.set_active (active);
+            return active;
+        }
     }
 }
