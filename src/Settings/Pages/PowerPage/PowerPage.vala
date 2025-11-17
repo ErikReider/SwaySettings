@@ -254,12 +254,16 @@ namespace SwaySettings {
                 threshold_toggle_toggle_id = threshold_toggle.notify["active"].connect (() => {
                     if (threshold_toggle.active != ref_display_device.charge_threshold_enabled) {
                         try {
-                            ref_display_device_proxy.enable_charge_threshold (threshold_toggle.active);
+                            ref_display_device_proxy.enable_charge_threshold (
+                                threshold_toggle.active);
                         } catch (Error e) {
                             critical (e.message);
                         }
                     }
                 });
+                threshold_toggle.set_subtitle (
+                    "Limit set to %.0f%% charge".printf (
+                        ref_display_device.charge_end_threshold));
             }
         }
 
