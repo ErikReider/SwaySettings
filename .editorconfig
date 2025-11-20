@@ -22,3 +22,6 @@ tab_width = 4
 [*.{h,c}]
 indent_style = tab
 indent_size = 4
+
+[*.{scss,css}]
+indent_size = 2

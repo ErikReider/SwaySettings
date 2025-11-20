@@ -35,7 +35,9 @@ window.screenshot-window {
 }
 
 .screenshot-preview-picture {
-  transition: opacity var(--transition-time), filter var(--transition-time);
+  transition:
+    opacity var(--transition-time),
+    filter var(--transition-time);
 }
 
 .screenshot-preview:hover .screenshot-preview-picture {

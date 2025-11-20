@@ -16,8 +16,10 @@
 
 .theme-preview-item .window {
   border-radius: 6px;
-  box-shadow: 0 1px 4px 1px rgba(black, 0.13),
-    0 1px 10px 5px rgba(black, 0.09), 0 3px 16px 8px rgba(black, 0.04),
+  box-shadow:
+    0 1px 4px 1px rgba(black, 0.13),
+    0 1px 10px 5px rgba(black, 0.09),
+    0 3px 16px 8px rgba(black, 0.04),
     0 0 0 1px rgba(black, 0.05);
 }
 
@@ -72,7 +74,9 @@
 
 .theme-preview-item:checked:focus:focus-visible,
 .background-flowbox-child:selected:focus:focus-visible {
-  box-shadow: 0 0 0 3px var(--accent-bg-color), 0 0 0 6px rgba(var(--accent-bg-color), 0.3);
+  box-shadow:
+    0 0 0 3px var(--accent-bg-color),
+    0 0 0 6px rgba(var(--accent-bg-color), 0.3);
 }
 
 .img-remove-button {
@@ -144,11 +148,20 @@
 }
 
 .accent-button:checked:focus:focus-visible {
-  box-shadow: 0 0 0 3px var(--accent-bg-color),
-              0 0 0 6px color-mix(in srgb, var(--accent-color) 30%, transparent);
+  box-shadow:
+    0 0 0 3px var(--accent-bg-color),
+    0 0 0 6px color-mix(in srgb, var(--accent-color) 30%, transparent);
 }
 
-.blue, .teal, .green, .yellow, .orange, .red, .pink, .purple, .slate {
+.blue,
+.teal,
+.green,
+.yellow,
+.orange,
+.red,
+.pink,
+.purple,
+.slate {
   --accent-color: oklab(from var(--accent-bg-color) var(--standalone-color-oklab));
 }
 
@@ -189,12 +202,12 @@
 }
 
 .power-info-banner {
-    padding: 8px;
+  padding: 8px;
 }
 .power-device {
-    padding: 8px;
+  padding: 8px;
 
-    separator {
-        background: var(--card-fg-color);
-    }
+  separator {
+    background: var(--card-fg-color);
+  }
 }
