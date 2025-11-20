@@ -20,30 +20,21 @@ namespace SwaySettings {
             }
 
             set_has_tooltip (true);
-            query_tooltip.connect ((x, y, keyboard_tooltip, tooltip) => {
-                if (n_items == 0) {
-                    return false;
-                }
+            query_tooltip.connect (get_tooltip);
+        }
 
-                Up.DeviceState state;
-                double value = get_value (out state);
-                string[] text = {
-                    "Average: %0.1lf".printf (average),
-                    "value: %0.1lf".printf (value),
-                    "State: %0s".printf (Up.Device.state_to_string (state)),
-                    "Num items: %u".printf (n_items),
-                    "Items: {",
-                };
-                foreach (var item in items) {
-                    text += "  %lf, %s".printf (
-                        item.value,
-                        Up.Device.state_to_string (item.state)
-                    );
-                }
-                text += "}";
-                tooltip.set_text (string.joinv ("\n", text));
-                return true;
-            });
+        private bool get_tooltip (int x, int y, bool keyboard_tooltip, Gtk.Tooltip tooltip) {
+            if (n_items == 0) {
+                return false;
+            }
+
+            Up.DeviceState state;
+            double value = get_value (out state);
+            string text = "%s: %0.0lf%%".printf (
+                PowerBatteryState.get_battery_state (state),
+                value);
+            tooltip.set_text (text);
+            return true;
         }
 
         public double get_value (out Up.DeviceState state) {
