@@ -71,11 +71,29 @@ template $SwaySettingsPowerPageContent: Adw.Bin {
           ProgressBar battery_group_progress {}
         }
 
+        Adw.PreferencesGroup battery_history_row {
+          title: "Battery Level History";
+
+          ListBox {
+            selection-mode: none;
+
+            styles [
+              "boxed-list",
+            ]
+
+            ListBoxRow {
+              selectable: false;
+              activatable: false;
+
+              child: $SwaySettingsBatteryGraphWidget history_graph {};
+            }
+          }
+        }
+
         Adw.PreferencesGroup battery_health_group {
           visible: false;
           title: "Battery Health";
-          // TODO: Battery threshold toggle
-          // TODO: Battery threshold slider setting
+
           Adw.ActionRow {
             title: "Health";
 

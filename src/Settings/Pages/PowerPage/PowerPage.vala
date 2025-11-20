@@ -11,6 +11,7 @@ namespace SwaySettings {
             typeof (PowerModeRow).ensure ();
             typeof (PowerInfoBanner).ensure ();
             typeof (PowerDeviceList).ensure ();
+            typeof (BatteryGraphWidget).ensure ();
         }
 
         public override Gtk.Widget set_child () {
@@ -42,6 +43,11 @@ namespace SwaySettings {
         unowned Gtk.Label battery_group_status;
         [GtkChild]
         unowned Gtk.ProgressBar battery_group_progress;
+
+        [GtkChild]
+        unowned Adw.PreferencesGroup battery_history_row;
+        [GtkChild]
+        unowned BatteryGraphWidget history_graph;
 
         [GtkChild]
         unowned Adw.PreferencesGroup battery_health_group;
@@ -160,6 +166,13 @@ namespace SwaySettings {
                     ref_display_device_proxy = Up.get_device_proxy (ref_display_device);
                     break;
                 }
+            }
+
+            bool has_history = ref_display_device != null && ref_display_device.has_history;
+
+            battery_history_row.set_visible (has_history);
+            if (has_history) {
+                history_graph.init.begin (ref_display_device);
             }
 
             display_device_notify_id = display_device.notify.connect (() => {

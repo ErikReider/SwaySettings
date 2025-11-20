@@ -211,3 +211,36 @@
     background: var(--card-fg-color);
   }
 }
+
+batterygraphwidget {
+  padding: 8px;
+  color: var(--border-color);
+
+  & > .spinner {
+    color: var(--card-fg-color);
+  }
+
+  & > label {
+    color: var(--card-fg-color);
+    margin: 0 4px;
+  }
+
+  graphbar {
+    --bar-color: var(--card-bg-color);
+    background: linear-gradient(lighter(var(--bar-color)), var(--bar-color));
+    border: 2px solid darker(var(--bar-color));
+    margin: 0 1px;
+    min-height: 5px;
+    border-radius: 10px;
+
+    &.normal {
+      --bar-color: var(--accent-green);
+    }
+    &.low {
+      --bar-color: var(--accent-yellow);
+    }
+    &.critical {
+      --bar-color: var(--accent-red);
+    }
+  }
+}
