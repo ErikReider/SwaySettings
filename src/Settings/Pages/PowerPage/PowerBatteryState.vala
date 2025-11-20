@@ -50,7 +50,10 @@ namespace SwaySettings {
                     break;
                 case Up.DeviceState.CHARGING:
                     status = get_battery_state (device.state);
-                    time = "%s until fully charged".printf (parse_time (device.time_to_full));
+                    string parsed_time;
+                    if (parse_time (device.time_to_full, out parsed_time)) {
+                        time = "%s until fully charged".printf (parsed_time);
+                    }
                     break;
                 case Up.DeviceState.DISCHARGING:
                 case Up.DeviceState.PENDING_DISCHARGE:
@@ -58,7 +61,10 @@ namespace SwaySettings {
                     if (device.energy_rate > 0) {
                         energy_rate = "%.0lf W".printf (device.energy_rate);
                     }
-                    time = "%s remaining".printf (parse_time (device.time_to_empty));
+                    string parsed_time;
+                    if (parse_time (device.time_to_empty, out parsed_time)) {
+                        time = "%s remaining".printf (parsed_time);
+                    }
                     break;
                 case Up.DeviceState.FULLY_CHARGED:
                     status = get_battery_state (device.state);
@@ -68,7 +74,10 @@ namespace SwaySettings {
                     if (device.energy_rate > 0) {
                         energy_rate = "%.0lf W".printf (device.energy_rate);
                     }
-                    time = "%s remaining".printf (parse_time (device.time_to_empty));
+                    string parsed_time;
+                    if (parse_time (device.time_to_empty, out parsed_time)) {
+                        time = "%s remaining".printf (parsed_time);
+                    }
                     break;
                 default:
                     break;
@@ -198,26 +207,30 @@ namespace SwaySettings {
             return "battery-symbolic";
         }
 
-        private static string parse_time (int64 sec) {
+        private static bool parse_time (int64 sec, out string time) {
             int minutes = (int) ((sec / 60.0) + 0.5);
             if (minutes <= 0) {
-                return "Unknown time";
+                time = "Unknown time";
+                return false;
             }
 
             if (minutes < 60) {
-                return ngettext ("%i minute", "%i minutes", minutes).printf (minutes);
+                time = ngettext ("%i minute", "%i minutes", minutes).printf (minutes);
+                return true;
             }
 
             int hours = minutes / 60;
             minutes %= 60;
 
             if (minutes == 0) {
-                return ngettext ("%i hour", "%i hour", hours).printf (hours);
+                time = ngettext ("%i hour", "%i hour", hours).printf (hours);
+                return true;
             }
 
-            return "%s %s".printf (
+            time = "%s %s".printf (
                 ngettext ("%i hour", "%i hour", hours).printf (hours),
                 ngettext ("%i minute", "%i minutes", minutes).printf (minutes));
+            return true;
         }
     }
 }

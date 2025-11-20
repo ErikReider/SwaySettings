@@ -19,9 +19,6 @@ namespace SwaySettings {
         [GtkChild]
         unowned Gtk.Label battery_percent;
 
-        [GtkChild]
-        unowned Gtk.Label battery_time;
-
         unowned Up.Device device;
 
         public PowerDevice (Up.Device device) {
@@ -49,6 +46,8 @@ namespace SwaySettings {
             separator.set_visible (battery_charging_state.visible);
 
             battery_icon.set_from_icon_name (device.icon_name);
+
+            battery_percent.set_text (PowerBatteryState.get_battery_percent (device, true));
         }
     }
 }
