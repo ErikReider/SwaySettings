@@ -80,10 +80,7 @@ namespace SwaySettings {
 
         [GtkChild]
         unowned Gtk.ListBox power_info_listbox;
-        [GtkChild]
-        unowned PowerInfoBanner degraded_banner;
-        [GtkChild]
-        unowned PowerInfoBanner power_mode_banner;
+        ListStore power_info_liststore;
 
         Up.Device display_device = null;
         ulong display_device_notify_id = 0;
@@ -95,6 +92,12 @@ namespace SwaySettings {
             modes_liststore = new ListStore (typeof (PowerModeRow));
             modes_listbox.bind_model (modes_liststore, (obj) => {
                 PowerModeRow row = (PowerModeRow) obj;
+                return row;
+            });
+
+            power_info_liststore = new ListStore (typeof (PowerInfoBanner));
+            power_info_listbox.bind_model (power_info_liststore, (obj) => {
+                PowerInfoBanner row = (PowerInfoBanner) obj;
                 return row;
             });
 
@@ -181,11 +184,6 @@ namespace SwaySettings {
         }
 
         private async void setup_upower_battery () {
-            // TODO: swaysettings UPower daemon:
-            // - Auto set low power when reach threshold
-            // - Auto set profile depending on if charging or not
-            // - Above handle if no battery is present
-            // - Notify when devices and battery reach multiple thresholds (25%, 10%, etc...)
             // TODO: Battery profile selector for plugged in and on battery
             battery_group.set_visible (up_client != null);
             options_group.set_visible (up_client != null);
@@ -344,6 +342,9 @@ namespace SwaySettings {
                         // TODO: Proper changed handling
                         setup_power_profiles_ui ();
                     });
+                    profile_daemon.profile_released.connect (() => {
+                        setup_power_profiles_ui ();
+                    });
                 } catch (Error e) {
                     warning (e.message);
                 }
@@ -403,13 +404,40 @@ namespace SwaySettings {
                 }
             }
 
-            bool show_info_row = false;
-            // TODO: Holds:
-            // Set power_mode_label when swaysettings is holding the power-saver profile due to low battery
+            // Profile information
+            power_info_liststore.remove_all ();
 
-            // Degraded performance
+            // Display if any profile is being held
+            HashTable<string, Variant>[] holds = profile_daemon.active_profile_holds;
+            if (holds.length > 0) {
+                foreach (unowned var info in holds) {
+                    if (!info.contains ("Profile")) {
+                        critical ("Profile doesn't contain key \"Profile\"");
+                        continue;
+                    }
+                    string profile = info["Profile"].dup_string ();
+                    if (!info.contains ("Reason")) {
+                        critical ("Profile doesn't contain key \"Profile\"");
+                        continue;
+                    }
+                    string reason = info["Reason"].dup_string ();
+
+                    PowerInfoBanner holds_banner = new PowerInfoBanner ();
+                    if (profile == "performance") {
+                        holds_banner.set_icon ("power-profile-performance-symbolic");
+                    } else if (profile == "power-saver") {
+                        holds_banner.set_icon ("power-profile-power-saver-symbolic");
+                    } else {
+                        holds_banner.set_icon ("power-profile-balanced-symbolic");
+                    }
+                    holds_banner.set_text (reason);
+                    power_info_liststore.append (holds_banner);
+                }
+            }
+
+            // Display if the performance is degraded
             if (profile_daemon.performance_degraded != "") {
-                show_info_row = true;
+                PowerInfoBanner degraded_banner = new PowerInfoBanner ();
                 if (profile_daemon.performance_degraded == "lap-detected") {
                     degraded_banner.set_icon ("info-outline-symbolic");
                     degraded_banner.set_text (
@@ -421,8 +449,10 @@ namespace SwaySettings {
                     degraded_banner.set_icon ("warning-outline-symbolic");
                     degraded_banner.set_text ("Performance mode temporarily disabled.");
                 }
+                power_info_liststore.append (degraded_banner);
             }
-            power_info_listbox.set_visible (show_info_row);
+
+            power_info_listbox.set_visible (power_info_liststore.n_items > 0);
 
             setup_ui_post ();
         }

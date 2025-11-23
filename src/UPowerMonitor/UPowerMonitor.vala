@@ -46,6 +46,8 @@ class UPowerMonitor : Application {
             }
         }
 
+        // TODO: Auto set profile depending on if charging or not
+
         setup_display_device ();
         setup_upower_devices ();
     }
