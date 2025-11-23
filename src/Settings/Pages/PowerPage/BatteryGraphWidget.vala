@@ -31,7 +31,7 @@ namespace SwaySettings {
             Up.DeviceState state;
             double value = get_value (out state);
             string text = "%s: %0.0lf%%".printf (
-                PowerBatteryState.get_battery_state (state),
+                Power.PowerBatteryState.get_battery_state (state),
                 value);
             tooltip.set_text (text);
             return true;
@@ -101,7 +101,7 @@ namespace SwaySettings {
 
             states[item.state]++;
 
-            // TODO: Use settings value for minimum instead of 25 and 10
+            // TODO: Parse these values from the UPower configuration file?
             if (average <= 10) {
                 css_classes = { "critical" };
             } else if (average <= 25) {

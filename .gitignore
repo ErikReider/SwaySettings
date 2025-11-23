@@ -11,3 +11,4 @@ swaysettings-*
 build-scripts/src*
 
 !pam/*
+!*.service.in

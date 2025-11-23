@@ -1,0 +1,178 @@
+static Settings self_settings;
+static UPowerMonitor app;
+
+class UPowerMonitor : Application {
+    static Power.PowerProfileDaemon ?profile_daemon = null;
+    static Up.Client ?up_client = null;
+
+    HashTable<string, Device> devices = new HashTable<string, Device> (str_hash, str_equal);
+    public Up.Device ?display_device { get; private set; }
+    public string ?display_device_obj_path { get; private set; }
+
+    private uint cookie = 0;
+
+    public UPowerMonitor () {
+        Object (
+            application_id : "org.erikreider.swaysettings-upower-monitor",
+            flags : ApplicationFlags.IS_SERVICE
+        );
+        Notify.init (application_id);
+    }
+
+    protected override void startup () {
+        base.startup ();
+
+        Bus.watch_name (
+            BusType.SYSTEM,
+            Power.POWER_PROFILES_DAEMON_NAME,
+            BusNameWatcherFlags.NONE,
+            profile_daemon_appear,
+            profile_daemon_disappear);
+        setup_upower.begin ();
+
+        hold ();
+    }
+
+    ///
+    /// UPower
+    ///
+
+    private async void setup_upower () {
+        if (up_client == null) {
+            try {
+                up_client = yield new Up.Client.async ();
+            } catch (Error e) {
+                warning ("Could not connect to UPower: %s", e.message);
+            }
+        }
+
+        setup_display_device ();
+        setup_upower_devices ();
+    }
+
+    private void setup_display_device () {
+        display_device = up_client.get_display_device ();
+        display_device_obj_path = null;
+        foreach (unowned Up.Device device in up_client.get_devices2 ()) {
+            if (device.kind == Up.DeviceKind.BATTERY && device.power_supply) {
+                display_device_obj_path = device.get_object_path ();
+                break;
+            }
+        }
+    }
+
+    private void setup_upower_devices () {
+        foreach (Up.Device device in up_client.get_devices2 ()) {
+            devices.set (device.get_object_path (), new Device (device));
+        }
+
+        up_client.device_added.connect ((device) => {
+            lock (devices) {
+                devices.set (device.get_object_path (), new Device (device));
+            }
+            setup_display_device ();
+        });
+        up_client.device_removed.connect ((object_path) => {
+            lock (devices) {
+                devices.remove (object_path);
+            }
+            setup_display_device ();
+        });
+    }
+
+    ///
+    /// Power Profile Daemon
+    ///
+
+    private void profile_daemon_appear () {
+        get_profile_daemon.begin ();
+    }
+
+    private void profile_daemon_disappear () {
+        cookie = 0;
+        profile_daemon = null;
+    }
+
+    private async void get_profile_daemon () {
+        if (profile_daemon == null) {
+            try {
+                profile_daemon = yield Bus.get_proxy (BusType.SYSTEM,
+                                                      Power.POWER_PROFILES_DAEMON_NAME,
+                                                      Power.POWER_PROFILES_DAEMON_PATH);
+
+                profile_daemon.profile_released.connect ((cookie) => {
+                    if (cookie == this.cookie) {
+                        this.cookie = 0;
+                    }
+                });
+            } catch (Error e) {
+                warning (e.message);
+            }
+        }
+    }
+
+    public bool ppd_is_holding () {
+        return cookie != 0;
+    }
+
+    public void ppd_hold_profile () {
+        if (profile_daemon == null) {
+            return;
+        }
+        try {
+            cookie = profile_daemon.hold_profile ("power-saver", "Battery power is low",
+                                                  application_id);
+        } catch (Error e) {
+            cookie = 0;
+            warning (e.message);
+        }
+    }
+
+    public void ppd_release_profile () {
+        if (profile_daemon == null) {
+            return;
+        }
+        try {
+            if (cookie != 0) {
+                profile_daemon.release_profile (cookie);
+                cookie = 0;
+            }
+        } catch (Error e) {
+            warning (e.message);
+        }
+    }
+
+    public static int main (string[] args) {
+        // TODO: Do this instead:
+        // https://discourse.gnome.org/t/having-trouble-getting-my-schema-to-work-in-gtk4-tutorial-example/8541/6
+#if USE_GLOBAL_GSCHEMA
+        // Use the global compiled gschema in /usr/share/glib-2.0/schemas/*
+        self_settings = new Settings ("org.erikreider.swaysettings");
+#else
+        try {
+            message ("Using local GSchema");
+            // Meant for use in development.
+            // Uses the compiled gschema in SwaySettings/data/
+            // Should never be used in production!
+            string settings_dir = Path.build_path (Path.DIR_SEPARATOR_S,
+                                                   Environment.get_current_dir (),
+                                                   "data");
+            SettingsSchemaSource sss =
+                new SettingsSchemaSource.from_directory (settings_dir, null,
+                                                         false);
+            SettingsSchema schema = sss.lookup ("org.erikreider.swaysettings",
+                                                false);
+            if (sss.lookup == null) {
+                error ("ID not found.\n");
+                return 0;
+            }
+            self_settings = new Settings.full (schema, null, null);
+        } catch (Error e) {
+            error ("Application error: %s", e.message);
+        }
+#endif
+
+        app = new UPowerMonitor ();
+        return app.run ();
+    }
+}

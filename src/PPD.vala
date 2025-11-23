@@ -1,6 +1,6 @@
 namespace Power {
-    public const string POWER_PROFILES_DAEMON_NAME = "net.hadess.PowerProfiles";
-    public const string POWER_PROFILES_DAEMON_PATH = "/net/hadess/PowerProfiles";
+    public const string POWER_PROFILES_DAEMON_NAME = "org.freedesktop.UPower.PowerProfiles";
+    public const string POWER_PROFILES_DAEMON_PATH = "/org/freedesktop/UPower/PowerProfiles";
 
     enum PowerProfiles {
         PERFORMANCE,
@@ -62,9 +62,23 @@ namespace Power {
         }
     }
 
-    [DBus (name = "net.hadess.PowerProfiles")]
+    [DBus (name = "org.freedesktop.UPower.PowerProfiles")]
     /** https://upower.pages.freedesktop.org/power-profiles-daemon/gdbus-org.freedesktop.UPower.PowerProfiles.html */
     public interface PowerProfileDaemon : DBusProxy {
+        [DBus (name = "HoldProfile")]
+        public abstract uint hold_profile (string profile,
+                                           string reason,
+                                           string app_id) throws Error;
+
+        [DBus (name = "ReleaseProfile")]
+        public abstract void release_profile (uint cookie) throws Error;
+
+        [DBus (name = "SetActionEnabled")]
+        public abstract void set_action_enabled (string action, bool enabled) throws Error;
+
+        [DBus (name = "ProfileReleased")]
+        public signal void profile_released (uint cookie);
+
         [DBus (name = "ActiveProfile")]
         public abstract string active_profile { owned get; set; }
 

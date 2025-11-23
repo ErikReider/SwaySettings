@@ -25,3 +25,6 @@ indent_size = 4
 
 [*.{scss,css}]
 indent_size = 2
+
+[meson.build]
+indent_size = 2

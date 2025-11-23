@@ -186,7 +186,6 @@ namespace SwaySettings {
             // - Auto set profile depending on if charging or not
             // - Above handle if no battery is present
             // - Notify when devices and battery reach multiple thresholds (25%, 10%, etc...)
-            // TODO: Battery graph
             // TODO: Battery profile selector for plugged in and on battery
             battery_group.set_visible (up_client != null);
             options_group.set_visible (up_client != null);
@@ -214,13 +213,13 @@ namespace SwaySettings {
 
             // Percent
             battery_group_percent.set_text (
-                PowerBatteryState.get_battery_percent (display_device, true));
+                Power.PowerBatteryState.get_battery_percent (display_device, true));
 
             // Icon
             battery_group_icon.set_from_icon_name (display_device.icon_name);
 
             // Status
-            string ?state = PowerBatteryState.get_battery_status (display_device);
+            string ?state = Power.PowerBatteryState.get_battery_status (display_device);
             battery_group_status.set_text (state);
             battery_group_status.set_visible (state != null);
 

@@ -1,4 +1,4 @@
-namespace SwaySettings {
+namespace Power {
     private class PowerBatteryState {
         public static string ?get_battery_state (Up.DeviceState state) {
             switch (state) {
@@ -38,7 +38,8 @@ namespace SwaySettings {
             return percent;
         }
 
-        public static string ?get_battery_status (Up.Device device) {
+        public static string ?get_battery_status (Up.Device device,
+                                                  bool include_rate = true) {
             string[] status_items = {};
 
             string ?status = null;
@@ -58,7 +59,7 @@ namespace SwaySettings {
                 case Up.DeviceState.DISCHARGING:
                 case Up.DeviceState.PENDING_DISCHARGE:
                     status = get_battery_state (device.state);
-                    if (device.energy_rate > 0) {
+                    if (device.energy_rate > 0 && include_rate) {
                         energy_rate = "%.0lf W".printf (device.energy_rate);
                     }
                     string parsed_time;
@@ -71,7 +72,7 @@ namespace SwaySettings {
                     break;
                 case Up.DeviceState.EMPTY:
                     status = get_battery_state (device.state);
-                    if (device.energy_rate > 0) {
+                    if (device.energy_rate > 0 && include_rate) {
                         energy_rate = "%.0lf W".printf (device.energy_rate);
                     }
                     string parsed_time;

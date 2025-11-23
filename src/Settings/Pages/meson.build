@@ -27,8 +27,8 @@ swaysettings_settings_sources += files([
   'PowerPage/PowerInfoBanner.vala',
   'PowerPage/PowerDevice.vala',
   'PowerPage/PowerDeviceList.vala',
-  'PowerPage/PowerBatteryState.vala',
   'PowerPage/BatteryGraphWidget.vala',
-  'PowerPage/PPD.vala',
+  join_paths(meson.current_source_dir(), '..', '..', 'PowerBatteryState.vala'),
+  join_paths(meson.current_source_dir(), '..', '..', 'PPD.vala'),
   'PowerPage/UPower.vala',
 ])

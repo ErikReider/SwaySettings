@@ -36,10 +36,11 @@ namespace SwaySettings {
         }
 
         private void set_ui () {
-            icon.set_from_icon_name (PowerBatteryState.get_device_icon_name (device.kind, false));
+            icon.set_from_icon_name (Power.PowerBatteryState.get_device_icon_name (device.kind,
+                                                                                   false));
             device_name.set_text (device.model);
 
-            string ?state = PowerBatteryState.get_battery_status (device);
+            string ?state = Power.PowerBatteryState.get_battery_status (device);
             battery_charging_state.set_text (state);
             battery_charging_state.set_visible (state != null);
 
@@ -47,7 +48,7 @@ namespace SwaySettings {
 
             battery_icon.set_from_icon_name (device.icon_name);
 
-            battery_percent.set_text (PowerBatteryState.get_battery_percent (device, true));
+            battery_percent.set_text (Power.PowerBatteryState.get_battery_percent (device, true));
         }
     }
 }
