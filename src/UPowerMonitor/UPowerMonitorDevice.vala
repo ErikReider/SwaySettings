@@ -137,7 +137,10 @@ class Device : Object {
                             Power.PowerBatteryState.get_battery_status (device, false));
                         icon = "battery-level-20-symbolic";
                         // Hold low power mode
-                        if (device.is_present) {
+                        if (device.is_present && app.auto_power_saver) {
+                            if (!app.ppd_is_power_saver ()) {
+                                body = "%s. %s".printf (body, "Enabling Power Saver");
+                            }
                             app.ppd_hold_profile ();
                         }
                         break;

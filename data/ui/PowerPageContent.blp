@@ -90,6 +90,13 @@ template $SwaySettingsPowerPageContent: Adw.Bin {
           }
         }
 
+        Adw.PreferencesGroup devices_group {
+          visible: false;
+          title: "Connected Devices";
+
+          $SwaySettingsPowerDeviceList devices_list {}
+        }
+
         Adw.PreferencesGroup battery_health_group {
           visible: false;
           title: "Battery Health";
@@ -125,14 +132,12 @@ template $SwaySettingsPowerPageContent: Adw.Bin {
 
         Adw.PreferencesGroup options_group {
           visible: false;
-          title: "Options";
-        }
+          title: "Battery Options";
 
-        Adw.PreferencesGroup devices_group {
-          visible: false;
-          title: "Connected Devices";
-
-          $SwaySettingsPowerDeviceList devices_list {}
+          Adw.SwitchRow auto_power_saver_row {
+            title: "Automatic Power Saver";
+            subtitle: "Enable Power Saver when battery power is low";
+          }
         }
 
         Adw.PreferencesGroup power_mode_group {

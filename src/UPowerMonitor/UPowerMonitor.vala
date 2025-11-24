@@ -5,6 +5,8 @@ class UPowerMonitor : Application {
     static Power.PowerProfileDaemon ?profile_daemon = null;
     static Up.Client ?up_client = null;
 
+    public bool auto_power_saver { get; internal set; }
+
     HashTable<string, Device> devices = new HashTable<string, Device> (str_hash, str_equal);
     public Up.Device ?display_device { get; private set; }
     public string ?display_device_obj_path { get; private set; }
@@ -21,6 +23,9 @@ class UPowerMonitor : Application {
 
     protected override void startup () {
         base.startup ();
+
+        self_settings.bind (Constants.SETTINGS_POWER_AUTO_POWER_SAVER,
+                            this, "auto-power-saver", SettingsBindFlags.GET);
 
         Bus.watch_name (
             BusType.SYSTEM,
@@ -49,25 +54,11 @@ class UPowerMonitor : Application {
         // TODO: Auto set profile depending on if charging or not
 
         setup_display_device ();
-        setup_upower_devices ();
-    }
 
-    private void setup_display_device () {
-        display_device = up_client.get_display_device ();
-        display_device_obj_path = null;
-        foreach (unowned Up.Device device in up_client.get_devices2 ()) {
-            if (device.kind == Up.DeviceKind.BATTERY && device.power_supply) {
-                display_device_obj_path = device.get_object_path ();
-                break;
-            }
-        }
-    }
-
-    private void setup_upower_devices () {
+        // Setup devices
         foreach (Up.Device device in up_client.get_devices2 ()) {
             devices.set (device.get_object_path (), new Device (device));
         }
-
         up_client.device_added.connect ((device) => {
             lock (devices) {
                 devices.set (device.get_object_path (), new Device (device));
@@ -80,6 +71,17 @@ class UPowerMonitor : Application {
             }
             setup_display_device ();
         });
+    }
+
+    private void setup_display_device () {
+        display_device = up_client.get_display_device ();
+        display_device_obj_path = null;
+        foreach (unowned Up.Device device in up_client.get_devices2 ()) {
+            if (device.kind == Up.DeviceKind.BATTERY && device.power_supply) {
+                display_device_obj_path = device.get_object_path ();
+                break;
+            }
+        }
     }
 
     ///
@@ -119,8 +121,18 @@ class UPowerMonitor : Application {
 
     public void ppd_hold_profile () {
         if (profile_daemon == null) {
+            cookie = 0;
             return;
         }
+
+        // Don't change to power saver mode if disabled
+        if (!auto_power_saver) {
+            if (ppd_is_holding ()) {
+                ppd_release_profile ();
+            }
+            return;
+        }
+
         try {
             cookie = profile_daemon.hold_profile ("power-saver", "Battery power is low",
                                                   application_id);
@@ -142,6 +154,13 @@ class UPowerMonitor : Application {
         } catch (Error e) {
             warning (e.message);
         }
+    }
+
+    public bool ppd_is_power_saver () {
+        if (profile_daemon == null) {
+            return false;
+        }
+        return profile_daemon.active_profile == "power-saver";
     }
 
     public static int main (string[] args) {

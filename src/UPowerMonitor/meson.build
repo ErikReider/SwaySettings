@@ -3,8 +3,7 @@ executable(
   files(
     'UPowerMonitor.vala',
     'UPowerMonitorDevice.vala',
-    join_paths(meson.current_source_dir(), '..', 'PowerBatteryState.vala'),
-    join_paths(meson.current_source_dir(), '..', 'PPD.vala'),
+    join_paths(src_dir, 'Power.vala'),
   )
   + swaysettings_sources
   + shared_files,

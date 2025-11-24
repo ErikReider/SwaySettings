@@ -1,6 +1,8 @@
 vala = meson.get_compiler('vala')
 cc = meson.get_compiler('c')
 
+src_dir = meson.current_source_dir()
+
 # Deps
 dep_glib = dependency('glib-2.0', version: '>= 2.50')
 dep_gio_unix = dependency('gio-unix-2.0', version: '>= 2.50')

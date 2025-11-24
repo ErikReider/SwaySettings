@@ -65,6 +65,8 @@ namespace SwaySettings {
 
         [GtkChild]
         unowned Adw.PreferencesGroup options_group;
+        [GtkChild]
+        unowned Adw.SwitchRow auto_power_saver_row;
 
         [GtkChild]
         unowned Adw.PreferencesGroup devices_group;
@@ -100,6 +102,10 @@ namespace SwaySettings {
                 PowerInfoBanner row = (PowerInfoBanner) obj;
                 return row;
             });
+
+            self_settings.bind (Constants.SETTINGS_POWER_AUTO_POWER_SAVER,
+                                auto_power_saver_row, "active",
+                                SettingsBindFlags.DEFAULT);
 
             stack.set_visible_child_name (STACK_PAGE);
 
@@ -197,9 +203,8 @@ namespace SwaySettings {
             setup_upower_battery_status ();
             setup_upower_battery_health ();
 
-            options_group.set_visible (display_device.is_present);
             // TODO:
-            options_group.set_visible (false);
+            options_group.set_visible (display_device.is_present);
 
             setup_ui_post ();
         }
