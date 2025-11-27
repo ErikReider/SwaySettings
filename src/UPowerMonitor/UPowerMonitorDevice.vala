@@ -52,7 +52,7 @@ class Device : Object {
         }
         switch ((Up.DeviceLevel) device.warning_level) {
             default:
-                if (state >= WarningState.REGULAR) {
+                if (state <= WarningState.REGULAR) {
                     break;
                 }
                 state = WarningState.REGULAR;
