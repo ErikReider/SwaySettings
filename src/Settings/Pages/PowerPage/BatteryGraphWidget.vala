@@ -3,6 +3,8 @@ namespace SwaySettings {
         public uint n_items { get; private set; default = 0; }
 
         private List<Up.HistoryItem> items = new List<Up.HistoryItem> ();
+        private DateTime ?first_date = null;
+        private DateTime ?now = null;
         private double average = 0.0;
         private double sum = 0;
         private double max = double.MIN;
@@ -44,10 +46,12 @@ namespace SwaySettings {
             }
 
             state = (Up.DeviceState) items.first ().data.state;
-            if (state == Up.DeviceState.PENDING_CHARGE) {
-                // Currently Pending charge
-                return max;
+            if (first_date != null && now != null
+                && first_date.get_hour () == now.get_hour ()) {
+                // The latest bar, use the most recent data instead of average
+                return items.first ().data.value;
             }
+
             uint state_count = 1;
             for (uint i = 0; i < states.length; i++) {
                 int value = states[i];
@@ -92,6 +96,11 @@ namespace SwaySettings {
             items.append (item);
             n_items++;
 
+            if (first_date == null) {
+                first_date = new DateTime.from_unix_local (item.time);
+                now = new DateTime.now_local ();
+            }
+
             double value = item.value;
             sum += value;
             average = sum / n_items;
@@ -123,6 +132,9 @@ namespace SwaySettings {
             for (uint i = 0; i < states.length; i++) {
                 states[i] = 0;
             }
+
+            first_date = null;
+            now = null;
 
             average = 0;
             max = double.MIN;
