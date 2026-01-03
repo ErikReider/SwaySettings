@@ -61,8 +61,9 @@ namespace Wallpaper {
                 try {
                     File file = File.new_for_path (new_background_info.config.path);
                     uint hash = file.hash ();
-                    if (old_background_info?.config?.path == new_background_info.config.path
-                        && old_background_info?.file_hash == hash) {
+                    // Trying to load the same file, skip
+                    if (saved_background_info?.config?.path == new_background_info.config.path
+                        && saved_background_info?.file_hash == hash) {
                         return;
                     }
                     InputStream stream = yield file.read_async (Priority.DEFAULT,
