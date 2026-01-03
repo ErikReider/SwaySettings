@@ -33,6 +33,8 @@ BuildRequires: systemd
 BuildRequires: scdoc
 BuildRequires: pkgconfig(pam)
 BuildRequires: sassc
+BuildRequires: pkgconfig(upower-glib)
+BuildRequires: pkgconfig(libnotify)
 Requires: dbus
 Requires: grim
 Requires: bluez
