@@ -210,7 +210,7 @@ namespace SwaySettings {
                 bool status = Process.spawn_command_line_sync (
                     "gdk-pixbuf-thumbnailer \"%s\" \"%s\"".printf (p, checksum_path),
                     out output, out error);
-                if (!status || error.length > 0) {
+                if (!status) {
                     throw new ThumbnailerError.FAILED (error);
                 }
             }
@@ -252,7 +252,7 @@ namespace SwaySettings {
                     Utils.wallpaper_application.activate_action (Constants.WALLPAPER_ACTION_NAME, config);
                 }
             } catch (Error e) {
-                stderr.printf ("%s\n", e.message);
+                stderr.printf ("Setting wallpaper error: %s\n", e.message);
                 return false;
             }
 
