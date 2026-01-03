@@ -6,10 +6,10 @@
 
 // From: https://blogs.gnome.org/alicem/2024/06/07/css-happenings/
 @function lighter($color) {
-  @return hsl(from $color h calc(s * 1.3) calc(l * 1.3));
+  @return hsl(from $color h, calc(s * 1.3), calc(l * 1.3));
 }
 @function darker($color) {
-  @return hsl(from $color h calc(s * 0.7) calc(l * 0.7));
+  @return hsl(from $color h, calc(s * 0.7), calc(l * 0.7));
 }
 
 *:disabled image {

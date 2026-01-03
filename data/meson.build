@@ -32,6 +32,7 @@ if appstream_util.found()
   )
 endif
 
+style_files = []
 subdir('style')
 
 # GSchema
@@ -86,7 +87,7 @@ blueprints = custom_target(
 swaysettings_sources += gnome.compile_resources(
   'swaysettings-resources',
   'swaysettings.gresource.xml',
-  dependencies: [blueprints],
+  dependencies: [style_files, blueprints],
   c_name: 'sway_settings',
 )
 

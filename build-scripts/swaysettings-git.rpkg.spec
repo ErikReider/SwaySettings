@@ -32,7 +32,7 @@ BuildRequires: pkgconfig(systemd)
 BuildRequires: systemd
 BuildRequires: scdoc
 BuildRequires: pkgconfig(pam)
-BuildRequires: sass
+BuildRequires: sassc
 Requires: dbus
 Requires: grim
 Requires: bluez
