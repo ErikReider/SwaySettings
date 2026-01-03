@@ -8,6 +8,7 @@ project(
 
 fs = import('fs')
 
+add_project_arguments(['-w'], language: 'c')
 add_project_arguments(
     ['--vapidir', join_paths(meson.current_source_dir(), 'vapi')],
     language: 'vala'
