@@ -22,4 +22,12 @@ swaysettings_settings_sources += files([
   'Pulse/PulseDaemon.vala',
   'Pulse/PulseDevice.vala',
   'Pulse/PulseSinkInput.vala',
+  'PowerPage/PowerPage.vala',
+  'PowerPage/PowerModeRow.vala',
+  'PowerPage/PowerInfoBanner.vala',
+  'PowerPage/PowerDevice.vala',
+  'PowerPage/PowerDeviceList.vala',
+  'PowerPage/BatteryGraphWidget.vala',
+  join_paths(src_dir, 'Power.vala'),
+  'PowerPage/UPower.vala',
 ])

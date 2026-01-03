@@ -62,5 +62,14 @@
 				- "swappy -f -"
 			</description>
 		</key>
+
+		<!-- Power -->
+		<key name="power-auto-power-saver" type="b">
+			<default>true</default>
+			<summary>Automatically enable Power Saver when battery is low</summary>
+			<description>
+				This is a toggle to automatically enable Power Saver when the battery percentage is low.
+			</description>
+		</key>
 	</schema>
 </schemalist>

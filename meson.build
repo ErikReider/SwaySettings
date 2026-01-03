@@ -8,10 +8,13 @@ project(
 
 fs = import('fs')
 
+add_project_arguments(['-w'], language: 'c')
 add_project_arguments(
     ['--vapidir', join_paths(meson.current_source_dir(), 'vapi')],
     language: 'vala'
 )
+
+add_global_arguments('-DGETTEXT_PACKAGE="@0@"'.format (meson.project_name()), language:'c')
 
 i18n = import('i18n')
 
@@ -19,22 +22,7 @@ swaysettings_sources = []
 
 dep_systemd = dependency('systemd')
 
-config_path = join_paths(get_option('sysconfdir'), 'xdg', 'swaysettings')
-
-# Systemd service unit
-if dep_systemd.found()
-  systemd_service_install_dir = dep_systemd.get_variable(pkgconfig: 'systemduserunitdir')
-else
-  systemd_service_install_dir = join_paths(get_option('libdir'), 'systemd', 'user')
-endif
-conf_data = configuration_data()
-conf_data.set('bindir', join_paths(get_option('prefix'), get_option('bindir')))
-configure_file(
-  configuration: conf_data,
-  input: 'services/systemd/sway-wallpaper.service.in',
-  output: '@BASENAME@',
-  install_dir: systemd_service_install_dir,
-)
+subdir('services')
 
 subdir('data')
 subdir('src')

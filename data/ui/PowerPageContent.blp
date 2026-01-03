@@ -1,0 +1,167 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $SwaySettingsPowerPageContent: Adw.Bin {
+  child: Stack stack {
+    hhomogeneous: true;
+    vhomogeneous: true;
+    transition-type: crossfade;
+    transition-duration: 200;
+    vexpand: true;
+
+    StackPage {
+      name: "placeholder";
+
+      child: Box {
+        halign: center;
+        valign: center;
+        hexpand: true;
+        vexpand: true;
+        orientation: vertical;
+        spacing: 12;
+        sensitive: false;
+
+        Image {
+          pixel-size: 96;
+          icon-name: "power-page-symbolic";
+          use-fallback: true;
+        }
+
+        Label text_empty_label {
+          label: "No Power Daemon Running";
+        }
+      };
+    }
+
+    StackPage {
+      name: "page";
+
+      child: Gtk.Box main_box {
+        orientation: vertical;
+        spacing: 32;
+        halign: fill;
+
+        Box battery_group {
+          visible: false;
+          orientation: vertical;
+          margin-top: 32;
+          spacing: 8;
+
+          Box {
+            orientation: horizontal;
+            spacing: 4;
+
+            Image battery_group_icon {
+              pixel-size: 32;
+            }
+
+            Label battery_group_percent {
+              xalign: 0;
+
+              styles [
+                "title-1",
+              ]
+            }
+          }
+
+          Label battery_group_status {
+            xalign: 0;
+          }
+
+          ProgressBar battery_group_progress {}
+        }
+
+        Adw.PreferencesGroup battery_history_row {
+          title: "Battery Level History";
+
+          ListBox {
+            selection-mode: none;
+
+            styles [
+              "boxed-list",
+            ]
+
+            ListBoxRow {
+              selectable: false;
+              activatable: false;
+
+              child: $SwaySettingsBatteryGraphWidget history_graph {};
+            }
+          }
+        }
+
+        Adw.PreferencesGroup devices_group {
+          visible: false;
+          title: "Connected Devices";
+
+          $SwaySettingsPowerDeviceList devices_list {}
+        }
+
+        Adw.PreferencesGroup battery_health_group {
+          visible: false;
+          title: "Battery Health";
+
+          Adw.ActionRow {
+            title: "Health";
+
+            Label health_status_label {
+              xalign: 0;
+            }
+          }
+
+          Adw.ActionRow {
+            title: "Maximum Capacity";
+
+            Label health_capacity_label {
+              xalign: 0;
+            }
+          }
+
+          Adw.ActionRow health_cycles_row {
+            title: "Cycle Count";
+
+            Label health_cycles_label {
+              xalign: 0;
+            }
+          }
+
+          Adw.SwitchRow threshold_toggle {
+            title: "Charge Limit";
+          }
+        }
+
+        Adw.PreferencesGroup options_group {
+          visible: false;
+          title: "Battery Options";
+
+          Adw.SwitchRow auto_power_saver_row {
+            title: "Automatic Power Saver";
+            subtitle: "Enable Power Saver when battery power is low";
+          }
+        }
+
+        Adw.PreferencesGroup power_mode_group {
+          visible: false;
+          title: "Power Mode";
+
+          ListBox modes_listbox {
+            selection-mode: none;
+
+            styles [
+              "boxed-list",
+            ]
+          }
+
+          ListBox power_info_listbox {
+            selection-mode: none;
+            margin-top: 12;
+
+            styles [
+              "boxed-list",
+            ]
+          }
+        }
+      };
+    }
+  };
+}
