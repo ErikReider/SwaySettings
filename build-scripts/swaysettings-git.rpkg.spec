@@ -73,8 +73,10 @@ A gui for setting sway wallpaper, default apps, GTK themes, etc...
 %{_bindir}/sway-autostart
 %{_bindir}/swaysettings-screenshot
 %{_bindir}/swaysettings-locker
+%{_bindir}/swaysettings-upower-monitor
 %license COPYING
 %{_userunitdir}/sway-wallpaper.service
+%{_userunitdir}/swaysettings-upower-monitor.service
 %{_datadir}/glib-2.0/schemas/org.erikreider.swaysettings.gschema.xml
 %{_datadir}/appdata/org.erikreider.swaysettings.appdata.xml
 %{_datadir}/applications/org.erikreider.swaysettings.desktop
