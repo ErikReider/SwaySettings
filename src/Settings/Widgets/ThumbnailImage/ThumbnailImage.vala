@@ -84,6 +84,7 @@ namespace SwaySettings {
             refresh_image.begin ();
         }
 
+        /** Doesn't load the Image. You must call `refresh_image ()`. */
         public ThumbnailImage.batch (Wallpaper wallpaper,
                                      int height,
                                      int width,
@@ -112,8 +113,6 @@ namespace SwaySettings {
                 check_folder_exist ();
                 checked_folder_exists = true;
             }
-
-            refresh_image.begin ();
         }
 
         private void set_scaling_mode () {
@@ -131,7 +130,6 @@ namespace SwaySettings {
                     picture.content_fit = Gtk.ContentFit.SCALE_DOWN;
                     break;
             }
-
         }
 
         private void set_request () {
@@ -141,7 +139,7 @@ namespace SwaySettings {
             picture.height_request = height;
         }
 
-        public async void refresh_image() {
+        public async void refresh_image () {
             overlay.set_child (new Adw.Spinner () {
                 width_request = 128,
                 height_request = 128,
@@ -174,7 +172,9 @@ namespace SwaySettings {
                 string allpath = string.joinv (
                     Path.DIR_SEPARATOR_S,
                     folders);
-                if (File.new_for_path (allpath).query_exists ()) return;
+                if (File.new_for_path (allpath).query_exists ()) {
+                    return;
+                }
 
                 string path = "";
                 foreach (string part in folders) {

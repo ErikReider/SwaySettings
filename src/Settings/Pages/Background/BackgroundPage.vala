@@ -14,6 +14,8 @@ namespace SwaySettings {
 
         private const int SPACING = 16;
 
+        private Queue<unowned ThumbnailImage> load_images = new Queue<unowned ThumbnailImage> ();
+
         private static Wallpaper current_wallpaper = Wallpaper () {
             path = Path.build_path (Path.DIR_SEPARATOR_S,
                                     Environment.get_user_config_dir (),
@@ -64,6 +66,10 @@ namespace SwaySettings {
         }
 
         public override Gtk.Widget set_child () {
+            lock (load_images) {
+                load_images.clear ();
+            }
+
             Gtk.Box content_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 12);
 
             preview_image = new ThumbnailImage (current_wallpaper,
@@ -94,6 +100,8 @@ namespace SwaySettings {
             Adw.PreferencesGroup sys_wallpapers = get_wallpaper_container (
                 "System Wallpapers", get_system_wallpapers (), out sys_flow_box);
             wallpaper_box.append (sys_wallpapers);
+
+            load_batched_images.begin ();
 
             return content_box;
         }
@@ -328,8 +336,38 @@ namespace SwaySettings {
                 if (wp.path == path) flow_box.select_child (f_child);
 
                 item.on_set_image.connect ((visible) => {
+                    // Hide if unable to set image
                     f_child.set_visible (visible);
                 });
+
+                load_images.push_tail (item);
+            }
+        }
+
+        // Load all the Thumbnails in batches to not overload the system
+        private async void load_batched_images (uint max_batch_size = 20) {
+            while (true) {
+                uint counter = 0;
+                lock (load_images) {
+                    if (load_images.is_empty ()) {
+                        break;
+                    }
+                    uint batch_size = uint.min (max_batch_size, load_images.length);
+                    counter = batch_size;
+                    for (uint i = 0; i < batch_size; i++) {
+                        unowned ThumbnailImage ?image = load_images.pop_head ();
+                        if (image == null) {
+                            AtomicUint.dec_and_test (ref counter);
+                            continue;
+                        }
+                        image.refresh_image.begin ((obj, result) => {
+                            if (AtomicUint.dec_and_test (ref counter)) {
+                                load_batched_images.callback ();
+                            }
+                        });
+                    }
+                }
+                yield;
             }
         }
 
