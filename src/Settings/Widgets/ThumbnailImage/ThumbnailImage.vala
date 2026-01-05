@@ -79,6 +79,8 @@ namespace SwaySettings {
             this.margin_start = margin;
             this.margin_end = margin;
 
+            picture.set_tooltip_text (wallpaper.path);
+
             refresh_image.begin ();
         }
 
@@ -100,6 +102,8 @@ namespace SwaySettings {
             this.margin_bottom = margin;
             this.margin_start = margin;
             this.margin_end = margin;
+
+            picture.set_tooltip_text (wallpaper.path);
 
             preview_button.set_visible (true);
             remove_button.set_visible (have_remove_button);
@@ -195,13 +199,29 @@ namespace SwaySettings {
             var toolbar_view = new Adw.ToolbarView ();
             toolbar_view.set_top_bar_style (Adw.ToolbarStyle.FLAT);
             toolbar_view.set_reveal_top_bars (true);
-            toolbar_view.add_top_bar (new Adw.HeaderBar ());
             dialog.set_child (toolbar_view);
 
             var image = new ThumbnailImage (wallpaper, -1, -1, scaling_mode,
                                             true, 0);
             image.add_css_class ("no-round");
             toolbar_view.set_content (image);
+
+            Adw.HeaderBar header_bar = new Adw.HeaderBar ();
+            toolbar_view.add_top_bar (header_bar);
+
+            Gtk.Button copy_button = new Gtk.Button.from_icon_name ("edit-copy-symbolic");
+            copy_button.set_tooltip_text ("Copy to clipboard");
+            copy_button.add_css_class ("circular");
+            copy_button.add_css_class ("flat");
+            copy_button.clicked.connect (() => {
+                unowned Gdk.Clipboard clipboard = get_clipboard ();
+                if (clipboard == null) {
+                    warning ("Could not copy path to clipboard. Clipboard could not be obtained");
+                    return;
+                }
+                clipboard.set_text (wallpaper.path);
+            });
+            header_bar.pack_end (copy_button);
 
             dialog.present (get_root ());
         }
