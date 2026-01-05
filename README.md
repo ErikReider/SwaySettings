@@ -103,3 +103,20 @@ meson compile -C build
 # Install (optional)
 meson install -C build
 ```
+
+## Development
+
+### Setup and build
+
+```sh
+meson setup build
+meson compile -C build
+```
+
+### Set the environment
+
+```sh
+# Sets the correct environment variables
+meson devenv -C build -w .
+# Now you can start nvim, vscode, etc in the development environment
+```
