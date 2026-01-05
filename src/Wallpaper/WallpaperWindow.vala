@@ -12,101 +12,189 @@ namespace Wallpaper {
                 return (1 - animation_progress);
             }
         }
-        private Adw.TimedAnimation ? animation;
-        private bool loading_texture = false;
+        private Adw.TimedAnimation ?animation;
 
-        private Cancellable pixbuf_cancellable = new Cancellable ();
-        private BackgroundInfo ? background_info = null;
-        private BackgroundInfo ? old_background_info = null;
+        private Queue<unowned Cancellable> cancellables = new Queue<unowned Cancellable> ();
+        private BackgroundInfo ?background_info = null;
+        private BackgroundInfo ?prev_background_info = null;
 
         public Window (Gtk.Application app, Gdk.Monitor monitor) {
             Object (
-                application: app,
-                monitor: monitor
+                application : app,
+                monitor : monitor
             );
 
-            Adw.CallbackAnimationTarget target = new Adw.CallbackAnimationTarget (animation_value_cb);
+            Adw.CallbackAnimationTarget target =
+                new Adw.CallbackAnimationTarget (animation_value_cb);
             animation = new Adw.TimedAnimation (this, 1.0, 0.0, TRANSITION_DURATION, target);
 
-            GtkLayerShell.init_for_window (this);
-            GtkLayerShell.set_monitor (this, monitor);
-            GtkLayerShell.set_layer (this, GtkLayerShell.Layer.BACKGROUND);
-            GtkLayerShell.set_exclusive_zone (this, -1);
-            GtkLayerShell.set_anchor (this, GtkLayerShell.Edge.TOP, true);
-            GtkLayerShell.set_anchor (this, GtkLayerShell.Edge.BOTTOM, true);
-            GtkLayerShell.set_anchor (this, GtkLayerShell.Edge.LEFT, true);
-            GtkLayerShell.set_anchor (this, GtkLayerShell.Edge.RIGHT, true);
+            if (!debug_no_layer_shell) {
+                GtkLayerShell.init_for_window (this);
+                GtkLayerShell.set_monitor (this, monitor);
+                GtkLayerShell.set_namespace (this, "sway-wallpaper");
+                GtkLayerShell.set_layer (this, GtkLayerShell.Layer.BACKGROUND);
+                GtkLayerShell.set_exclusive_zone (this, -1);
+                GtkLayerShell.set_anchor (this, GtkLayerShell.Edge.TOP, true);
+                GtkLayerShell.set_anchor (this, GtkLayerShell.Edge.BOTTOM, true);
+                GtkLayerShell.set_anchor (this, GtkLayerShell.Edge.LEFT, true);
+                GtkLayerShell.set_anchor (this, GtkLayerShell.Edge.RIGHT, true);
+            }
         }
 
-        public async void change_wallpaper (owned Utils.Config config, Cancellable cancellable) {
-            loading_texture = true;
-
-            cancellable.connect (() => {
-                pixbuf_cancellable.cancel ();
-            });
-
-            BackgroundInfo ?saved_background_info = background_info;
-            BackgroundInfo ?new_background_info = background_info;
-            if (new_background_info == null) {
-                new_background_info = BackgroundInfo ();
+        public async void change_wallpaper (owned Utils.Config new_config) {
+            // Cancel all currently running image loading threads,
+            // and start loading the new wallpaper instead
+            unowned Cancellable ?running_cancellable = null;
+            while ((running_cancellable = cancellables.pop_head ()) != null) {
+                running_cancellable.cancel ();
             }
-            new_background_info.config = config;
+            Cancellable cancellable = new Cancellable ();
+            cancellables.push_tail (cancellable);
 
-            if (new_background_info.config.path != null
-                && new_background_info.config.path.length > 0) {
-                // Cancel previous download, reset the state and download again
-                pixbuf_cancellable.cancel ();
-                pixbuf_cancellable.reset ();
+            // Texture texture = new Texture ();
+            BackgroundInfo ?saved_info = background_info;
+            BackgroundInfo new_info = new BackgroundInfo (new_config);
 
-                try {
-                    File file = File.new_for_path (new_background_info.config.path);
-                    uint hash = file.hash ();
-                    // Trying to load the same file, skip
-                    if (saved_background_info?.config?.path == new_background_info.config.path
-                        && saved_background_info?.file_hash == hash) {
-                        return;
-                    }
-                    InputStream stream = yield file.read_async (Priority.DEFAULT,
-                                                                pixbuf_cancellable);
-                    if (pixbuf_cancellable.is_cancelled ()) {
-                        pixbuf_cancellable.reset ();
-                        loading_texture = false;
-                        return;
-                    }
-                    Gdk.Pixbuf pixbuf = yield new Gdk.Pixbuf.from_stream_at_scale_async (
-                        stream, monitor.geometry.width, monitor.geometry.height,
-                        true, pixbuf_cancellable);
-                    if (pixbuf_cancellable.is_cancelled ()) {
-                        pixbuf_cancellable.reset ();
-                        loading_texture = false;
-                        return;
-                    }
+            File ?file;
+            bool has_image = new_info.config.has_image (out file, cancellable);
+            uint hash = 0;
+            if (file != null) {
+                hash = file.hash ();
+            }
 
-                    new_background_info.texture = Gdk.Texture.for_pixbuf (pixbuf);
-                    new_background_info.width = pixbuf.width;
-                    new_background_info.height = pixbuf.height;
-                    new_background_info.file_hash = hash;
-                } catch (Error e) {
-                    stderr.printf ("Setting wallpaper error: %s\n", e.message);
+            // Trying to load the same file, skip.
+            bool load_new_file = true;
+            if (saved_info != null) {
+                bool same_image = has_image && saved_info.texture != null;
+                bool same_hash = saved_info.file_hash != 0 && saved_info.file_hash == hash;
+                bool same_path = new_info.config.path == saved_info.config.path;
+                bool same_scale = new_info.config.scale_mode == saved_info.config.scale_mode;
+                // Cancel if the new wallpaper/color config is the exact same
+                // as the previous wallpaper/color
+                if (saved_info.config.cmp (new_info.config)
+                    && same_hash
+                    && same_image) {
+                    cancellables.remove (cancellable);
+                    return;
+                }
+                load_new_file = !same_hash || !same_image || !same_path || !same_scale;
+            }
+
+            // Load Image
+            if (has_image && load_new_file) {
+                Gdk.Rectangle geometry = monitor.get_geometry ();
+
+                SourceFunc callback = change_wallpaper.callback;
+                Gly.Frame ?frame = null;
+                new Thread<void> (null, () => {
+                    load_image.begin (file, geometry, cancellable, (obj, res) => {
+                        frame = load_image.end (res);
+                        Idle.add ((owned) callback);
+                    });
+                });
+                yield;
+
+                if (cancellable.is_cancelled () || frame == null) {
+                    cancellables.remove (cancellable);
+                    return;
+                }
+                new_info.file_hash = hash;
+                Gdk.Texture texture = GlyGtk4.frame_get_texture (frame);
+                uint32 ref_width = frame.get_width ();
+                uint32 ref_height = frame.get_height ();
+
+                float new_width, new_height;
+                calc_scaled_size (ref_width, ref_height,
+                                 geometry.width, geometry.height,
+                                 out new_width, out new_height);
+                Gtk.Snapshot snapshot = new Gtk.Snapshot ();
+                Graphene.Rect bounds = Graphene.Rect ().init (0, 0, new_width, new_height);
+                snapshot.append_scaled_texture (texture, SCALING_FILTER, bounds);
+                Gdk.Paintable ?paintable = snapshot.free_to_paintable (bounds.size);
+                if (paintable != null) {
+                    new_info.texture = paintable;
+                    new_info.width = (uint32) new_width;
+                    new_info.height = (uint32) new_height;
+                } else {
+                    new_info.texture = texture;
+                    new_info.width = ref_width;
+                    new_info.height = ref_height;
+                }
+
+                if (cancellable.is_cancelled ()) {
+                    cancellables.remove (cancellable);
+                    return;
                 }
             }
 
-            old_background_info = saved_background_info;
-            background_info = new_background_info;
-            debug ("Old background: %s\n", old_background_info?.to_string ());
-            debug ("New background: %s\n", background_info?.to_string ());
-        }
+            // full_texture = texture;
+            prev_background_info = saved_info;
+            background_info = new_info;
+            debug ("Old background: %s\n", prev_background_info?.to_string ());
+            debug ("New background: %s\n", background_info.to_string ());
 
-        // Has to be run after `change_wallpaper`
-        public void run_animation () {
-            loading_texture = false;
+            cancellables.remove (cancellable);
 
             // Start the transition
             animation.set_value_to (0);
             animation.play ();
         }
 
-        public override void snapshot(Gtk.Snapshot snapshot) {
+        private static void calc_scaled_size (float ref_width, float ref_height,
+                                              float target_width, float target_height,
+                                              out float new_width, out float new_height) {
+            new_width = target_width;
+            new_height = target_height;
+            // At least one dimension matches the target, doesn't need scaling,
+            // only translation.
+            if (ref_width == target_width || ref_height == target_height) {
+                return;
+            }
+
+            // Calculate the new scaled size -> the target size
+            // Might not need scaling as a 5120x1440 on 2560*1440 doesn't need scaling
+            if (target_width > 0 || target_height > 0) {
+                if (target_width < 0) {
+                    new_width = (uint32) (ref_width * target_height / ref_height);
+                    new_height = target_height;
+                } else if (target_height < 0) {
+                    new_width = target_width;
+                    new_height = (uint32) (ref_height * target_width / ref_width);
+                } else if (ref_height * target_width >
+                           ref_width * target_height) {
+                    new_width = (uint32) (0.5 + ref_width * target_height / ref_height);
+                    new_height = target_height;
+                } else {
+                    new_width = target_width;
+                    new_height = (uint32) (0.5 + ref_height * target_width / ref_width);
+                }
+            } else {
+                if (target_width > 0) {
+                    new_width = target_width;
+                }
+                if (target_height > 0) {
+                    new_height = target_height;
+                }
+            }
+            new_width = Math.floorf (float.max (new_width, 1));
+            new_height = Math.floorf (float.max (new_height, 1));
+        }
+
+        private static async Gly.Frame ?load_image (File file,
+                                                    Gdk.Rectangle geometry,
+                                                    Cancellable cancellable) {
+            try {
+                Gly.Image image = yield new Gly.Loader (file).load_async (cancellable);
+                Gly.FrameRequest frame_request = new Gly.FrameRequest ();
+                frame_request.set_scale (geometry.width, geometry.height);
+                return yield image.get_specific_frame_async (frame_request, cancellable);
+            } catch (Error e) {
+                stderr.printf ("Setting wallpaper error: %s\n", e.message);
+            }
+            return null;
+        }
+
+        public override void snapshot (Gtk.Snapshot snapshot) {
             // Render a black base wallpaper
             Gdk.RGBA bg_color = Gdk.RGBA () {
                 red = 0.0f,
@@ -115,17 +203,17 @@ namespace Wallpaper {
                 alpha = 1.0f,
             };
 
-            snapshot.append_color (bg_color, { { 0, 0 }, { get_width(), get_height() } });
+            snapshot.append_color (bg_color, { { 0, 0 }, { get_width (), get_height () } });
 
-            if (background_info == null || loading_texture) {
+            if (background_info == null) {
                 return;
             }
 
             if (animation.state == Adw.AnimationState.PLAYING
-                && old_background_info != null) {
+                && prev_background_info != null) {
                 snapshot.push_cross_fade (animation_progress_inv);
 
-                apply_transformed_background (snapshot, old_background_info);
+                apply_transformed_background (snapshot, prev_background_info);
                 snapshot.pop ();
 
                 snapshot.push_blur (animation_progress * BLUR_RADIUS);
@@ -149,93 +237,95 @@ namespace Wallpaper {
             }
 
             // Render texture and scale it correctly
-
-            int height = info.height;
-            int width = info.width;
+            uint32 height = info.height;
+            uint32 width = info.width;
             switch (info.config.scale_mode) {
-                case Utils.ScaleModes.FILL:
+                case Utils.ScaleModes.FILL :
                     double window_ratio = (double) buffer_width / buffer_height;
                     double bg_ratio = width / height;
                     if (window_ratio > bg_ratio) { // Taller wallpaper than monitor
                         double scale = (double) buffer_width / width;
                         if (scale * height < buffer_height) {
-                            draw_scale_wide (buffer_width, width, buffer_height, height, snapshot, info);
+                            draw_scale_wide (buffer_width, width, buffer_height, height, snapshot,
+                                             info);
                         } else {
-                            draw_scale_tall (buffer_width, width, buffer_height, height, snapshot, info);
+                            draw_scale_tall (buffer_width, width, buffer_height, height, snapshot,
+                                             info);
                         }
                     } else { // Wider wallpaper than monitor
                         double scale = (double) buffer_height / height;
                         if (scale * width < buffer_width) {
-                            draw_scale_tall (buffer_width, width, buffer_height, height, snapshot, info);
+                            draw_scale_tall (buffer_width, width, buffer_height, height, snapshot,
+                                             info);
                         } else {
-                            draw_scale_wide (buffer_width, width, buffer_height, height, snapshot, info);
+                            draw_scale_wide (buffer_width, width, buffer_height, height, snapshot,
+                                             info);
                         }
                     }
                     break;
-                case Utils.ScaleModes.FIT:
+                case Utils.ScaleModes.FIT :
                     double window_ratio = (double) buffer_width / buffer_height;
                     double bg_ratio = width / height;
                     if (window_ratio > bg_ratio) { // Taller wallpaper than monitor
                         double scale = (double) buffer_width / width;
                         if (scale * height < buffer_height) {
-                            draw_scale_tall (buffer_width, width, buffer_height, height, snapshot, info);
+                            draw_scale_tall (buffer_width, width, buffer_height, height, snapshot,
+                                             info);
                         } else {
-                            draw_scale_wide (buffer_width, width, buffer_height, height, snapshot, info);
+                            draw_scale_wide (buffer_width, width, buffer_height, height, snapshot,
+                                             info);
                         }
                     } else { // Wider wallpaper than monitor
                         double scale = (double) buffer_height / height;
                         if (scale * width < buffer_width) {
-                            draw_scale_wide (buffer_width, width, buffer_height, height, snapshot, info);
+                            draw_scale_wide (buffer_width, width, buffer_height, height, snapshot,
+                                             info);
                         } else {
-                            draw_scale_tall (buffer_width, width, buffer_height, height, snapshot, info);
+                            draw_scale_tall (buffer_width, width, buffer_height, height, snapshot,
+                                             info);
                         }
                     }
                     break;
-                case Utils.ScaleModes.STRETCH:
-                    snapshot.scale((float) buffer_width / width,
-                                   (float) buffer_height / height);
-                    snapshot.append_scaled_texture (info.texture,
-                                                    SCALING_FILTER,
-                                                    { { 0, 0 }, { width, height } });
+                case Utils.ScaleModes.STRETCH :
+                    snapshot.scale ((float) buffer_width / width,
+                                    (float) buffer_height / height);
+                    info.texture.snapshot (snapshot, width, height);
                     break;
-                case Utils.ScaleModes.CENTER:
+                case Utils.ScaleModes.CENTER :
                     float x = (float) (buffer_width / 2 - width / 2);
                     float y = (float) (buffer_height / 2 - height / 2);
-                    snapshot.append_scaled_texture (info.texture,
-                                                    SCALING_FILTER,
-                                                    { { x, y }, { width, height } });
+                    snapshot.translate (Graphene.Point ().init (x, y));
+                    info.texture.snapshot (snapshot, width, height);
                     break;
             }
         }
 
         private void draw_scale_tall (int buffer_width,
-                                      int width,
+                                      uint32 width,
                                       int buffer_height,
-                                      int height,
+                                      uint32 height,
                                       Gtk.Snapshot snapshot,
                                       BackgroundInfo info) {
             float scale = (float) buffer_width / width;
-            snapshot.scale(scale, scale);
+            snapshot.scale (scale, scale);
             float x = 0;
             float y = (float) (buffer_height / 2 / scale - height / 2);
-            snapshot.append_scaled_texture (info.texture,
-                                            SCALING_FILTER,
-                                            { { x, y }, { width, height } });
+            snapshot.translate (Graphene.Point ().init (x, y));
+            info.texture.snapshot (snapshot, width, height);
         }
 
         private void draw_scale_wide (int buffer_width,
-                                      int width,
+                                      uint32 width,
                                       int buffer_height,
-                                      int height,
+                                      uint32 height,
                                       Gtk.Snapshot snapshot,
                                       BackgroundInfo info) {
             float scale = (float) buffer_height / height;
-            snapshot.scale(scale, scale);
+            snapshot.scale (scale, scale);
             float x = (float) (buffer_width / 2 / scale - width / 2);
             float y = 0;
-            snapshot.append_scaled_texture (info.texture,
-                                            SCALING_FILTER,
-                                            { { x, y }, { width, height } });
+            snapshot.translate (Graphene.Point ().init (x, y));
+            info.texture.snapshot (snapshot, width, height);
         }
 
         void animation_value_cb (double progress) {

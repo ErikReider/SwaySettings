@@ -20,6 +20,8 @@ dep_libpulse = dependency('libpulse')
 dep_libpulse_mainloop_glib = dependency('libpulse-mainloop-glib')
 dep_upower_glib = dependency('upower-glib', version: '>= 1.90.0')
 dep_libnotify = dependency('libnotify', version: '>= 0.8.0')
+dep_glycin = dependency('glycin-2', version: '>= 2.0.0')
+dep_glycin_gtk4 = dependency('glycin-gtk4-2', version: '>= 2.0.0')
 
 shared_deps = [
   vala.find_library('posix'),

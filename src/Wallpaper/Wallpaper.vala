@@ -1,23 +1,30 @@
 namespace Wallpaper {
     public static Settings self_settings;
 
-    public struct BackgroundInfo {
+    public class BackgroundInfo {
         public Utils.Config config;
-        public Gdk.Texture texture;
-        public int width;
-        public int height;
-        public uint file_hash;
+        public Gdk.Paintable ?texture = null;
+        public uint32 width = 1;
+        public uint32 height = 1;
+        public uint file_hash = 0;
+
+        public BackgroundInfo (Utils.Config config) {
+            this.config = config;
+        }
 
         public string to_string () {
             return string.joinv ("\n", {
                 "BackgroundInfo:",
                 "\tConfig: %s".printf (config.to_string ()),
                 "\tTexture: %p".printf (texture),
-                "\tDimensions: %ix%i".printf (width, height),
+                "\tDimensions: %ux%u".printf (width, height),
                 "\tHash: %u".printf (file_hash),
             });
         }
     }
+
+    static int debug_no_layer_shell_windows = 0;
+    static bool debug_no_layer_shell = false;
 
     public class Main : Object {
         private static string option_path = "";
@@ -62,6 +69,15 @@ namespace Wallpaper {
                 "List all scaling modes",
                 null
             },
+            {
+                "no-layer-shell",
+                '\0',
+                OptionFlags.HIDDEN,
+                OptionArg.INT,
+                ref debug_no_layer_shell_windows,
+                "Debug: Disable usage of wlr-layer-shell",
+                null
+            },
             { null }
         };
 
@@ -71,9 +87,6 @@ namespace Wallpaper {
 
         private static SimpleAction action;
         private static Utils.Config current_config;
-
-        private static Cancellable action_cancellable;
-        private static ulong action_cancellable_id;
 
         private static unowned ListModel monitors;
         private static ListStore windows;
@@ -85,7 +98,7 @@ namespace Wallpaper {
             context.add_main_entries (ENTRIES, null);
             context.parse_strv (ref args);
 
-            Utils.Config config = Utils.Config();
+            Utils.Config config = Utils.Config ();
             if (option_path == null && option_color == null) {
                 // Use default wallpaper if no arguments were provided
                 // Try getting GSchema wallpaper before defaulting to file
@@ -148,11 +161,19 @@ namespace Wallpaper {
                     return 0;
                 }
 
+                if (debug_no_layer_shell_windows > 0) {
+                    debug_no_layer_shell = true;
+                }
+
                 app = new Gtk.Application ("org.erikreider.swaysettings-wallpaper",
                                            ApplicationFlags.DEFAULT_FLAGS);
-                app.hold ();
+                if (!debug_no_layer_shell) {
+                    app.hold ();
+                }
                 app.activate.connect ((g_app) => {
-                    if (activated) return;
+                    if (activated) {
+                        return;
+                    }
                     activated = true;
                     init ();
                 });
@@ -173,74 +194,49 @@ namespace Wallpaper {
             }
         }
 
-        private static async void action_activated (Variant ? param) {
+        private static async void action_activated (Variant ?param) {
             if (param == null || param.get_type_string () != Constants.WALLPAPER_ACTION_FORMAT) {
                 return;
             }
 
-            if (!action_cancellable.is_cancelled ()) {
-                action_cancellable.cancel ();
-                action_cancellable.reset ();
-            }
+            current_config = Utils.Config () {
+                path = param.get_child_value (0).get_string (),
+                scale_mode = param.get_child_value (1).get_int32 (),
+                color = param.get_child_value (2).get_string (),
+            };
 
-            Cancellable[] windows_cancellable = {};
-            try {
-                action_cancellable.set_error_if_cancelled ();
-
-                current_config = Utils.Config () {
-                    path = param.get_child_value (0).get_string (),
-                    scale_mode = param.get_child_value (1).get_int32 (),
-                    color = param.get_child_value (2).get_string (),
-                };
-
-
-                uint n_items = windows.get_n_items ();
-                int count = (int) n_items;
-                for (int i = 0; i < count; i++) {
-                    Cancellable c = new Cancellable ();
-                    windows_cancellable += c;
-
-                    Window window = (Window) windows.get_item (i);
-                    window.change_wallpaper.begin (current_config, c, (obj, res) => {
-                        window.change_wallpaper.end (res);
-                        if (AtomicInt.dec_and_test (ref count)) {
-                            action_activated.callback ();
-                        }
-                    });
-                }
-                yield;
-
-                // Run all the animations at the same time, after all monitors
-                // have loaded its new textures
-                for (int i = 0; i < n_items; i++) {
-                    Window window = (Window) windows.get_item (i);
-                    window.run_animation ();
-                }
-            } catch (Error e) {
-                // Cancel all the window wallpaper loading tasks
-                foreach (Cancellable cancellable in windows_cancellable) {
-                    cancellable.cancel ();
-                }
+            for (int i = 0; i < windows.get_n_items (); i++) {
+                Window window = (Window) windows.get_item (i);
+                window.change_wallpaper.begin (current_config);
             }
         }
 
         private static void init () {
-            action_cancellable = new Cancellable ();
-            action_cancellable_id = 0;
-
             windows = new ListStore (typeof (Window));
 
-            Gdk.Display ? display = Gdk.Display.get_default ();
+            Gdk.Display ?display = Gdk.Display.get_default ();
             assert_nonnull (display);
 
-            monitors = display.get_monitors ();
-            monitors.items_changed.connect (monitors_changed);
-
-            monitors_changed (0, 0, monitors.get_n_items ());
+            if (!debug_no_layer_shell) {
+                monitors = display.get_monitors ();
+                monitors.items_changed.connect (monitors_changed);
+                monitors_changed (0, 0, monitors.get_n_items ());
+            } else {
+                // Debug flag to only create a specified number of windows.
+                // Uses the first monitor as reference.
+                Gdk.Monitor ?first_monitor = (Gdk.Monitor ?) display.get_monitors ().get_item (0);
+                assert_nonnull (first_monitor);
+                ListStore debug_monitors = new ListStore (typeof (Gdk.Monitor));
+                for (int i = 0; i < debug_no_layer_shell_windows; i++) {
+                    debug_monitors.append (first_monitor);
+                }
+                monitors = debug_monitors;
+                monitors_changed (0, 0, debug_no_layer_shell_windows);
+            }
 
             // Activate once all windows have been added
             action = new SimpleAction (Constants.WALLPAPER_ACTION_NAME,
-                new VariantType (Constants.WALLPAPER_ACTION_FORMAT));
+                                       new VariantType (Constants.WALLPAPER_ACTION_FORMAT));
             action.activate.connect (action_activated);
 
             app.add_action (action);
@@ -248,15 +244,10 @@ namespace Wallpaper {
         }
 
         private static void monitors_changed (uint position, uint removed, uint added) {
-            if (!action_cancellable.is_cancelled ()) {
-                action_cancellable.cancel ();
-                action_cancellable.reset ();
-            }
-
             for (uint i = 0; i < removed; i++) {
-                Window window = (Window) windows.get_item (position + i);
+                Window window = (Window) windows.get_item (position);
                 window.close ();
-                windows.remove (position + i);
+                windows.remove (position);
             }
 
             for (uint i = 0; i < added; i++) {

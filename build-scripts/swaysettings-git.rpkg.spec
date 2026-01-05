@@ -35,6 +35,8 @@ BuildRequires: pkgconfig(pam)
 BuildRequires: sassc
 BuildRequires: pkgconfig(upower-glib)
 BuildRequires: pkgconfig(libnotify)
+BuildRequires: pkgconfig(glycin-2)
+BuildRequires: pkgconfig(glycin-gtk4-2)
 Requires: dbus
 Requires: grim
 Requires: bluez

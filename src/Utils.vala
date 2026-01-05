@@ -69,7 +69,7 @@ namespace Utils {
             }
         }
 
-        public static ScaleModes parse_mode (string ? value) {
+        public static ScaleModes parse_mode (string ?value) {
             switch (value) {
                 default:
                 case "fill":
@@ -96,15 +96,41 @@ namespace Utils {
 
         public Config () {
             default_path = Path.build_filename (Environment.get_user_config_dir (),
-                "swaysettings-wallpaper");
+                                                "swaysettings-wallpaper");
 
             path = "";
             scale_mode = DEFAULT_MODE;
             color = DEFAULT_COLOR;
         }
 
-        public string to_string () {
+        public inline string to_string () {
             return string.joinv (" ", { path, scale_mode.to_string (), color });
+        }
+
+        public inline bool is_path_valid () {
+            return path != null && path.length > 0;
+        }
+
+        public bool has_image (out File ?fd, Cancellable cancellable) {
+            fd = null;
+            if (!is_path_valid ()) {
+                return false;
+            }
+            File file = File.new_for_path (path);
+            FileType type = file.query_file_type (FileQueryInfoFlags.NONE, cancellable);
+            if (type != FileType.REGULAR && type != FileType.SYMBOLIC_LINK
+                && type != FileType.SHORTCUT) {
+                return false;
+            }
+
+            fd = file;
+            return true;
+        }
+
+        public inline bool cmp (Config other) {
+            return this.path == other.path
+                   && this.scale_mode == other.scale_mode
+                   && this.color == other.color;
         }
 
         public Gdk.RGBA get_color () {
@@ -121,7 +147,9 @@ namespace Utils {
 
             int hex_value;
             bool result = int.try_parse (color, out hex_value, null, 16);
-            if (!result) return _c;
+            if (!result) {
+                return _c;
+            }
             _c.alpha = 1.0f;
             _c.red = ((hex_value >> 16) & 0xFF) / 255.0f;
             _c.green = ((hex_value >> 8) & 0xFF) / 255.0f;
@@ -131,9 +159,10 @@ namespace Utils {
     }
 
     public static Utils.ScaleModes get_scale_mode_gschema (Settings settings) {
-        Variant ? variant = SwaySettings.Functions.get_gsetting (settings,
-            Constants.SETTINGS_WALLPAPER_SCALING_MODE,
-            VariantType.INT32);
+        Variant ?variant = SwaySettings.Functions.get_gsetting (settings,
+                                                                Constants.
+                                                                 SETTINGS_WALLPAPER_SCALING_MODE,
+                                                                VariantType.INT32);
         if (variant == null
             || !variant.get_type ().equal (VariantType.INT32)) {
             return 0;
@@ -141,10 +170,10 @@ namespace Utils {
         return (Utils.ScaleModes) variant.get_int32 ();
     }
 
-    public static string ? get_wallpaper_gschema (Settings settings) {
-        Variant ? variant = SwaySettings.Functions.get_gsetting (settings,
-            Constants.SETTINGS_WALLPAPER_PATH,
-            VariantType.STRING);
+    public static string ?get_wallpaper_gschema (Settings settings) {
+        Variant ?variant = SwaySettings.Functions.get_gsetting (settings,
+                                                                Constants.SETTINGS_WALLPAPER_PATH,
+                                                                VariantType.STRING);
         if (variant == null
             || !variant.get_type ().equal (VariantType.STRING)) {
             return null;
