@@ -188,9 +188,10 @@ namespace SwaySettings {
             return settings.get_value (name);
         }
 
-        public static string ? generate_thumbnail (string p,
-                                                   bool delete_past = false) throws Error {
-            File file = File.new_for_path (p);
+        public static string ?generate_thumbnail (string image_path,
+                                                  bool delete_past = false,
+                                                  int size = 256) throws Error {
+            File file = File.new_for_path (image_path);
             string path = file.get_uri ();
             string checksum = Checksum.compute_for_string (ChecksumType.MD5, path, path.length);
             // Only use large thumbnails to match the widget size
@@ -205,11 +206,17 @@ namespace SwaySettings {
                 exists = false;
             }
             if (!exists) {
-                string output;
                 string error;
-                bool status = Process.spawn_command_line_sync (
-                    "gdk-pixbuf-thumbnailer \"%s\" \"%s\"".printf (p, checksum_path),
-                    out output, out error);
+                string[] args = {
+                    "glycin-thumbnailer",
+                    "--input", path,
+                    "--output", checksum_path,
+                    "--size", size.to_string (),
+                };
+                bool status = Process.spawn_sync (null, args, null,
+                                                  SpawnFlags.STDOUT_TO_DEV_NULL
+                                                  | SpawnFlags.SEARCH_PATH_FROM_ENVP,
+                                                  null, null, out error, null);
                 if (!status) {
                     throw new ThumbnailerError.FAILED (error);
                 }
