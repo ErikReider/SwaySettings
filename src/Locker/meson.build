@@ -14,6 +14,8 @@ executable(
     dep_gdk_pixbuf,
     dep_libadwaita,
     dep_gtk4_layer_shell,
+    dep_glycin,
+    dep_glycin_gtk4,
     cc.find_library('pam'),
   ]
   + shared_deps,

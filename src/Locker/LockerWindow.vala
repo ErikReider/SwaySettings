@@ -169,19 +169,26 @@ public class LockerWindow : Gtk.ApplicationWindow {
             return;
         }
 
-        Gdk.Texture ?texture = null;
         try {
-            InputStream stream = file.read (load_cancellable);
-            Gdk.Pixbuf pixbuf = new Gdk.Pixbuf.from_stream_at_scale (
-                stream, monitor.geometry.width, monitor.geometry.height,
-                true, load_cancellable);
+            Gly.Image image = yield new Gly.Loader (file).load_async (null);
+            Gly.FrameRequest frame_request = new Gly.FrameRequest ();
+            frame_request.set_scale (monitor.geometry.width, monitor.geometry.height);
+            Gly.Frame frame = yield image.get_specific_frame_async (frame_request, null);
 
-            texture = Gdk.Texture.for_pixbuf (pixbuf);
+            // Scale the texture
+            float new_width, new_height;
+            Gdk.Paintable ?paintable
+                = SwaySettings.Functions.gdk_texture_scale (
+                        GlyGtk4.frame_get_texture (frame),
+                        frame.get_width (), frame.get_height (),
+                        monitor.geometry.width, monitor.geometry.height,
+                        Gsk.ScalingFilter.NEAREST,
+                        out new_width, out new_height);
+            picture.set_paintable (paintable);
         } catch (Error e) {
-            critical (e.message);
+            critical ("Getting background error: %s", e.message);
+            picture.set_paintable (null);
         }
-
-        picture.set_paintable (texture);
 
         Utils.ScaleModes scale = Utils.get_scale_mode_gschema (self_settings);
         picture.set_content_fit (scale.to_content_fit ());

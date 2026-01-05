@@ -103,14 +103,17 @@ namespace Wallpaper {
                 uint32 ref_width = frame.get_width ();
                 uint32 ref_height = frame.get_height ();
 
+                // Scale the texture
                 float new_width, new_height;
-                calc_scaled_size (ref_width, ref_height,
-                                 geometry.width, geometry.height,
-                                 out new_width, out new_height);
-                Gtk.Snapshot snapshot = new Gtk.Snapshot ();
-                Graphene.Rect bounds = Graphene.Rect ().init (0, 0, new_width, new_height);
-                snapshot.append_scaled_texture (texture, SCALING_FILTER, bounds);
-                Gdk.Paintable ?paintable = snapshot.free_to_paintable (bounds.size);
+                Gdk.Paintable ?paintable
+                    = SwaySettings.Functions.gdk_texture_scale (texture,
+                                                                ref_width,
+                                                                ref_height,
+                                                                geometry.width,
+                                                                geometry.height,
+                                                                SCALING_FILTER,
+                                                                out new_width,
+                                                                out new_height);
                 if (paintable != null) {
                     new_info.texture = paintable;
                     new_info.width = (uint32) new_width;
@@ -138,46 +141,6 @@ namespace Wallpaper {
             // Start the transition
             animation.set_value_to (0);
             animation.play ();
-        }
-
-        private static void calc_scaled_size (float ref_width, float ref_height,
-                                              float target_width, float target_height,
-                                              out float new_width, out float new_height) {
-            new_width = target_width;
-            new_height = target_height;
-            // At least one dimension matches the target, doesn't need scaling,
-            // only translation.
-            if (ref_width == target_width || ref_height == target_height) {
-                return;
-            }
-
-            // Calculate the new scaled size -> the target size
-            // Might not need scaling as a 5120x1440 on 2560*1440 doesn't need scaling
-            if (target_width > 0 || target_height > 0) {
-                if (target_width < 0) {
-                    new_width = (uint32) (ref_width * target_height / ref_height);
-                    new_height = target_height;
-                } else if (target_height < 0) {
-                    new_width = target_width;
-                    new_height = (uint32) (ref_height * target_width / ref_width);
-                } else if (ref_height * target_width >
-                           ref_width * target_height) {
-                    new_width = (uint32) (0.5 + ref_width * target_height / ref_height);
-                    new_height = target_height;
-                } else {
-                    new_width = target_width;
-                    new_height = (uint32) (0.5 + ref_height * target_width / ref_width);
-                }
-            } else {
-                if (target_width > 0) {
-                    new_width = target_width;
-                }
-                if (target_height > 0) {
-                    new_height = target_height;
-                }
-            }
-            new_width = Math.floorf (float.max (new_width, 1));
-            new_height = Math.floorf (float.max (new_height, 1));
         }
 
         private static async Gly.Frame ?load_image (File file,

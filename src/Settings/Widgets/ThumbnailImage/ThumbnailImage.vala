@@ -154,11 +154,11 @@ namespace SwaySettings {
             yield;
 
             image_path = data.image_path;
-            picture.set_paintable (data.texture);
+            picture.set_paintable (data.paintable);
             // Replace spinner with picture
             overlay.set_child (picture);
 
-            on_set_image (data.texture != null);
+            on_set_image (data.paintable != null);
         }
 
         private void check_folder_exist () {
@@ -229,7 +229,7 @@ namespace SwaySettings {
 
     private class ThumbnailThread {
         public string ?image_path;
-        public Gdk.Texture ?texture = null;
+        public Gdk.Paintable ?paintable = null;
 
         Wallpaper wallpaper;
         int width;
@@ -237,12 +237,12 @@ namespace SwaySettings {
         bool full_size;
         unowned SourceFunc callback;
 
-        public ThumbnailThread(string ?image_path,
-                               Wallpaper wallpaper,
-                               int width,
-                               int height,
-                               bool full_size,
-                               SourceFunc callback) {
+        public ThumbnailThread (string ?image_path,
+                                Wallpaper wallpaper,
+                                int width,
+                                int height,
+                                bool full_size,
+                                SourceFunc callback) {
             this.image_path = image_path;
             this.wallpaper = wallpaper;
             this.width = width;
@@ -251,7 +251,7 @@ namespace SwaySettings {
             this.callback = callback;
         }
 
-        public void begin() {
+        public void begin () {
             if (full_size) {
                 image_path = wallpaper.path;
                 show_image ();
@@ -277,18 +277,29 @@ namespace SwaySettings {
         }
 
         private void show_image () {
+            File file = File.new_for_path (image_path);
             try {
-                Gdk.Pixbuf pixbuf;
-                if (full_size) {
-                    pixbuf = new Gdk.Pixbuf.from_file (image_path);
-                } else {
-                    pixbuf = new Gdk.Pixbuf.from_file_at_scale (
-                        image_path, width, height, true);
+                Gly.Image image = new Gly.Loader (file).load ();
+                Gly.FrameRequest frame_request = new Gly.FrameRequest ();
+                if (!full_size) {
+                    frame_request.set_scale (width, height);
                 }
+                Gly.Frame frame = image.get_specific_frame (frame_request);
 
-                texture = Gdk.Texture.for_pixbuf (pixbuf);
+                if (!full_size) {
+                    // Scale the texture
+                    float new_width, new_height;
+                    paintable = SwaySettings.Functions.gdk_texture_scale (
+                        GlyGtk4.frame_get_texture (frame),
+                        frame.get_width (), frame.get_height (),
+                        width, height,
+                        Gsk.ScalingFilter.NEAREST,
+                        out new_width, out new_height);
+                } else {
+                    paintable = GlyGtk4.frame_get_texture (frame);
+                }
             } catch (Error e) {
-                texture = null;
+                paintable = null;
                 stderr.printf ("Set Image Error: %s\n", e.message);
             }
         }

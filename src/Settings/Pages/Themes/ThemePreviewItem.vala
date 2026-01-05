@@ -66,6 +66,11 @@ namespace SwaySettings {
             set_child (overlay);
 
             background = new Gtk.Picture ();
+            background.set_content_fit (Gtk.ContentFit.FILL);
+            // Fixes the Picture taking up too much space:
+            // https://gitlab.gnome.org/GNOME/gtk/-/issues/7092
+            Gtk.LayoutManager layout = new Gtk.CenterLayout ();
+            background.set_layout_manager (layout);
             overlay.set_child (background);
 
             fixed = new Gtk.Fixed ();
@@ -96,15 +101,27 @@ namespace SwaySettings {
             try {
                 string big_path = "%s/wallpaper".printf (Environment.get_user_cache_dir ());
                 string path = Functions.generate_thumbnail (big_path);
-                var pixbuf = new Gdk.Pixbuf.from_file_at_scale (
-                    path, WIDTH, HEIGHT, false);
-                Gdk.Texture paintable = Gdk.Texture.for_pixbuf (pixbuf);
+                File file = File.new_for_path (path);
+
+                Gly.Image image = new Gly.Loader (file).load ();
+                Gly.FrameRequest frame_request = new Gly.FrameRequest ();
+                frame_request.set_scale (WIDTH, HEIGHT);
+                Gly.Frame frame = image.get_specific_frame (frame_request);
+                // Scale the texture
+                float new_width, new_height;
+                Gdk.Paintable ?paintable
+                    = SwaySettings.Functions.gdk_texture_scale (
+                            GlyGtk4.frame_get_texture (frame),
+                            frame.get_width (), frame.get_height (),
+                            WIDTH, HEIGHT,
+                            Gsk.ScalingFilter.NEAREST,
+                            out new_width, out new_height);
                 background.set_paintable (paintable);
-                return;
             } catch (Error e) {
                 stderr.printf (
                     "Could not find wallpaper, using greyscale background instead... %s\n",
                     e.message);
+                background.set_paintable (null);
             }
         }
 

@@ -36,6 +36,8 @@ executable(
     dep_libpulse,
     dep_libpulse_mainloop_glib,
     dep_upower_glib,
+    dep_glycin,
+    dep_glycin_gtk4,
   ]
   + shared_deps,
   install: true,

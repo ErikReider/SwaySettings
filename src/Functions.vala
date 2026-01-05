@@ -225,6 +225,63 @@ namespace SwaySettings {
             return checksum_path;
         }
 
+        public static Gdk.Paintable ?gdk_texture_scale (Gdk.Texture texture,
+                                                        uint32 ref_width,
+                                                        uint32 ref_height,
+                                                        int target_width,
+                                                        int target_height,
+                                                        Gsk.ScalingFilter filter,
+                                                        out float new_width,
+                                                        out float new_height) {
+            calc_scaled_size (ref_width, ref_height,
+                             target_width, target_height,
+                             out new_width, out new_height);
+            Gtk.Snapshot snapshot = new Gtk.Snapshot ();
+            Graphene.Rect bounds = Graphene.Rect ().init (0, 0, new_width, new_height);
+            snapshot.append_scaled_texture (texture, filter, bounds);
+            return snapshot.free_to_paintable (bounds.size);
+        }
+
+        public static void calc_scaled_size (float ref_width, float ref_height,
+                                             float target_width, float target_height,
+                                             out float new_width, out float new_height) {
+            new_width = target_width;
+            new_height = target_height;
+            // At least one dimension matches the target, doesn't need scaling,
+            // only translation.
+            if (ref_width == target_width || ref_height == target_height) {
+                return;
+            }
+
+            // Calculate the new scaled size -> the target size
+            // Might not need scaling as a 5120x1440 on 2560*1440 doesn't need scaling
+            if (target_width > 0 || target_height > 0) {
+                if (target_width < 0) {
+                    new_width = (uint32) (ref_width * target_height / ref_height);
+                    new_height = target_height;
+                } else if (target_height < 0) {
+                    new_width = target_width;
+                    new_height = (uint32) (ref_height * target_width / ref_width);
+                } else if (ref_height * target_width >
+                           ref_width * target_height) {
+                    new_width = (uint32) (0.5 + ref_width * target_height / ref_height);
+                    new_height = target_height;
+                } else {
+                    new_width = target_width;
+                    new_height = (uint32) (0.5 + ref_height * target_width / ref_width);
+                }
+            } else {
+                if (target_width > 0) {
+                    new_width = target_width;
+                }
+                if (target_height > 0) {
+                    new_height = target_height;
+                }
+            }
+            new_width = Math.floorf (float.max (new_width, 1));
+            new_height = Math.floorf (float.max (new_height, 1));
+        }
+
         public static bool set_wallpaper (string file_path,
                                           Settings self_settings) {
             if (file_path == null) return false;

@@ -18,10 +18,9 @@ public static Gdk.Texture ? grim_screenshot_rect (Graphene.Rect rect) {
             SubprocessFlags.STDOUT_PIPE);
 
         // Read the standard output (image data)
-        DataInputStream input =
-            new DataInputStream (subprocess.get_stdout_pipe ());
-        Gdk.Pixbuf pixbuf = new Gdk.Pixbuf.from_stream (input);
-        return Gdk.Texture.for_pixbuf (pixbuf);
+        DataInputStream input_stream = new DataInputStream (subprocess.get_stdout_pipe ());
+        Gly.Image image = new Gly.Loader.for_stream (input_stream).load ();
+        return GlyGtk4.frame_get_texture (image.next_frame ());
     } catch (Error e) {
         stderr.printf ("Error: %s\n", e.message);
         return null;
