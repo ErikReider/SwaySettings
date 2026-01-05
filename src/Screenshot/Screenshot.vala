@@ -18,30 +18,7 @@ public static int main (string[] args) {
         Gtk.init ();
         Adw.init ();
 
-    // TODO: Do this instead:
-    // https://discourse.gnome.org/t/having-trouble-getting-my-schema-to-work-in-gtk4-tutorial-example/8541/6
-#if USE_GLOBAL_GSCHEMA
-        // Use the global compiled gschema in /usr/share/glib-2.0/schemas/*
         self_settings = new Settings ("org.erikreider.swaysettings");
-#else
-        message ("Using local GSchema");
-        // Meant for use in development.
-        // Uses the compiled gschema in SwaySettings/data/
-        // Should never be used in production!
-        string settings_dir = Path.build_path (Path.DIR_SEPARATOR_S,
-                                               Environment.get_current_dir (),
-                                               "data");
-        SettingsSchemaSource sss =
-            new SettingsSchemaSource.from_directory (settings_dir, null,
-                                                     false);
-        SettingsSchema schema = sss.lookup ("org.erikreider.swaysettings",
-                                            false);
-        if (sss.lookup == null) {
-            error ("ID not found.\n");
-            return 0;
-        }
-        self_settings = new Settings.full (schema, null, null);
-#endif
 
         app = new Gtk.Application ("org.erikreider.swaysettings-screenshot",
                                    ApplicationFlags.FLAGS_NONE);
