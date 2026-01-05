@@ -272,12 +272,16 @@ public class LockerWindow : Gtk.ApplicationWindow {
 
     private void set_user_data () {
         // Avatar
+        int avatar_height;
+        avatar.measure (Gtk.Orientation.HORIZONTAL, -1,
+                        null, out avatar_height,
+                        null, null);
         avatar.set_text (user_mgr.current_user.real_name);
         if (user_mgr.current_user.icon_file != null
             && user_mgr.current_user.icon_file.length > 0) {
             Gtk.IconPaintable paintable = new Gtk.IconPaintable.for_file (
                 File.new_for_path (user_mgr.current_user.icon_file),
-                avatar.size, get_scale_factor ());
+                avatar_height, get_scale_factor ());
             avatar.set_custom_image (paintable);
         }
 
