@@ -31,7 +31,7 @@ foreach lib : library_info
   _lib_dependencies = lib['dependencies']
   _lib_sources = lib['sources']
 
-  _lib = library(
+  _lib = static_library(
     'libswaysettings-@0@'.format(_lib_name),
     _lib_sources,
     dependencies: _lib_dependencies,
