@@ -1,2 +1,2 @@
-out/
 !*.rpkg.spec
+!PKGBUILD

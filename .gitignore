@@ -8,7 +8,7 @@ gdb*
 
 SwaySettings
 swaysettings-*
-build-scripts/src*
+build-scripts/*
 
 !pam/*
 !*.service.in

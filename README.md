@@ -1,6 +1,7 @@
 # SwaySettings
 
-A GUI for configuring your sway desktop + some extra programs
+A GUI for configuring your wayland desktop + some extra programs.
+Named **Sway**Settings, but it works on almost all capable wayland compositors.
 
 ## Features
 
