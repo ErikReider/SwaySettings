@@ -65,10 +65,10 @@ namespace SwaySettings {
             accent_preferences_box.set_child (get_accent_widget ());
             main_box.append (accent_preferences_box);
 
-            // Accent Color
+            // Waydock
             if (dock_settings == null) {
                 dock_settings_schema = SettingsSchemaSource.get_default ()
-                    .lookup ("org.erikreider.waydock", false);
+                    .lookup ("org.erikreider.waydock", true);
                 if (dock_settings_schema != null) {
                     dock_settings = new Settings.full (dock_settings_schema, null, null);
                 }
@@ -268,44 +268,74 @@ namespace SwaySettings {
             pref_group.set_title ("Waydock");
 
             // Position
-            return_val_if_fail (dock_settings_schema.has_key ("position"), pref_group);
-            string selected = dock_settings.get_string ("position");
+            Adw.ComboRow ?position_row = widget_waydock_position ();
+            if ((valid |= position_row != null)) {
+                pref_group.add (position_row);
+            }
+
+            // Minimized
+            Adw.SwitchRow ?minimized_row = widget_waydock_minimized ();
+            if ((valid |= minimized_row != null)) {
+                pref_group.add (minimized_row);
+            }
+
+            return pref_group;
+        }
+
+        private Adw.ComboRow ?widget_waydock_position () {
+            string schema_key = "position";
+            return_val_if_fail (dock_settings_schema.has_key (schema_key), null);
+
+            string selected = dock_settings.get_string (schema_key);
             // Create the widget
             Adw.ComboRow position_row = new Adw.ComboRow ();
             position_row.set_title ("Position");
             ListStore list_store = new ListStore (typeof (Gtk.StringObject));
             position_row.set_model (list_store);
             // Populate the list
-            SettingsSchemaKey key = dock_settings_schema.get_key ("position");
-            Variant range = key.get_range();
-            if (range != null && range.get_type_string() == "(sv)"
-                && range.get_child_value (0).get_string () == "enum") {
-                Variant variant = range.get_child_value (1).get_variant ();
-                return_val_if_fail (variant.is_of_type (VariantType.STRING_ARRAY), pref_group);
+            SettingsSchemaKey key = dock_settings_schema.get_key (schema_key);
+            Variant ?range = key.get_range();
+            return_val_if_fail (range != null, null);
+            if (range.get_type_string() != "(sv)"
+                || range.get_child_value (0).get_string () != "enum") {
+                critical ("Waydock Schema error: %s\n", range.print (false));
+                return null;
+            }
 
-                string[] values = variant.dup_strv ();
-                for (int i = 0; i < values.length; i++) {
-                    unowned string enum_value = values[i];
-                    list_store.append (new Gtk.StringObject (enum_value));
-                    if (enum_value == selected) {
-                        position_row.set_selected (i);
-                    }
+            Variant variant = range.get_child_value (1).get_variant ();
+            return_val_if_fail (variant.is_of_type (VariantType.STRING_ARRAY), null);
+
+            string[] values = variant.dup_strv ();
+            for (int i = 0; i < values.length; i++) {
+                unowned string enum_value = values[i];
+                list_store.append (new Gtk.StringObject (enum_value));
+                if (enum_value == selected) {
+                    position_row.set_selected (i);
                 }
             }
+            return_val_if_fail (list_store.n_items > 0, null);
+
             position_row.notify["selected-item"].connect (() => {
                 Object ? item = list_store.get_item (position_row.selected);
                 if (item is Gtk.StringObject) {
                     string value = ((Gtk.StringObject) item).string;
-                    dock_settings.set_string ("position", value);
+                    dock_settings.set_string (schema_key, value);
                     return;
                 }
                 warn_if_reached ();
             });
-            return_val_if_fail (list_store.n_items > 0, pref_group);
 
-            pref_group.add (position_row);
-            valid = true;
-            return pref_group;
+            return position_row;
+        }
+
+        private Adw.SwitchRow ?widget_waydock_minimized () {
+            string schema_key = "minimized";
+            return_val_if_fail (dock_settings_schema.has_key (schema_key), null);
+
+            Adw.SwitchRow position_row = new Adw.SwitchRow ();
+            position_row.set_title ("Minimized");
+            dock_settings.bind (schema_key, position_row, "active", SettingsBindFlags.DEFAULT);
+            return position_row;
         }
 
         private Gtk.Widget gtk_toggle_row (string title, string setting_name) {
