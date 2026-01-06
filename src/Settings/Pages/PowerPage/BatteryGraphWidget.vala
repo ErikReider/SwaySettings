@@ -33,7 +33,7 @@ namespace SwaySettings {
             Up.DeviceState state;
             double value = get_value (out state);
             string text = "%s: %0.0lf%%".printf (
-                Power.PowerBatteryState.get_battery_state (state),
+                UPower.UPowerBatteryState.get_battery_state (state),
                 value);
             tooltip.set_text (text);
             return true;

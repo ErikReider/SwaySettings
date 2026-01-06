@@ -1,11 +1,11 @@
 namespace SwaySettings {
     private class PowerModeRow : Adw.ActionRow {
-        public Power.PowerProfiles profile { get; private set; }
+        public UPower.PowerProfiles profile { get; private set; }
 
         private Gtk.CheckButton check_button;
 
-        public PowerModeRow (string power_profile, Power.PowerProfiles active_profile) {
-            this.profile = Power.PowerProfiles.parse (power_profile);
+        public PowerModeRow (string power_profile, UPower.PowerProfiles active_profile) {
+            this.profile = UPower.PowerProfiles.parse (power_profile);
 
             this.activatable = false;
             this.selectable = false;
@@ -24,7 +24,7 @@ namespace SwaySettings {
             this.check_button.set_group (row?.check_button);
         }
 
-        public bool set_active (Power.PowerProfiles profile) {
+        public bool set_active (UPower.PowerProfiles profile) {
             bool active = profile == this.profile;
             check_button.set_active (active);
             return active;

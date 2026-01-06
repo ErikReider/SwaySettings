@@ -24,7 +24,7 @@ namespace SwaySettings {
         const string STACK_PAGE = "page";
         const string STACK_PLACEHOLDER_PAGE = "placeholder";
 
-        static Power.PowerProfileDaemon ?profile_daemon = null;
+        static unowned UPower.PowerProfileDaemon ?profile_daemon = null;
         static Up.Client ?up_client = null;
 
         [GtkChild]
@@ -84,10 +84,12 @@ namespace SwaySettings {
         unowned Gtk.ListBox power_info_listbox;
         ListStore power_info_liststore;
 
+        UPower.PowerProfileDaemonHelper ppd_helper = new UPower.PowerProfileDaemonHelper ();
+
         Up.Device display_device = null;
         ulong display_device_notify_id = 0;
         Up.Device ?ref_display_device = null;
-        Up.DeviceProxy ?ref_display_device_proxy = null;
+        UPower.UPowerDeviceProxy ?ref_display_device_proxy = null;
         ulong ref_display_device_notify_id = 0;
 
         construct {
@@ -109,13 +111,27 @@ namespace SwaySettings {
 
             stack.set_visible_child_name (STACK_PAGE);
 
-            Bus.watch_name (
-                BusType.SYSTEM,
-                Power.POWER_PROFILES_DAEMON_NAME,
-                BusNameWatcherFlags.NONE,
-                profile_daemon_appear,
-                profile_daemon_disappear);
-
+            // PowerProfileDaemon
+            ppd_helper.profile_released.connect ((cookie) => {
+                setup_power_profiles_ui ();
+            });
+            ppd_helper.properties_changed.connect (() => {
+                // TODO: Proper changed handling
+                setup_power_profiles_ui ();
+            });
+            ppd_helper.disappear.connect (() => {
+                profile_daemon = null;
+                setup_power_profiles_ui ();
+            });
+            ppd_helper.appear.connect ((ppd) => {
+                profile_daemon = ppd;
+                setup_power_profiles_ui ();
+            });
+            ppd_helper.get_async.begin ((obj, res) => {
+                profile_daemon = ppd_helper.get_async.end (res);
+                setup_power_profiles_ui ();
+            });
+            // UPower
             setup_upower.begin ();
         }
 
@@ -172,7 +188,7 @@ namespace SwaySettings {
                     ref_display_device_notify_id = ref_display_device.notify.connect (() => {
                         setup_upower_battery_health ();
                     });
-                    ref_display_device_proxy = Up.get_device_proxy (ref_display_device);
+                    ref_display_device_proxy = UPower.get_device_proxy (ref_display_device);
                     break;
                 }
             }
@@ -216,13 +232,13 @@ namespace SwaySettings {
 
             // Percent
             battery_group_percent.set_text (
-                Power.PowerBatteryState.get_battery_percent (display_device, true));
+                UPower.UPowerBatteryState.get_battery_percent (display_device, true));
 
             // Icon
             battery_group_icon.set_from_icon_name (display_device.icon_name);
 
             // Status
-            string ?state = Power.PowerBatteryState.get_battery_status (display_device);
+            string ?state = UPower.UPowerBatteryState.get_battery_status (display_device);
             battery_group_status.set_text (state);
             battery_group_status.set_visible (state != null);
 
@@ -327,36 +343,6 @@ namespace SwaySettings {
         /// Power Profile Daemon
         ///
 
-        private void profile_daemon_appear () {
-            get_profile_daemon.begin ();
-        }
-
-        private void profile_daemon_disappear () {
-            profile_daemon = null;
-            setup_power_profiles_ui ();
-        }
-
-        private async void get_profile_daemon () {
-            if (profile_daemon == null) {
-                try {
-                    profile_daemon = yield Bus.get_proxy (BusType.SYSTEM,
-                                                          Power.POWER_PROFILES_DAEMON_NAME,
-                                                          Power.POWER_PROFILES_DAEMON_PATH);
-
-                    profile_daemon.g_properties_changed.connect ((changed) => {
-                        // TODO: Proper changed handling
-                        setup_power_profiles_ui ();
-                    });
-                    profile_daemon.profile_released.connect (() => {
-                        setup_power_profiles_ui ();
-                    });
-                } catch (Error e) {
-                    warning (e.message);
-                }
-            }
-            setup_power_profiles_ui ();
-        }
-
         private static void change_profile (Adw.ActionRow action_row) {
             PowerModeRow row = (PowerModeRow) action_row;
             string ?profile_name = row.profile.to_string ();
@@ -373,8 +359,8 @@ namespace SwaySettings {
                 return;
             }
 
-            Power.PowerProfiles active_profile =
-                Power.PowerProfiles.parse (profile_daemon.active_profile);
+            UPower.PowerProfiles active_profile =
+                UPower.PowerProfiles.parse (profile_daemon.active_profile);
             if (modes_liststore.n_items == 0) {
                 unowned PowerModeRow ?previous_row = null;
                 foreach (unowned var profile in profile_daemon.profiles) {

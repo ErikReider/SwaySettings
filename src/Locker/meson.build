@@ -10,6 +10,7 @@ executable(
   + shared_files,
   vala_args: ['--target-glib=2.50'],
   dependencies: [
+    libraries['accounts_service'],
     dep_gtk4,
     dep_gdk_pixbuf,
     dep_libadwaita,

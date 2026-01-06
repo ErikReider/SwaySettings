@@ -1,8 +1,10 @@
+using SwaySettings;
+
 static Settings self_settings;
 static UPowerMonitor app;
 
 class UPowerMonitor : Application {
-    static Power.PowerProfileDaemon ?profile_daemon = null;
+    static unowned UPower.PowerProfileDaemon ?profile_daemon = null;
     static Up.Client ?up_client = null;
 
     public bool auto_power_saver { get; internal set; }
@@ -12,6 +14,7 @@ class UPowerMonitor : Application {
     public string ?display_device_obj_path { get; private set; }
 
     private uint cookie = 0;
+    private UPower.PowerProfileDaemonHelper ppd_helper = new UPower.PowerProfileDaemonHelper ();
 
     public UPowerMonitor () {
         Object (
@@ -27,12 +30,20 @@ class UPowerMonitor : Application {
         self_settings.bind (Constants.SETTINGS_POWER_AUTO_POWER_SAVER,
                             this, "auto-power-saver", SettingsBindFlags.GET);
 
-        Bus.watch_name (
-            BusType.SYSTEM,
-            Power.POWER_PROFILES_DAEMON_NAME,
-            BusNameWatcherFlags.NONE,
-            profile_daemon_appear,
-            profile_daemon_disappear);
+        // PowerProfileDaemon
+        ppd_helper.profile_released.connect ((cookie) => {
+            if (cookie == this.cookie) {
+                this.cookie = 0;
+            }
+        });
+        ppd_helper.disappear.connect (() => {
+            cookie = 0;
+            profile_daemon = null;
+        });
+        ppd_helper.get_async.begin ((obj, res) => {
+            profile_daemon = ppd_helper.get_async.end (res);
+        });
+        // UPower
         setup_upower.begin ();
 
         hold ();
@@ -87,33 +98,6 @@ class UPowerMonitor : Application {
     ///
     /// Power Profile Daemon
     ///
-
-    private void profile_daemon_appear () {
-        get_profile_daemon.begin ();
-    }
-
-    private void profile_daemon_disappear () {
-        cookie = 0;
-        profile_daemon = null;
-    }
-
-    private async void get_profile_daemon () {
-        if (profile_daemon == null) {
-            try {
-                profile_daemon = yield Bus.get_proxy (BusType.SYSTEM,
-                                                      Power.POWER_PROFILES_DAEMON_NAME,
-                                                      Power.POWER_PROFILES_DAEMON_PATH);
-
-                profile_daemon.profile_released.connect ((cookie) => {
-                    if (cookie == this.cookie) {
-                        this.cookie = 0;
-                    }
-                });
-            } catch (Error e) {
-                warning (e.message);
-            }
-        }
-    }
 
     public bool ppd_is_holding () {
         return cookie != 0;

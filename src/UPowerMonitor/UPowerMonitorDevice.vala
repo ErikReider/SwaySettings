@@ -1,3 +1,5 @@
+using SwaySettings;
+
 enum WarningState {
     REGULAR = 0,
     LOW = 1,
@@ -108,7 +110,7 @@ class Device : Object {
             if (app.ppd_is_holding () && app.display_device_obj_path == device_obj_path) {
                 summary = "Battery no longer in Low Power state";
                 body = "Disabling Low Power mode. %s".printf (
-                    Power.PowerBatteryState.get_battery_status (device, false));
+                    UPower.UPowerBatteryState.get_battery_status (device, false));
                 // Release low power mode
                 if (device.is_present) {
                     app.ppd_release_profile ();
@@ -134,7 +136,7 @@ class Device : Object {
                     if (app.display_device_obj_path == device_obj_path) {
                         summary = "Low Battery";
                         body = "Time to recharge. %s".printf (
-                            Power.PowerBatteryState.get_battery_status (device, false));
+                            UPower.UPowerBatteryState.get_battery_status (device, false));
                         icon = "battery-level-20-symbolic";
                         // Hold low power mode
                         if (device.is_present && app.auto_power_saver) {
@@ -152,7 +154,7 @@ class Device : Object {
                     if (app.display_device_obj_path == device_obj_path) {
                         summary = "Critical Battery";
                         body = "Time to recharge. %s".printf (
-                            Power.PowerBatteryState.get_battery_status (device, false));
+                            UPower.UPowerBatteryState.get_battery_status (device, false));
                         icon = "battery-level-10-symbolic";
                         break;
                     }

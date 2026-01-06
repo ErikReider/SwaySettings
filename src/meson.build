@@ -22,10 +22,13 @@ dep_upower_glib = dependency('upower-glib', version: '>= 1.90.0')
 dep_libnotify = dependency('libnotify', version: '>= 0.8.0')
 dep_glycin = dependency('glycin-2', version: '>= 2.0.0')
 dep_glycin_gtk4 = dependency('glycin-gtk4-2', version: '>= 2.0.0')
+dep_accountsservice = dependency('accountsservice')
 
 shared_deps = [
+  dep_glib,
+  dep_gio_unix,
+  dep_gio,
   vala.find_library('posix'),
-  dependency('accountsservice'),
   dependency('gee-0.8'),
   dependency('gsettings-desktop-schemas'),
   cc.find_library('m', required: true),
@@ -35,9 +38,10 @@ shared_files = files(
   './Constants.vala',
   './Functions.vala',
   './Strings.vala',
-  './UserMgr.vala',
   './Utils.vala',
 )
+
+subdir('Library')
 
 subdir('Settings')
 subdir('Wallpaper')

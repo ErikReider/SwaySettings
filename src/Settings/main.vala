@@ -1,6 +1,6 @@
 namespace SwaySettings {
     public static Settings self_settings;
-    public static UserMgr userMgr;
+    public static AccountsService.Manager userMgr;
 
     public class Main {
         private static string page = "";
@@ -54,7 +54,7 @@ namespace SwaySettings {
             Gtk.init ();
             Adw.init ();
 
-            userMgr = new UserMgr ();
+            userMgr = new AccountsService.Manager ();
 
             Utils.wallpaper_application_registered ();
 

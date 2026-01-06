@@ -22,9 +22,8 @@ executable(
   swaysettings_sources + swaysettings_settings_sources + shared_files,
   vala_args: ['--target-glib=2.82', '--pkg=linux'],
   dependencies: [
-    dep_glib,
-    dep_gio_unix,
-    dep_gio,
+    libraries['upower'],
+    libraries['accounts_service'],
     dep_gtk4,
     dep_gdk_pixbuf,
     dep_libadwaita,
@@ -35,7 +34,6 @@ executable(
     dep_libgtop,
     dep_libpulse,
     dep_libpulse_mainloop_glib,
-    dep_upower_glib,
     dep_glycin,
     dep_glycin_gtk4,
   ]

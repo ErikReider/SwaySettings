@@ -1,4 +1,5 @@
 using Posix;
+using SwaySettings;
 
 public class TimeObj : Object {
     private DateTime date_time;
@@ -34,7 +35,7 @@ static TimeObj time_object;
 
 static Settings self_settings;
 static Gtk.Application app;
-static UserMgr user_mgr;
+static AccountsService.Manager user_mgr;
 static GtkSessionLock.Instance instance;
 
 private static bool should_daemonize = false;
@@ -91,7 +92,7 @@ class Main : Object {
         Gtk.init ();
         Adw.init ();
 
-        user_mgr = new UserMgr ();
+        user_mgr = new AccountsService.Manager ();
         time_object = new TimeObj ();
 
         self_settings = new Settings ("org.erikreider.swaysettings");
