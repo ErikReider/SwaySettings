@@ -91,6 +91,8 @@ namespace Wallpaper {
         private static unowned ListModel monitors;
         private static ListStore windows;
 
+        private static uint notify_action_id = 0;
+
         /** Separates each group of monitors and parses them separately */
         private static Utils.Config begin_parse (owned string[] args) throws Error {
             OptionContext context = new OptionContext ();
@@ -195,8 +197,12 @@ namespace Wallpaper {
 
         private static void init () {
             windows = new ListStore (typeof (Window));
+            action = new SimpleAction (Constants.WALLPAPER_ACTION_NAME,
+                                       new VariantType (Constants.WALLPAPER_ACTION_FORMAT));
+            action.activate.connect (action_activated);
+            app.add_action (action);
 
-            Gdk.Display ?display = Gdk.Display.get_default ();
+            unowned Gdk.Display ?display = Gdk.Display.get_default ();
             assert_nonnull (display);
 
             if (!debug_no_layer_shell) {
@@ -215,14 +221,6 @@ namespace Wallpaper {
                 monitors = debug_monitors;
                 monitors_changed (0, 0, debug_no_layer_shell_windows);
             }
-
-            // Activate once all windows have been added
-            action = new SimpleAction (Constants.WALLPAPER_ACTION_NAME,
-                                       new VariantType (Constants.WALLPAPER_ACTION_FORMAT));
-            action.activate.connect (action_activated);
-
-            app.add_action (action);
-            app.activate_action (Constants.WALLPAPER_ACTION_NAME, current_config);
         }
 
         private static void monitors_changed (uint position, uint removed, uint added) {
@@ -239,8 +237,16 @@ namespace Wallpaper {
                 win.present ();
             }
 
-            if (app.has_action (Constants.WALLPAPER_ACTION_NAME)) {
-                app.activate_action (Constants.WALLPAPER_ACTION_NAME, current_config);
+            lock (notify_action_id) {
+                if (notify_action_id > 0) {
+                    Source.remove (notify_action_id);
+                }
+                notify_action_id = Idle.add_once (() => {
+                    notify_action_id = 0;
+                    if (app.has_action (Constants.WALLPAPER_ACTION_NAME)) {
+                        app.activate_action (Constants.WALLPAPER_ACTION_NAME, current_config);
+                    }
+                });
             }
         }
     }

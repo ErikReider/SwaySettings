@@ -24,6 +24,8 @@ namespace Wallpaper {
                 monitor : monitor
             );
 
+            monitor.notify["geometry"].connect(geometry_changed_cb);
+
             Adw.CallbackAnimationTarget target =
                 new Adw.CallbackAnimationTarget (animation_value_cb);
             animation = new Adw.TimedAnimation (this, 1.0, 0.0, TRANSITION_DURATION, target);
@@ -38,6 +40,12 @@ namespace Wallpaper {
                 GtkLayerShell.set_anchor (this, GtkLayerShell.Edge.BOTTOM, true);
                 GtkLayerShell.set_anchor (this, GtkLayerShell.Edge.LEFT, true);
                 GtkLayerShell.set_anchor (this, GtkLayerShell.Edge.RIGHT, true);
+            }
+        }
+
+        private void geometry_changed_cb () {
+            if (background_info != null) {
+                change_wallpaper.begin (background_info.config);
             }
         }
 
