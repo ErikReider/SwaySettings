@@ -6,7 +6,16 @@ namespace Wallpaper {
 
         public unowned Gdk.Monitor monitor { get; construct set; }
 
-        private double animation_progress = 1.0;
+        private double _animation_progress = 1.0;
+        internal double animation_progress {
+            get {
+                return _animation_progress;
+            }
+            set {
+                _animation_progress = value;
+                queue_draw ();
+            }
+        }
         private double animation_progress_inv {
             get {
                 return (1 - animation_progress);
@@ -26,8 +35,7 @@ namespace Wallpaper {
 
             monitor.notify["geometry"].connect(geometry_changed_cb);
 
-            Adw.CallbackAnimationTarget target =
-                new Adw.CallbackAnimationTarget (animation_value_cb);
+            Adw.PropertyAnimationTarget target = new Adw.PropertyAnimationTarget (this, "animation-progress");
             animation = new Adw.TimedAnimation (this, 1.0, 0.0, TRANSITION_DURATION, target);
 
             if (!debug_no_layer_shell) {
@@ -40,6 +48,13 @@ namespace Wallpaper {
                 GtkLayerShell.set_anchor (this, GtkLayerShell.Edge.BOTTOM, true);
                 GtkLayerShell.set_anchor (this, GtkLayerShell.Edge.LEFT, true);
                 GtkLayerShell.set_anchor (this, GtkLayerShell.Edge.RIGHT, true);
+            }
+        }
+
+        ~Window () {
+            unowned Cancellable ?running_cancellable = null;
+            while ((running_cancellable = cancellables.pop_head ()) != null) {
+                running_cancellable.cancel ();
             }
         }
 
@@ -297,12 +312,6 @@ namespace Wallpaper {
             float y = 0;
             snapshot.translate (Graphene.Point ().init (x, y));
             info.texture.snapshot (snapshot, width, height);
-        }
-
-        void animation_value_cb (double progress) {
-            animation_progress = progress;
-
-            queue_draw ();
         }
     }
 }
