@@ -230,7 +230,7 @@ namespace SwaySettingsWallpaper {
             uint32 height = info.height;
             uint32 width = info.width;
             switch (info.config.scale_mode) {
-                case ScaleModes.FILL :
+                case ScaleModes.FILL:
                     double window_ratio = (double) buffer_width / buffer_height;
                     double bg_ratio = width / height;
                     if (window_ratio > bg_ratio) { // Taller wallpaper than monitor
@@ -253,7 +253,7 @@ namespace SwaySettingsWallpaper {
                         }
                     }
                     break;
-                case ScaleModes.FIT :
+                case ScaleModes.FIT:
                     double window_ratio = (double) buffer_width / buffer_height;
                     double bg_ratio = width / height;
                     if (window_ratio > bg_ratio) { // Taller wallpaper than monitor
@@ -276,12 +276,12 @@ namespace SwaySettingsWallpaper {
                         }
                     }
                     break;
-                case ScaleModes.STRETCH :
+                case ScaleModes.STRETCH:
                     snapshot.scale ((float) buffer_width / width,
                                     (float) buffer_height / height);
                     info.texture.snapshot (snapshot, width, height);
                     break;
-                case ScaleModes.CENTER :
+                case ScaleModes.CENTER:
                     float x = (float) (buffer_width / 2 - width / 2);
                     float y = (float) (buffer_height / 2 - height / 2);
                     snapshot.translate (Graphene.Point ().init (x, y));

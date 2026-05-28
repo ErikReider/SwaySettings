@@ -39,7 +39,7 @@ namespace Utils.GSchema {
         }
 
         switch (value.get_type_string ()) {
-            case "i" :
+            case "i":
                 int32 val = value.get_int32 ();
                 settings.set_int (name, val);
                 return val.to_string ();

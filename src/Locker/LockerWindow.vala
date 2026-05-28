@@ -236,7 +236,7 @@ public class LockerWindow : Gtk.ApplicationWindow {
         set_busy (false);
 
         switch (status) {
-            case pam_status.PAM_STATUS_ERROR :
+            case pam_status.PAM_STATUS_ERROR:
                 // TODO:
                 critical ("PAM failed!");
                 break;

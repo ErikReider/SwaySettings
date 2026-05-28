@@ -41,7 +41,7 @@ class Device : Object {
 
     private void device_notify () {
         switch ((Up.DeviceState) device.state) {
-            case Up.DeviceState.FULLY_CHARGED :
+            case Up.DeviceState.FULLY_CHARGED:
                 charge_state = ChargeState.FULLY_CHARGED;
                 break;
             case Up.DeviceState.PENDING_CHARGE:

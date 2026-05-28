@@ -23,16 +23,16 @@ namespace SwaySettings.UPower {
     public class UPowerBatteryState {
         public static string ?get_battery_state (Up.DeviceState state) {
             switch (state) {
-                case PENDING_CHARGE:
+                case Up.DeviceState.PENDING_CHARGE:
                     return "Charge limit reached, not charging";
-                case CHARGING:
+                case Up.DeviceState.CHARGING:
                     return "Charging";
-                case DISCHARGING:
-                case PENDING_DISCHARGE:
+                case Up.DeviceState.DISCHARGING:
+                case Up.DeviceState.PENDING_DISCHARGE:
                     return "Discharging";
-                case FULLY_CHARGED:
+                case Up.DeviceState.FULLY_CHARGED:
                     return "Full";
-                case EMPTY:
+                case Up.DeviceState.EMPTY:
                     return "Empty";
                 default:
                     return null;

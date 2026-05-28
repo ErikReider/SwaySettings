@@ -241,7 +241,7 @@ namespace SwaySettings {
             ipc.run_command (str);
             string file_name;
             switch (device.input_type) {
-                case InputTypes.POINTER :
+                case InputTypes.POINTER:
                     file_name = Strings.SETTINGS_FOLDER_INPUT_POINTER;
                     break;
                 case InputTypes.TOUCHPAD:
