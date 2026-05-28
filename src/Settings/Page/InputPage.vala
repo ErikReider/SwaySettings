@@ -148,9 +148,10 @@ namespace SwaySettings {
                     // Example would be a keyboard that reports as a mouse
                     if ((type == InputTypes.POINTER ||
                          type == InputTypes.TOUCHPAD)) {
-                        if (obj.get_member ("libinput")
-                            ?.get_object ()
-                            ?.has_member ("accel_speed") == false) {
+                        unowned Json.Node ?lib = obj.get_member ("libinput");
+                        if (lib != null
+                            && lib.get_node_type () == Json.NodeType.OBJECT
+                            && lib.get_object ().has_member ("accel_speed")) {
                             continue;
                         }
                     }

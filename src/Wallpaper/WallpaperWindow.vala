@@ -160,7 +160,6 @@ namespace SwaySettingsWallpaper {
             // full_texture = texture;
             prev_background_info = saved_info;
             background_info = new_info;
-            // TODO: Fix uncrustify formatting `_?._` -> `_ ? ._`
             debug ("Old background: %s\n", prev_background_info?.to_string ());
             debug ("New background: %s\n", background_info.to_string ());
 
