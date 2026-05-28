@@ -1,4 +1,5 @@
 using Gee;
+using Utils;
 
 namespace SwaySettings {
     public class ThemesPage : PageScroll {
@@ -129,7 +130,8 @@ namespace SwaySettings {
 
         private void sync_gtk_theme () {
             string ? theme = get_theme_for_style ();
-            string ? applied_theme = Functions.get_gsetting (
+            // TODO: Move into function
+            string ? applied_theme = GSchema.get_gsetting (
                 settings,
                 "gtk-theme",
                 VariantType.STRING)?.get_string ();
@@ -145,16 +147,15 @@ namespace SwaySettings {
             ThemeStyle style = get_color_scheme ();
             string name = style == ThemeStyle.DARK
                 ? Constants.SETTINGS_THEME_DARK : Constants.SETTINGS_THEME_LIGHT;
-            Functions.set_gsetting (self_settings, name, theme);
+            GSchema.set_gsetting (self_settings, name, theme);
         }
 
         private string ? get_theme_for_style () {
             ThemeStyle style = get_color_scheme ();
             string name = style == ThemeStyle.DARK
                 ? Constants.SETTINGS_THEME_DARK : Constants.SETTINGS_THEME_LIGHT;
-            return Functions.get_gsetting (self_settings,
-                                           name,
-                                           VariantType.STRING) ? .get_string ();
+            Variant value = GSchema.get_gsetting (self_settings, name, VariantType.STRING);
+            return value != null ? value.dup_string () : null;
         }
 
         private void settings_changed (Settings settings, string str) {
@@ -233,7 +234,7 @@ namespace SwaySettings {
 
 
             // Add the buttons
-            Adw.AccentColor accent_color = Functions.get_accent_color (settings);
+            Adw.AccentColor accent_color = Widgets.get_adw_accent_color (settings);
             unowned Gtk.ToggleButton ? prev_button = null;
             foreach (EnumValue value in ((EnumClass) typeof (Adw.AccentColor).class_ref()).values) {
                 Gtk.ToggleButton button = new Gtk.ToggleButton ();
@@ -244,10 +245,10 @@ namespace SwaySettings {
                 }
                 button.toggled.connect (() => {
                     if (button.active) {
-                        Functions.set_gsetting (settings,
-                                                "accent-color",
-                                                // ex: blue, teal, green, etc...
-                                                new Variant.string (value.value_nick));
+                        GSchema.set_gsetting (settings,
+                                              "accent-color",
+                                              // ex: blue, teal, green, etc...
+                                              new Variant.string (value.value_nick));
                     }
                 });
                 accent_box.append (button);
@@ -401,7 +402,7 @@ namespace SwaySettings {
         }
 
         void set_gtk_value (string type, Variant val, bool write_file = true) {
-            string ? theme_value = Functions.set_gsetting (settings, type, val);
+            string ? theme_value = GSchema.set_gsetting (settings, type, val);
             if (theme_value == null || !write_file) return;
 
             string ? looking_for = null;
@@ -510,7 +511,7 @@ namespace SwaySettings {
             if (min_ver % 2 != 0) min_ver++;
 
             foreach (string path in paths) {
-                Functions.extract_symlink (ref path);
+                Fs.extract_symlink (ref path);
                 if (!FileUtils.test (path, FileTest.IS_DIR)) continue;
 
                 try {
@@ -522,7 +523,7 @@ namespace SwaySettings {
                         string child_file_path =
                             Path.build_path (Path.DIR_SEPARATOR_S, path,
                                              file_prop.get_name ());
-                        if (Functions.extract_symlink (ref child_file_path)) {
+                        if (Fs.extract_symlink (ref child_file_path)) {
                             File child_file =
                                 File.new_for_path (child_file_path);
                             // Get the new file information

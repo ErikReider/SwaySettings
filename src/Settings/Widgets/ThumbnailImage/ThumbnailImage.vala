@@ -1,18 +1,20 @@
+using Utils;
+
 namespace SwaySettings {
     public class ThumbnailImage : Adw.Bin {
-        private Utils.ScaleModes scaling_mode;
+        private Wallpaper.ScaleModes scaling_mode;
         private Gtk.Overlay overlay;
         private Gtk.Picture picture;
         private Gtk.Button remove_button;
         private Gtk.Button preview_button;
 
         public string ?image_path;
-        public Wallpaper wallpaper;
+        public WallpaperInfo wallpaper;
         public int width;
         public int height;
         public bool full_size;
 
-        public signal void on_remove_click (Wallpaper wp);
+        public signal void on_remove_click (WallpaperInfo wp);
         public signal void on_set_image (bool visible);
 
         construct {
@@ -60,10 +62,10 @@ namespace SwaySettings {
             add_css_class ("thumbnail-image");
         }
 
-        public ThumbnailImage (Wallpaper wallpaper,
+        public ThumbnailImage (WallpaperInfo wallpaper,
                                int height,
                                int width,
-                               Utils.ScaleModes scaling_mode,
+                               Wallpaper.ScaleModes scaling_mode,
                                bool full_size,
                                int margin = 8) {
             this.wallpaper = wallpaper;
@@ -85,10 +87,10 @@ namespace SwaySettings {
         }
 
         /** Doesn't load the Image. You must call `refresh_image ()`. */
-        public ThumbnailImage.batch (Wallpaper wallpaper,
+        public ThumbnailImage.batch (WallpaperInfo wallpaper,
                                      int height,
                                      int width,
-                                     Utils.ScaleModes scaling_mode,
+                                     Wallpaper.ScaleModes scaling_mode,
                                      ref bool checked_folder_exists,
                                      bool have_remove_button,
                                      int margin = 8) {
@@ -117,16 +119,16 @@ namespace SwaySettings {
 
         private void set_scaling_mode () {
             switch (scaling_mode) {
-                case Utils.ScaleModes.FILL:
+                case Wallpaper.ScaleModes.FILL:
                     picture.content_fit = Gtk.ContentFit.COVER;
                     break;
-                case Utils.ScaleModes.STRETCH:
+                case Wallpaper.ScaleModes.STRETCH:
                     picture.content_fit = Gtk.ContentFit.FILL;
                     break;
-                case Utils.ScaleModes.FIT:
+                case Wallpaper.ScaleModes.FIT:
                     picture.content_fit = Gtk.ContentFit.CONTAIN;
                     break;
-                case Utils.ScaleModes.CENTER:
+                case Wallpaper.ScaleModes.CENTER:
                     picture.content_fit = Gtk.ContentFit.SCALE_DOWN;
                     break;
             }
@@ -231,14 +233,14 @@ namespace SwaySettings {
         public string ?image_path;
         public Gdk.Paintable ?paintable = null;
 
-        Wallpaper wallpaper;
+        WallpaperInfo wallpaper;
         int width;
         int height;
         bool full_size;
         unowned SourceFunc callback;
 
         public ThumbnailThread (string ?image_path,
-                                Wallpaper wallpaper,
+                                WallpaperInfo wallpaper,
                                 int width,
                                 int height,
                                 bool full_size,
@@ -268,7 +270,7 @@ namespace SwaySettings {
 
         private void generate_thumbnail () {
             try {
-                image_path = Functions.generate_thumbnail (wallpaper.path);
+                image_path = Wallpaper.generate_thumbnail (wallpaper.path);
             } catch (Error e) {
                 stderr.printf (e.message + "\n");
                 image_path = wallpaper.path;
@@ -289,7 +291,7 @@ namespace SwaySettings {
                 if (!full_size) {
                     // Scale the texture
                     float new_width, new_height;
-                    paintable = SwaySettings.Functions.gdk_texture_scale (
+                    paintable = Widgets.gdk_texture_scale (
                         GlyGtk4.frame_get_texture (frame),
                         frame.get_width (), frame.get_height (),
                         width, height,

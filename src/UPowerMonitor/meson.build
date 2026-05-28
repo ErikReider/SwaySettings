@@ -6,7 +6,6 @@ executable(
   )
   + swaysettings_sources
   + shared_files,
-  vala_args: ['--target-glib=2.50'],
   dependencies: [
     libraries['upower'],
     dep_libadwaita,

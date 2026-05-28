@@ -1,4 +1,5 @@
 using Gee;
+using Utils;
 
 namespace SwaySettings {
 
@@ -60,7 +61,7 @@ namespace SwaySettings {
         }
 
         public override Gtk.Widget set_child () {
-            string config_path = Functions.get_swaync_config_path ();
+            string config_path = get_swaync_config_path ();
             settings = read_file (config_path);
             write_file ();
 
@@ -130,6 +131,30 @@ namespace SwaySettings {
             } catch (Error e) {
                 stderr.printf (e.message + "\n");
             }
+        }
+
+        private bool is_swaync_installed () {
+            return GLib.Environment.find_program_in_path ("swaync") != null;
+        }
+
+        private string get_swaync_config_path () {
+            string[] paths = {};
+            paths += Path.build_path (Path.DIR_SEPARATOR.to_string (),
+                                      GLib.Environment.get_user_config_dir (),
+                                      "swaync/config.json");
+            foreach (var path in GLib.Environment.get_system_config_dirs ()) {
+                paths += Path.build_path (Path.DIR_SEPARATOR.to_string (),
+                                          path, "swaync/config.json");
+            }
+
+            string path = "";
+            foreach (string try_path in paths) {
+                if (File.new_for_path (try_path).query_exists ()) {
+                    path = try_path;
+                    break;
+                }
+            }
+            return path;
         }
     }
 }

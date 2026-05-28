@@ -1,3 +1,5 @@
+using Utils;
+
 namespace SwaySettings {
     public class BluetoothPage : Page {
 
@@ -277,7 +279,7 @@ namespace SwaySettings {
         }
 
         void device_removed_cb (Bluez.Device1 device) {
-            BoolFunc<Gtk.Widget> func = (widget) => {
+            Widgets.BoolFunc<Gtk.Widget> func = (widget) => {
                 if (widget is BluetoothDeviceRow) {
                     BluetoothDeviceRow row = (BluetoothDeviceRow) widget;
                     if (row.device == device) {
@@ -289,8 +291,8 @@ namespace SwaySettings {
                 }
                 return false;
             };
-            Functions.iter_listbox_children (paired_list_box, func);
-            Functions.iter_listbox_children (nearby_list_box, func);
+            Widgets.iter_listbox_children (paired_list_box, func);
+            Widgets.iter_listbox_children (nearby_list_box, func);
         }
 
         void device_changed_cb (BluetoothDeviceRow row) {

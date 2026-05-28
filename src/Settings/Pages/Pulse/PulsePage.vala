@@ -1,5 +1,6 @@
-using PulseAudio;
 using Gee;
+using PulseAudio;
+using Utils;
 
 namespace SwaySettings {
     public class PulsePage : PageScroll {
@@ -487,7 +488,7 @@ namespace SwaySettings {
 
         /** Updates the correct `SinkInputRow` with new information */
         private void active_sink_change (PulseSinkInput sink) {
-            Functions.iter_listbox_children<Gtk.Widget> (levels_listbox, (row) => {
+            Widgets.iter_listbox_children<Gtk.Widget> (levels_listbox, (row) => {
                 if (row == null || !(row is SinkInputRow)) return false;
                 var s = (SinkInputRow) row;
                 if (s.sink_input.cmp (sink)) {
@@ -507,7 +508,7 @@ namespace SwaySettings {
         /** Removes the correct `SinkInputRow` */
         private void active_sink_removed (PulseSinkInput sink) {
             int count = 0;
-            Functions.iter_listbox_children<Gtk.Widget> (levels_listbox, (row) => {
+            Widgets.iter_listbox_children<Gtk.Widget> (levels_listbox, (row) => {
                 if (row == null || !(row is SinkInputRow)) return false;
                 var s = (SinkInputRow) row;
                 count++;

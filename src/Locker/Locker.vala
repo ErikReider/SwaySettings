@@ -97,7 +97,7 @@ class Main : Object {
 
         self_settings = new Settings ("org.erikreider.swaysettings");
 
-        app = new Gtk.Application ("org.erikreider.swaysettings-locker",
+        app = new Gtk.Application (AppIds.LOCKER,
                                    ApplicationFlags.FLAGS_NONE);
         app.activate.connect ((g_app) => {
             if (activated) {

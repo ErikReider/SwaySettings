@@ -1,7 +1,9 @@
+using Utils;
+
 namespace Services {
     [DBus (name = "org.freedesktop.impl.portal.Settings")]
     // Docs: https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.impl.portal.Settings.html
-    class Settings : BaseService {
+    class SettingsPortal : BaseService {
         public uint version {
             get;
             default = 2;
@@ -11,7 +13,7 @@ namespace Services {
         private const string APPEARANCE_NAMESPACE = "org.freedesktop.appearance";
         private const string ACCENT_COLOR = "accent-color";
 
-        public Settings (DBusConnection conn) {
+        public SettingsPortal (DBusConnection conn) {
             base (conn);
 
             gnome_settings = new GLib.Settings ("org.gnome.desktop.interface");
@@ -23,7 +25,7 @@ namespace Services {
         }
 
         private Variant get_accent_color () {
-            var color = SwaySettings.Functions.get_accent_color (gnome_settings);
+            Adw.AccentColor color = Widgets.get_adw_accent_color (gnome_settings);
             Gdk.RGBA rgb = color.to_rgba ();
             return new Variant ("(ddd)", rgb.red, rgb.green, rgb.blue);
         }

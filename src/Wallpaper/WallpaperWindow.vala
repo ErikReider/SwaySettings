@@ -1,4 +1,7 @@
-namespace Wallpaper {
+using Utils;
+using Utils.Wallpaper;
+
+namespace SwaySettingsWallpaper {
     class Window : Gtk.Window {
         const Gsk.ScalingFilter SCALING_FILTER = Gsk.ScalingFilter.NEAREST;
         const int TRANSITION_DURATION = 500;
@@ -33,9 +36,10 @@ namespace Wallpaper {
                 monitor : monitor
             );
 
-            monitor.notify["geometry"].connect(geometry_changed_cb);
+            monitor.notify["geometry"].connect (geometry_changed_cb);
 
-            Adw.PropertyAnimationTarget target = new Adw.PropertyAnimationTarget (this, "animation-progress");
+            Adw.PropertyAnimationTarget target = new Adw.PropertyAnimationTarget (this,
+                                                                                  "animation-progress");
             animation = new Adw.TimedAnimation (this, 1.0, 0.0, TRANSITION_DURATION, target);
 
             if (!debug_no_layer_shell) {
@@ -64,7 +68,7 @@ namespace Wallpaper {
             }
         }
 
-        public async void change_wallpaper (owned Utils.Config new_config) {
+        public async void change_wallpaper (owned Config new_config) {
             // Cancel all currently running image loading threads,
             // and start loading the new wallpaper instead
             unowned Cancellable ?running_cancellable = null;
@@ -129,14 +133,14 @@ namespace Wallpaper {
                 // Scale the texture
                 float new_width, new_height;
                 Gdk.Paintable ?paintable
-                    = SwaySettings.Functions.gdk_texture_scale (texture,
-                                                                ref_width,
-                                                                ref_height,
-                                                                geometry.width,
-                                                                geometry.height,
-                                                                SCALING_FILTER,
-                                                                out new_width,
-                                                                out new_height);
+                    = Widgets.gdk_texture_scale (texture,
+                                                 ref_width,
+                                                 ref_height,
+                                                 geometry.width,
+                                                 geometry.height,
+                                                 SCALING_FILTER,
+                                                 out new_width,
+                                                 out new_height);
                 if (paintable != null) {
                     new_info.texture = paintable;
                     new_info.width = (uint32) new_width;
@@ -156,6 +160,7 @@ namespace Wallpaper {
             // full_texture = texture;
             prev_background_info = saved_info;
             background_info = new_info;
+            // TODO: Fix uncrustify formatting `_?._` -> `_ ? ._`
             debug ("Old background: %s\n", prev_background_info?.to_string ());
             debug ("New background: %s\n", background_info.to_string ());
 
@@ -226,7 +231,7 @@ namespace Wallpaper {
             uint32 height = info.height;
             uint32 width = info.width;
             switch (info.config.scale_mode) {
-                case Utils.ScaleModes.FILL :
+                case ScaleModes.FILL :
                     double window_ratio = (double) buffer_width / buffer_height;
                     double bg_ratio = width / height;
                     if (window_ratio > bg_ratio) { // Taller wallpaper than monitor
@@ -249,7 +254,7 @@ namespace Wallpaper {
                         }
                     }
                     break;
-                case Utils.ScaleModes.FIT :
+                case ScaleModes.FIT :
                     double window_ratio = (double) buffer_width / buffer_height;
                     double bg_ratio = width / height;
                     if (window_ratio > bg_ratio) { // Taller wallpaper than monitor
@@ -272,12 +277,12 @@ namespace Wallpaper {
                         }
                     }
                     break;
-                case Utils.ScaleModes.STRETCH :
+                case ScaleModes.STRETCH :
                     snapshot.scale ((float) buffer_width / width,
                                     (float) buffer_height / height);
                     info.texture.snapshot (snapshot, width, height);
                     break;
-                case Utils.ScaleModes.CENTER :
+                case ScaleModes.CENTER :
                     float x = (float) (buffer_width / 2 - width / 2);
                     float y = (float) (buffer_height / 2 - height / 2);
                     snapshot.translate (Graphene.Point ().init (x, y));

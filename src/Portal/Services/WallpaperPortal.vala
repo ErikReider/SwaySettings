@@ -1,7 +1,9 @@
+using Utils;
+
 namespace Services {
     [DBus (name = "org.freedesktop.impl.portal.Wallpaper")]
-    class Wallpaper : BaseService {
-        public Wallpaper (DBusConnection conn) {
+    class WallpaperPortal : BaseService {
+        public WallpaperPortal (DBusConnection conn) {
             base (conn);
         }
 
@@ -42,7 +44,7 @@ namespace Services {
             }
 
             string ? path = file.get_path ();
-            if (!SwaySettings.Functions.set_wallpaper (path, self_settings)) {
+            if (!Wallpaper.set_wallpaper (path, self_settings)) {
                 critical ("Could not set wallpaper for path: \"%s\"", path);
                 return 1;
             }

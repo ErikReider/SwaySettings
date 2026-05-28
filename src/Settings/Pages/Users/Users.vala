@@ -1,7 +1,8 @@
 using Gee;
+using Utils;
+
 // https://sssd.io/design-pages/accounts_service.html
 namespace SwaySettings {
-
     private struct Image {
         string path;
         bool correct_size;
@@ -181,7 +182,7 @@ namespace SwaySettings {
 
         void get_avatars_in_path (string location, string[] formats,
                                   int depth, int max_depth = -1) {
-            Functions.walk_through_dir (location, (info, file) => {
+            Fs.walk_through_dir (location, (info, file) => {
                 string path = Path.build_filename (file.get_path (),
                                                    info.get_name ());
                 switch (info.get_file_type ()) {

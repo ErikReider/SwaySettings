@@ -1,3 +1,5 @@
+using Utils;
+
 namespace SwaySettings {
     public enum ThemeStyle {
         DEFAULT, DARK;
@@ -100,7 +102,7 @@ namespace SwaySettings {
         private void draw_background () {
             try {
                 string big_path = "%s/wallpaper".printf (Environment.get_user_cache_dir ());
-                string path = Functions.generate_thumbnail (big_path);
+                string path = Wallpaper.generate_thumbnail (big_path);
                 File file = File.new_for_path (path);
 
                 Gly.Image image = new Gly.Loader (file).load ();
@@ -110,7 +112,7 @@ namespace SwaySettings {
                 // Scale the texture
                 float new_width, new_height;
                 Gdk.Paintable ?paintable
-                    = SwaySettings.Functions.gdk_texture_scale (
+                    = Widgets.gdk_texture_scale (
                             GlyGtk4.frame_get_texture (frame),
                             frame.get_width (), frame.get_height (),
                             WIDTH, HEIGHT,

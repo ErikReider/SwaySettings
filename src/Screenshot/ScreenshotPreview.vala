@@ -1,3 +1,5 @@
+using Utils;
+
 private enum DecorationLayout {
     LEFT, RIGTH;
 }
@@ -187,7 +189,7 @@ public class ScreenshotPreview : Adw.Bin {
     }
 
     private File ? get_initial_folder () {
-        Variant ? variant = SwaySettings.Functions.get_gsetting (
+        Variant ? variant = GSchema.get_gsetting (
             self_settings,
             Constants.SETTINGS_SCREENSHOT_SAVE_DEST,
             VariantType.STRING);
@@ -232,7 +234,7 @@ public class ScreenshotPreview : Adw.Bin {
     }
 
     private void picture_button_click_cb () {
-        Variant variant = SwaySettings.Functions.get_gsetting (
+        Variant variant = GSchema.get_gsetting (
             self_settings,
             Constants.SETTINGS_SCREENSHOT_EDIT_CMD,
             VariantType.STRING);
@@ -311,7 +313,7 @@ public class ScreenshotPreview : Adw.Bin {
         }
 
         // Exit on save
-        Variant ? variant = SwaySettings.Functions.get_gsetting (
+        Variant ? variant = GSchema.get_gsetting (
             self_settings, Constants.SETTINGS_SCREENSHOT_EXIT_ON_SAVE, VariantType.BOOLEAN);
         if (variant == null) {
             critical ("Setting: \"%s\" could not be found!",
@@ -344,7 +346,7 @@ public class ScreenshotPreview : Adw.Bin {
         texture.save_to_png (path);
 
         // Exit on save
-        Variant ? variant = SwaySettings.Functions.get_gsetting (
+        Variant ? variant = GSchema.get_gsetting (
             self_settings, Constants.SETTINGS_SCREENSHOT_EXIT_ON_SAVE, VariantType.BOOLEAN);
         if (variant == null) {
             critical ("Setting: \"%s\" could not be found!",

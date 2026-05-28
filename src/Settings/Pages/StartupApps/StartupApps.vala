@@ -1,8 +1,8 @@
 using Gee;
+using Utils;
 
 namespace SwaySettings {
     public class StartupApps : PageScroll {
-
         Gtk.ListBox list_box;
 
         ArrayList<DesktopAppInfo> startup_apps;
@@ -57,8 +57,9 @@ namespace SwaySettings {
         ArrayList<DesktopAppInfo> get_startup_apps () {
             ArrayList<DesktopAppInfo> apps = new ArrayList<DesktopAppInfo> ();
             string auto_start_path = Path.build_path (Path.DIR_SEPARATOR_S,
-                Environment.get_user_config_dir (), "autostart");
-            Functions.walk_through_dir (auto_start_path, (file_info) => {
+                                                      Environment.get_user_config_dir (),
+                                                      "autostart");
+            Fs.walk_through_dir (auto_start_path, (file_info) => {
                 // Implement "X-GNOME-Autostart-enabled" check???
                 string app_path = Path.build_path (Path.DIR_SEPARATOR_S,
                     auto_start_path, file_info.get_name ());

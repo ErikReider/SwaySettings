@@ -1,3 +1,5 @@
+using Utils;
+
 namespace Bluez {
     class Daemon : Object {
         private DBusObjectManager ? object_manager;
@@ -325,9 +327,9 @@ namespace Bluez {
             return return_value;
         }
 
-        Type agentmanager1_proxy_type = SwaySettings.Functions.get_proxy_gtype<AgentManager1> ();
-        Type device1_proxy_type = SwaySettings.Functions.get_proxy_gtype<Device1> ();
-        Type adapter1_proxy_type = SwaySettings.Functions.get_proxy_gtype<Adapter1> ();
+        Type agentmanager1_proxy_type = DBusHelper.get_proxy_gtype<AgentManager1> ();
+        Type device1_proxy_type = DBusHelper.get_proxy_gtype<Device1> ();
+        Type adapter1_proxy_type = DBusHelper.get_proxy_gtype<Adapter1> ();
         private Type get_proxy_type_func (DBusObjectManagerClient manager,
                                           string object_path,
                                           string ? interface_name) {

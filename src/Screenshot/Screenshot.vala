@@ -20,7 +20,7 @@ public static int main (string[] args) {
 
         self_settings = new Settings ("org.erikreider.swaysettings");
 
-        app = new Gtk.Application ("org.erikreider.swaysettings-screenshot",
+        app = new Gtk.Application (AppIds.SCREENSHOT,
                                    ApplicationFlags.FLAGS_NONE);
         app.activate.connect ((g_app) => {
             if (activated) {

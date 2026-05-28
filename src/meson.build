@@ -4,7 +4,7 @@ cc = meson.get_compiler('c')
 src_dir = meson.current_source_dir()
 
 # Deps
-dep_glib = dependency('glib-2.0', version: '>= 2.50')
+dep_glib = dependency('glib-2.0', version: '>= 2.82')
 dep_gio_unix = dependency('gio-unix-2.0', version: '>= 2.50')
 dep_gio = dependency('gio-2.0', version: '>= 2.50')
 dep_gtk4 = dependency('gtk4', version: '>= 4.14.0')
@@ -35,18 +35,20 @@ shared_deps = [
 ]
 
 shared_files = files(
+  './AppIds.vala',
   './Constants.vala',
-  './Functions.vala',
   './Strings.vala',
-  './Utils.vala',
 )
+
+utils = {}
+subdir('Utils')
 
 subdir('Library')
 
-subdir('Settings')
-subdir('Wallpaper')
 subdir('AutoStart')
+subdir('Locker')
 subdir('Portal')
 subdir('Screenshot')
-subdir('Locker')
+subdir('Settings')
 subdir('UPowerMonitor')
+subdir('Wallpaper')

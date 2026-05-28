@@ -1,3 +1,5 @@
+using Utils;
+
 public class LockData : Object {
     public Gtk.PasswordEntryBuffer pwd_buffer { get; construct set; }
     public bool show_password { get; private set; }
@@ -161,7 +163,7 @@ public class LockerWindow : Gtk.ApplicationWindow {
         load_cancellable.cancel ();
         load_cancellable.reset ();
 
-        string path = Utils.get_wallpaper_gschema (self_settings);
+        string path = Wallpaper.get_path_setting (self_settings);
 
         File file = File.new_for_path (path);
         if (!file.query_exists ()) {
@@ -178,7 +180,7 @@ public class LockerWindow : Gtk.ApplicationWindow {
             // Scale the texture
             float new_width, new_height;
             Gdk.Paintable ?paintable
-                = SwaySettings.Functions.gdk_texture_scale (
+                = Widgets.gdk_texture_scale (
                         GlyGtk4.frame_get_texture (frame),
                         frame.get_width (), frame.get_height (),
                         monitor.geometry.width, monitor.geometry.height,
@@ -190,7 +192,7 @@ public class LockerWindow : Gtk.ApplicationWindow {
             picture.set_paintable (null);
         }
 
-        Utils.ScaleModes scale = Utils.get_scale_mode_gschema (self_settings);
+        var scale = Wallpaper.get_scale_mode_setting (self_settings);
         picture.set_content_fit (scale.to_content_fit ());
 
         // User Data
@@ -234,7 +236,7 @@ public class LockerWindow : Gtk.ApplicationWindow {
         set_busy (false);
 
         switch (status) {
-            case pam_status.PAM_STATUS_ERROR:
+            case pam_status.PAM_STATUS_ERROR :
                 // TODO:
                 critical ("PAM failed!");
                 break;

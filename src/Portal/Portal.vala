@@ -36,9 +36,9 @@ void on_bus_aquired (DBusConnection conn,
     debug ("Bus aquired: %s", name);
     try {
         conn.register_object ("/org/freedesktop/portal/desktop",
-                              new Services.Wallpaper (conn));
+                              new Services.WallpaperPortal (conn));
         conn.register_object ("/org/freedesktop/portal/desktop",
-                              new Services.Settings (conn));
+                              new Services.SettingsPortal (conn));
     } catch (IOError e) {
         critical ("Could not register CC service");
         Process.exit (1);

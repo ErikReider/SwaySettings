@@ -1,14 +1,16 @@
-namespace Wallpaper {
+using Utils.Wallpaper;
+
+namespace SwaySettingsWallpaper {
     public static Settings self_settings;
 
     public class BackgroundInfo {
-        public Utils.Config config;
+        public Config config;
         public Gdk.Paintable ?texture = null;
         public uint32 width = 1;
         public uint32 height = 1;
         public uint file_hash = 0;
 
-        public BackgroundInfo (Utils.Config config) {
+        public BackgroundInfo (Config config) {
             this.config = config;
         }
 
@@ -86,7 +88,7 @@ namespace Wallpaper {
         private static bool activated = false;
 
         private static SimpleAction action;
-        private static Utils.Config current_config;
+        private static Config current_config;
 
         private static unowned ListModel monitors;
         private static ListStore windows;
@@ -94,20 +96,20 @@ namespace Wallpaper {
         private static uint notify_action_id = 0;
 
         /** Separates each group of monitors and parses them separately */
-        private static Utils.Config begin_parse (owned string[] args) throws Error {
+        private static Config begin_parse (owned string[] args) throws Error {
             OptionContext context = new OptionContext ();
             context.set_help_enabled (true);
             context.add_main_entries (ENTRIES, null);
             context.parse_strv (ref args);
 
-            Utils.Config config = Utils.Config ();
+            Config config = Config ();
             if (option_path == null && option_color == null) {
                 // Use default wallpaper if no arguments were provided
                 // Try getting GSchema wallpaper before defaulting to file
-                config.path = Utils.get_wallpaper_gschema (self_settings);
+                config.path = get_path_setting (self_settings);
                 if (config.path == null) {
                     debug ("Defaulting to default wallpaper through path");
-                    config.path = Utils.Config.default_path;
+                    config.path = Config.default_path;
                 }
             } else {
                 if (option_path != null) {
@@ -118,9 +120,9 @@ namespace Wallpaper {
                 }
             }
             if (option_mode != null) {
-                config.scale_mode = Utils.ScaleModes.parse_mode (option_mode);
+                config.scale_mode = ScaleModes.parse_mode (option_mode);
             } else {
-                config.scale_mode = Utils.get_scale_mode_gschema (self_settings);
+                config.scale_mode = get_scale_mode_setting (self_settings);
             }
 
             return config;
@@ -137,7 +139,7 @@ namespace Wallpaper {
                 if (option_list_modes) {
                     print ("Available scaling modes: \n");
                     string[] modes = {};
-                    EnumClass enumc = (EnumClass) typeof (Utils.ScaleModes).class_ref ();
+                    EnumClass enumc = (EnumClass) typeof (ScaleModes).class_ref ();
                     foreach (EnumValue enum_value in enumc.values) {
                         modes += enum_value.value_nick;
                     }
@@ -149,7 +151,7 @@ namespace Wallpaper {
                     debug_no_layer_shell = true;
                 }
 
-                app = new Gtk.Application ("org.erikreider.swaysettings-wallpaper",
+                app = new Gtk.Application (AppIds.WALLPAPER,
                                            ApplicationFlags.DEFAULT_FLAGS);
                 if (!debug_no_layer_shell) {
                     app.hold ();
@@ -166,7 +168,7 @@ namespace Wallpaper {
 
                 // Exit early if a instance is already running
                 if (app.get_is_remote ()) {
-                    app.activate_action (Constants.WALLPAPER_ACTION_NAME, current_config);
+                    app.activate_action (ACTION_NAME, current_config);
                     app.get_dbus_connection ().flush_sync ();
                     return 0;
                 }
@@ -179,11 +181,11 @@ namespace Wallpaper {
         }
 
         private static async void action_activated (Variant ?param) {
-            if (param == null || param.get_type_string () != Constants.WALLPAPER_ACTION_FORMAT) {
+            if (param == null || param.get_type_string () != ACTION_FORMAT) {
                 return;
             }
 
-            current_config = Utils.Config () {
+            current_config = Config () {
                 path = param.get_child_value (0).get_string (),
                 scale_mode = param.get_child_value (1).get_int32 (),
                 color = param.get_child_value (2).get_string (),
@@ -197,8 +199,8 @@ namespace Wallpaper {
 
         private static void init () {
             windows = new ListStore (typeof (Window));
-            action = new SimpleAction (Constants.WALLPAPER_ACTION_NAME,
-                                       new VariantType (Constants.WALLPAPER_ACTION_FORMAT));
+            action = new SimpleAction (ACTION_NAME,
+                                       new VariantType (ACTION_FORMAT));
             action.activate.connect (action_activated);
             app.add_action (action);
 
@@ -243,8 +245,8 @@ namespace Wallpaper {
                 }
                 notify_action_id = Idle.add_once (() => {
                     notify_action_id = 0;
-                    if (app.has_action (Constants.WALLPAPER_ACTION_NAME)) {
-                        app.activate_action (Constants.WALLPAPER_ACTION_NAME, current_config);
+                    if (app.has_action (ACTION_NAME)) {
+                        app.activate_action (ACTION_NAME, current_config);
                     }
                 });
             }

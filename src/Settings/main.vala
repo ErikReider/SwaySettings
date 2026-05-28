@@ -56,12 +56,10 @@ namespace SwaySettings {
 
             userMgr = new AccountsService.Manager ();
 
-            Utils.wallpaper_application_registered ();
-
             self_settings = new Settings ("org.erikreider.swaysettings");
 
             try {
-                var app = new Gtk.Application ("org.erikreider.swaysettings",
+                var app = new Gtk.Application (AppIds.SETTINGS,
                                                ApplicationFlags.FLAGS_NONE);
                 app.activate.connect (() => {
                     Window ? win = (Window) app.active_window;

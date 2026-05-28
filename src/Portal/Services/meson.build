@@ -1,4 +1,4 @@
 services += files(
-  'Settings.vala',
-  'Wallpaper.vala',
+  'SettingsPortal.vala',
+  'WallpaperPortal.vala',
 )

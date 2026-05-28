@@ -1,5 +1,7 @@
+using Utils;
+
 namespace SwaySettings {
-    public struct Wallpaper {
+    public struct WallpaperInfo {
         string path;
         string thumbnail_path;
         bool thumbnail_valid;
@@ -16,15 +18,14 @@ namespace SwaySettings {
 
         private Queue<unowned ThumbnailImage> load_images = new Queue<unowned ThumbnailImage> ();
 
-        private static Wallpaper current_wallpaper = Wallpaper () {
-            path = Path.build_path (Path.DIR_SEPARATOR_S,
-                                    Environment.get_user_config_dir (),
-                                    "swaysettings-wallpaper"),
+        private static WallpaperInfo current_wallpaper = WallpaperInfo () {
+            path = Wallpaper.Config.get_default_path (),
             thumbnail_path = "",
             thumbnail_valid = false,
         };
 
-        private static Utils.ScaleModes scaling_mode = Utils.get_scale_mode_gschema (self_settings);
+        private static Wallpaper.ScaleModes scaling_mode =
+            Wallpaper.get_scale_mode_setting (self_settings);
 
         private Gtk.FlowBox ? user_flow_box;
         private Gtk.FlowBox ? sys_flow_box;
@@ -162,7 +163,7 @@ namespace SwaySettings {
                         string[] paths = get_user_wallpaper_paths ();
                         if (format != null && !(path in paths)) {
                             paths += path;
-                            Functions.set_gsetting (self_settings,
+                            GSchema.set_gsetting (self_settings,
                                                     Constants.SETTINGS_USER_WALLPAPERS,
                                                     new Variant.strv (paths));
                         }
@@ -173,7 +174,7 @@ namespace SwaySettings {
             });
         }
 
-        private void remove_user_wallpaper (Wallpaper wallpaper) {
+        private void remove_user_wallpaper (WallpaperInfo wallpaper) {
             string[] paths = get_user_wallpaper_paths ();
             if (wallpaper.path in paths) {
                 string[] wallpapers = {};
@@ -182,18 +183,18 @@ namespace SwaySettings {
                         wallpapers += path;
                     }
                 }
-                Functions.set_gsetting (self_settings,
+                GSchema.set_gsetting (self_settings,
                                         Constants.SETTINGS_USER_WALLPAPERS,
                                         new Variant.strv (wallpapers));
             }
         }
 
         Adw.PreferencesGroup get_scale_mode_container () {
-            Utils.ScaleModes[] modes = {
-                Utils.ScaleModes.FILL,
-                Utils.ScaleModes.STRETCH,
-                Utils.ScaleModes.FIT,
-                Utils.ScaleModes.CENTER,
+            Wallpaper.ScaleModes[] modes = {
+                Wallpaper.ScaleModes.FILL,
+                Wallpaper.ScaleModes.STRETCH,
+                Wallpaper.ScaleModes.FIT,
+                Wallpaper.ScaleModes.CENTER,
             };
 
             Adw.PreferencesGroup pref_group = new Adw.PreferencesGroup ();
@@ -219,7 +220,7 @@ namespace SwaySettings {
 
             combo_row.notify["selected-item"].connect (
                 (sender, property) => {
-                Utils.ScaleModes mode = modes[((int)((Adw.ComboRow) sender).get_selected ())];
+                Wallpaper.ScaleModes mode = modes[((int)((Adw.ComboRow) sender).get_selected ())];
                 set_scale_mode (mode);
             });
 
@@ -227,7 +228,7 @@ namespace SwaySettings {
         }
 
         Adw.PreferencesGroup get_wallpaper_container (string title,
-                                                      Wallpaper[] wallpapers,
+                                                      WallpaperInfo[] wallpapers,
                                                       out Gtk.FlowBox ? flow_box,
                                                       bool add_button = false) {
             var group = new Adw.PreferencesGroup ();
@@ -299,7 +300,7 @@ namespace SwaySettings {
                 ThumbnailImage img = (ThumbnailImage) child;
                 if (img.image_path != null) {
                     disconnect_wallpaper_listener ();
-                    Functions.set_wallpaper (img.wallpaper.path, self_settings);
+                    Wallpaper.set_wallpaper (img.wallpaper.path, self_settings);
                     refresh_selected_wallpaper (img.wallpaper.path);
                     connect_wallpaper_listener ();
                 }
@@ -310,8 +311,8 @@ namespace SwaySettings {
             return group;
         }
 
-        void add_images (owned Wallpaper[] paths, Gtk.FlowBox flow_box, bool remove_button) {
-            string ? path = Utils.get_wallpaper_gschema (self_settings);
+        void add_images (owned WallpaperInfo[] paths, Gtk.FlowBox flow_box, bool remove_button) {
+            string ? path = Wallpaper.get_path_setting (self_settings);
 
             bool checked_folder_exists = false;
             foreach (var wp in paths) {
@@ -371,8 +372,8 @@ namespace SwaySettings {
             }
         }
 
-        private Wallpaper get_wallpaper_from_path (string path) {
-            Wallpaper wp = Wallpaper ();
+        private WallpaperInfo get_wallpaper_from_path (string path) {
+            WallpaperInfo wp = WallpaperInfo ();
             wp.path = path;
             try {
                 string[] required = {
@@ -398,22 +399,29 @@ namespace SwaySettings {
             return wp;
         }
 
-        private void set_scale_mode (Utils.ScaleModes mode) {
+        private void set_scale_mode (Wallpaper.ScaleModes mode) {
             scaling_mode = mode;
-            Functions.set_gsetting (self_settings,
+            // TODO: Move into function
+            // TODO: Even needed?
+            GSchema.set_gsetting (self_settings,
                 Constants.SETTINGS_WALLPAPER_SCALING_MODE,
                 mode);
-            if (Utils.wallpaper_application_registered ()) {
-                Utils.Config config = Utils.Config() {
+
+            try {
+                Wallpaper.Config config = Wallpaper.Config() {
                     path = current_wallpaper.path,
                     scale_mode = scaling_mode,
                 };
-                Utils.wallpaper_application.activate_action (Constants.WALLPAPER_ACTION_NAME, config);
+                Wallpaper.update_config (config);
+            } catch (Error e) {
+                var dialog = new Adw.AlertDialog ("Error setting wallpaper scale",
+                                                  e.message);
+                dialog.present (get_root ());
             }
         }
 
         private string[] get_user_wallpaper_paths () {
-            Variant ? variant = Functions.get_gsetting (
+            Variant ? variant = GSchema.get_gsetting (
                 self_settings,
                 Constants.SETTINGS_USER_WALLPAPERS,
                 VariantType.STRING_ARRAY);
@@ -424,8 +432,8 @@ namespace SwaySettings {
             return variant.dup_strv ();
         }
 
-        private Wallpaper[] get_user_wallpapers () {
-            Wallpaper[] wallpapers = {};
+        private WallpaperInfo[] get_user_wallpapers () {
+            WallpaperInfo[] wallpapers = {};
             string[] paths = get_user_wallpaper_paths ();
             foreach (string path in paths) {
                 wallpapers += get_wallpaper_from_path (path);
@@ -433,7 +441,7 @@ namespace SwaySettings {
             return wallpapers;
         }
 
-        private Wallpaper[] get_system_wallpapers () {
+        private WallpaperInfo[] get_system_wallpapers () {
             string[] default_paths = {
                 "/usr/share/backgrounds",
                 "/usr/share/wallpapers",
@@ -444,10 +452,10 @@ namespace SwaySettings {
             string[] formats = { "jpg" };
             Gdk.Pixbuf.get_formats ().foreach ((fmt) => formats += fmt.get_name ());
 
-            Wallpaper[] wallpaper_paths = {};
+            WallpaperInfo[] wallpaper_paths = {};
             for (int i = 0; i < default_paths.length; i++) {
                 string path = default_paths[i];
-                Functions.walk_through_dir (path, (file_info, file) => {
+                Fs.walk_through_dir (path, (file_info, file) => {
                     switch (file_info.get_file_type ()) {
                         case FileType.REGULAR:
                             if (file_info.get_is_hidden ()
