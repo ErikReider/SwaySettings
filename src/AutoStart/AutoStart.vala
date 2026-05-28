@@ -18,7 +18,9 @@ public int main () {
                                                 autostart_path,
                                                 file_prop.get_name ());
             DesktopAppInfo app = new DesktopAppInfo.from_filename (file_path);
-            if (app == null || app.get_is_hidden ()) continue;
+            if (app == null || app.get_is_hidden ()) {
+                continue;
+            }
             app.launch (null, new AppLaunchContext ());
         }
     } catch (Error e) {

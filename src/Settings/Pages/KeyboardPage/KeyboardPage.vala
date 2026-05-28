@@ -2,7 +2,6 @@ using Gee;
 
 namespace SwaySettings {
     public class KeyboardPage : InputPage {
-
         public KeyboardPage (SettingsItem item,
                              Adw.NavigationPage page,
                              IPC ipc) {

@@ -17,12 +17,12 @@ namespace SwaySettings.AccountsService {
             current_user = user_manager.get_user (Environment.get_user_name ());
         }
 
-        public Manager() {
+        public Manager () {
             is_loaded_id =
                 current_user.notify["is-loaded"].connect (() => changed ());
             changed_id = current_user.changed.connect (() => changed ());
         }
 
-        public signal void changed();
+        public signal void changed ();
     }
 }

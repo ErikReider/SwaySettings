@@ -43,7 +43,7 @@ namespace Services {
                 return 1;
             }
 
-            string ? path = file.get_path ();
+            string ?path = file.get_path ();
             if (!Wallpaper.set_wallpaper (path, self_settings)) {
                 critical ("Could not set wallpaper for path: \"%s\"", path);
                 return 1;

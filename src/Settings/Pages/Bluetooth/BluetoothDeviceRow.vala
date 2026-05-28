@@ -147,10 +147,13 @@ namespace SwaySettings {
         }
 
         private void remove_button_clicked_cb () {
-            if (!device.paired) return;
+            if (!device.paired) {
+                return;
+            }
 
             string title = "Remove \"%s\"?".printf (device.alias);
-            const string BODY = "If you remove the device, you will have to repair the device to use it.";
+            const string BODY =
+                "If you remove the device, you will have to repair the device to use it.";
             var window = (Adw.ApplicationWindow) this.get_root ();
 
             var dialog = new Adw.MessageDialog (window, title, BODY);
@@ -184,7 +187,9 @@ namespace SwaySettings {
         }
 
         public void update_widget () {
-            if (is_dead ()) return;
+            if (is_dead ()) {
+                return;
+            }
 
             // Only show devices with low RSSI if paired
             if (!device.paired && !device.connected && device.rssi == 0) {
@@ -199,7 +204,9 @@ namespace SwaySettings {
 
             const string DEFAULT_ICON = "bluetooth-symbolic";
             string icon = DEFAULT_ICON;
-            if (device.icon != null && device.icon.length > 0) icon = device.icon;
+            if (device.icon != null && device.icon.length > 0) {
+                icon = device.icon;
+            }
             if (!Gtk.IconTheme.get_for_display (get_display ()).has_icon (icon)) {
                 icon = DEFAULT_ICON;
             }
@@ -208,7 +215,9 @@ namespace SwaySettings {
         }
 
         private void update_state () {
-            if (is_dead ()) return;
+            if (is_dead ()) {
+                return;
+            }
 
             if (!device.paired) {
                 this.set_row_state (State.UNPAIRED);

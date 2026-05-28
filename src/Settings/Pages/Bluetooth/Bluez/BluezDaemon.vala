@@ -2,7 +2,7 @@ using Utils;
 
 namespace Bluez {
     class Daemon : Object {
-        private DBusObjectManager ? object_manager;
+        private DBusObjectManager ?object_manager;
 
         public signal void adapter_added (Adapter1 adapter);
         public signal void adapter_removed (Adapter1 adapter);
@@ -15,8 +15,8 @@ namespace Bluez {
         public bool discovering { get; private set; }
         public bool discoverable { get; private set; }
 
-        private AgentManager1 ? agent_manager;
-        private Agent1 ? agent;
+        private AgentManager1 ?agent_manager;
+        private Agent1 ?agent;
 
         uint watch_bluez_id = 0;
 
@@ -24,7 +24,9 @@ namespace Bluez {
         public bool rfkill_blocking { get; private set; }
 
         public void start () {
-            if (watch_bluez_id > 0) Bus.unwatch_name (watch_bluez_id);
+            if (watch_bluez_id > 0) {
+                Bus.unwatch_name (watch_bluez_id);
+            }
 
             this.watch_bluez_id = Bus.watch_name (
                 BusType.SYSTEM,
@@ -138,7 +140,9 @@ namespace Bluez {
         }
 
         public async void register_agent (Gtk.Window window) {
-            if (agent == null) this.agent = new Agent1 (window);
+            if (agent == null) {
+                this.agent = new Agent1 (window);
+            }
 
             if (agent_manager != null) {
                 try {
@@ -163,7 +167,9 @@ namespace Bluez {
         }
 
         public bool check_adapter_powered () {
-            if (rfkill_blocking) return false;
+            if (rfkill_blocking) {
+                return false;
+            }
             foreach (Adapter1 adapter in this.get_adapters ()) {
                 if (adapter.powered) {
                     this.powered = true;
@@ -194,51 +200,69 @@ namespace Bluez {
             this.discoverable = false;
         }
 
-        public Bluez.Adapter1 ? get_adapter (ObjectPath path) {
-            if (object_manager == null) return null;
-            DBusObject ? object = object_manager.get_object (path);
+        public Bluez.Adapter1 ?get_adapter (ObjectPath path) {
+            if (object_manager == null) {
+                return null;
+            }
+            DBusObject ?object = object_manager.get_object (path);
             if (object != null) {
                 var iface = object.get_interface ("org.bluez.Adapter1");
-                if (iface is Bluez.Adapter1) return (Bluez.Adapter1) iface;
+                if (iface is Bluez.Adapter1) {
+                    return (Bluez.Adapter1) iface;
+                }
             }
             return null;
         }
 
         public List<Adapter1> get_adapters () {
             var list = new List<Adapter1> ();
-            if (this.object_manager == null) return (owned) list;
+            if (this.object_manager == null) {
+                return (owned) list;
+            }
             foreach (DBusObject object in object_manager.get_objects ()) {
-                DBusInterface ? iface = object.get_interface ("org.bluez.Adapter1");
-                if (iface == null) continue;
+                DBusInterface ?iface = object.get_interface ("org.bluez.Adapter1");
+                if (iface == null) {
+                    continue;
+                }
                 list.append ((Adapter1) iface);
             }
             return (owned) list;
         }
 
-        public Bluez.Device1 ? get_device (string path) {
-            if (object_manager == null) return null;
-            DBusObject ? object = object_manager.get_object (path);
+        public Bluez.Device1 ?get_device (string path) {
+            if (object_manager == null) {
+                return null;
+            }
+            DBusObject ?object = object_manager.get_object (path);
             if (object != null) {
                 var iface = object.get_interface ("org.bluez.Device1");
-                if (iface is Bluez.Device1) return (Bluez.Device1) iface;
+                if (iface is Bluez.Device1) {
+                    return (Bluez.Device1) iface;
+                }
             }
             return null;
         }
 
         public List<Device1> get_devices () {
             var list = new List<Device1> ();
-            if (this.object_manager == null) return (owned) list;
+            if (this.object_manager == null) {
+                return (owned) list;
+            }
             foreach (DBusObject object in object_manager.get_objects ()) {
-                DBusInterface ? iface = object.get_interface ("org.bluez.Device1");
-                if (iface == null) continue;
+                DBusInterface ?iface = object.get_interface ("org.bluez.Device1");
+                if (iface == null) {
+                    continue;
+                }
                 list.append ((Device1) iface);
             }
             return (owned) list;
         }
 
-        public string ? get_alias () {
+        public string ?get_alias () {
             var adapters = get_adapters ();
-            if (adapters.is_empty ()) return null;
+            if (adapters.is_empty ()) {
+                return null;
+            }
             return adapters.first ().data.alias;
         }
 
@@ -251,7 +275,9 @@ namespace Bluez {
 
                 // Disconnect all connected devices
                 foreach (Device1 device in get_devices ()) {
-                    if (!device.connected) continue;
+                    if (!device.connected) {
+                        continue;
+                    }
                     try {
                         yield device.disconnect ();
                     } catch (Error e) {
@@ -307,15 +333,21 @@ namespace Bluez {
             bool return_value = true;
 
             var adapters = get_adapters ();
-            if (adapters.is_empty ()) return false;
+            if (adapters.is_empty ()) {
+                return false;
+            }
 
             foreach (Adapter1 adapter in adapters) {
                 try {
                     if (state) {
-                        if (adapter.discovering) continue;
+                        if (adapter.discovering) {
+                            continue;
+                        }
                         yield adapter.start_discovery ();
                     } else {
-                        if (!adapter.discovering) continue;
+                        if (!adapter.discovering) {
+                            continue;
+                        }
                         yield adapter.stop_discovery ();
                     }
                 } catch (Error e) {
@@ -332,9 +364,10 @@ namespace Bluez {
         Type adapter1_proxy_type = DBusHelper.get_proxy_gtype<Adapter1> ();
         private Type get_proxy_type_func (DBusObjectManagerClient manager,
                                           string object_path,
-                                          string ? interface_name) {
-            if (interface_name == null)
+                                          string ?interface_name) {
+            if (interface_name == null) {
                 return typeof (DBusObjectProxy);
+            }
 
             switch (interface_name) {
                 case "org.bluez.Device1":

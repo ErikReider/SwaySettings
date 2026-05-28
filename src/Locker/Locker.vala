@@ -14,7 +14,7 @@ public class TimeObj : Object {
         date_time = new DateTime.now_local ();
 
         // Compute ms until the next minute boundary
-        int sec  = date_time.get_second ();
+        int sec = date_time.get_second ();
         int usec = date_time.get_microsecond ();
         uint delay_ms = (60 - sec) * 1000 - usec / 1000;
         update ();
@@ -173,6 +173,7 @@ class Main : Object {
             monitors = display.get_monitors ();
 
             yield init_lock ();
+
             inited = true;
         }
 

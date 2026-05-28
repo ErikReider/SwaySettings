@@ -1,7 +1,6 @@
 using Gee;
 
 namespace SwaySettings {
-
     public enum SwayCommands {
         GET_WORKSPACES = 1,
         SUBSCRIBE = 2,
@@ -31,7 +30,7 @@ namespace SwaySettings {
         public bool inited { get; private set; }
 
         public IPC () {
-            string ? socket_path = get_sock_path ();
+            string ?socket_path = get_sock_path ();
 
             this.inited = socket_path != null;
             if (socket_path == null) {
@@ -60,7 +59,7 @@ namespace SwaySettings {
             }
         }
 
-        private string ? get_sock_path () {
+        private string ?get_sock_path () {
             string[] paths = {
                 GLib.Environment.get_variable ("SWAYSOCK"),
                 GLib.Environment.get_variable ("I3SOCK"),

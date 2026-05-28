@@ -62,9 +62,11 @@ namespace SwaySettings {
             Fs.walk_through_dir (auto_start_path, (file_info) => {
                 // Implement "X-GNOME-Autostart-enabled" check???
                 string app_path = Path.build_path (Path.DIR_SEPARATOR_S,
-                    auto_start_path, file_info.get_name ());
+                                                   auto_start_path, file_info.get_name ());
                 var app = new DesktopAppInfo.from_filename (app_path);
-                if (app == null) return;
+                if (app == null) {
+                    return;
+                }
                 apps.add (app);
             });
             return apps;
@@ -111,7 +113,6 @@ namespace SwaySettings {
 
     [GtkTemplate (ui = "/org/erikreider/swaysettings/ui/StartupAppsItem.ui")]
     class StartupAppsItem : Gtk.ListBoxRow {
-
         [GtkChild]
         unowned Gtk.Image image;
 
@@ -137,19 +138,18 @@ namespace SwaySettings {
     }
 
     class DesktopAppChooser : Adw.Dialog {
-    
         Gtk.ListStore liststore = new Gtk.ListStore (3,
                                                      typeof (string),
                                                      typeof (string),
                                                      typeof (int));
-    
+
         Gtk.TreeView tree_view = new Gtk.TreeView ();
-    
+
         Gtk.Button cancel_button = new Gtk.Button.with_label ("Cancel");
         Gtk.Button save_button = new Gtk.Button.with_label ("Add");
-    
+
         ArrayList<DesktopAppInfo> apps = new ArrayList<DesktopAppInfo> ();
-    
+
         public delegate void on_selected (DesktopAppInfo app_info);
 
         // TODO: Make tree_view scalable
@@ -176,10 +176,10 @@ namespace SwaySettings {
             toolbar.set_content (scrolled_window);
             scrolled_window.set_child (tree_view);
         }
-    
+
         public DesktopAppChooser (Gtk.Widget parent, on_selected callback) {
             tree_view.set_model (liststore);
-    
+
             cancel_button.clicked.connect (() => close ());
             tree_view.row_activated.connect (() => {
                 callback (get_selected ());
@@ -192,7 +192,7 @@ namespace SwaySettings {
                     close ();
                 }
             });
-    
+
             var icon_column = new Gtk.TreeViewColumn.with_attributes (
                 "icon",
                 new Gtk.CellRendererPixbuf (),
@@ -203,19 +203,21 @@ namespace SwaySettings {
                 new Gtk.CellRendererText (),
                 "text",
                 0);
-    
+
             tree_view.append_column (icon_column);
             tree_view.append_column (name_column);
-    
+
             populate_list ();
 
             present (parent);
         }
-    
+
         void populate_list () {
             var all_apps = GLib.AppInfo.get_all ();
             all_apps.sort ((a, b) => {
-                if (a.get_display_name () == b.get_display_name ()) return 0;
+                if (a.get_display_name () == b.get_display_name ()) {
+                    return 0;
+                }
                 return a.get_display_name () > b.get_display_name () ? 1 : -1;
             });
             for (uint index = 0, shown_index = 0; index < all_apps.length (); index++) {
@@ -234,16 +236,20 @@ namespace SwaySettings {
                 }
             }
         }
-    
-        DesktopAppInfo ? get_selected () {
+
+        DesktopAppInfo ?get_selected () {
             var selection = tree_view.get_selection ();
             Gtk.TreeModel tree_model;
             Gtk.TreeIter tree_iter;
             selection.get_selected (out tree_model, out tree_iter);
             GLib.Value app_index;
-            if (tree_iter.user_data == null) return null;
+            if (tree_iter.user_data == null) {
+                return null;
+            }
             tree_model.get_value (tree_iter, 2, out app_index);
-            if (!app_index.holds (typeof (int))) return null;
+            if (!app_index.holds (typeof (int))) {
+                return null;
+            }
             return apps[app_index.get_int ()];
         }
     }

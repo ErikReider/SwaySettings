@@ -1,5 +1,5 @@
-using PulseAudio;
 using Gee;
+using PulseAudio;
 
 namespace SwaySettings {
     public class PulseSinkInput : Object {
@@ -15,7 +15,7 @@ namespace SwaySettings {
         /** The name of the application binary: `application.process.binary` */
         public string application_binary;
         /** The application icon. Can be null: `application.icon_name` */
-        public string? application_icon_name;
+        public string ?application_icon_name;
         /** The name of the media: `media.name` */
         public string media_name;
 
@@ -31,7 +31,7 @@ namespace SwaySettings {
         /** Gets the name to be shown to the user:
          * "application_name"
          */
-        public string ? get_display_name () {
+        public string ?get_display_name () {
             return name;
         }
 
@@ -104,7 +104,7 @@ namespace SwaySettings {
                 client.set_sink_input_mute (button.active, sink_input);
             });
             scale.value_changed.connect (() => {
-                output_value.label = "%.0lf".printf(Math.round (scale.get_value ()));
+                output_value.label = "%.0lf".printf (Math.round (scale.get_value ()));
                 output_value.label = ((int) scale.get_value ()).to_string ();
                 client.set_sink_input_volume (
                     sink_input,
@@ -116,13 +116,14 @@ namespace SwaySettings {
             this.sink_input = sink_input;
 
             title.set_markup (Markup.printf_escaped (
-                    "<span text_transform='capitalize'>%s</span>", sink_input.name));
+                                  "<span text_transform='capitalize'>%s</span>", sink_input.name));
             title.set_visible (sink_input.name != null && sink_input.name.length > 0);
 
             media_name.set_visible (sink_input.media_name != null
-                && sink_input.media_name.length > 0);
+                                    && sink_input.media_name.length > 0);
             media_name.set_markup (Markup.printf_escaped (
-                    "<span text_transform='capitalize'>%s</span>", sink_input.media_name));
+                                       "<span text_transform='capitalize'>%s</span>",
+                                       sink_input.media_name));
 
             icon.set_from_icon_name (
                 sink_input.application_icon_name ?? "application-x-executable");
@@ -130,7 +131,7 @@ namespace SwaySettings {
             mute_toggle.set_active (sink_input.is_muted);
 
             scale.set_value (sink_input.volume);
-            output_value.label = "%.0lf".printf(Math.round (scale.get_value ()));
+            output_value.label = "%.0lf".printf (Math.round (scale.get_value ()));
         }
     }
 }

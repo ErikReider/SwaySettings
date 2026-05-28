@@ -17,7 +17,7 @@ namespace SwaySettings {
         MOUSE,
         TRACKPAD;
 
-        public string ? get_name () {
+        public string ?get_name () {
             switch (this) {
                 case USERS:
                     return "Users";
@@ -36,7 +36,7 @@ namespace SwaySettings {
                 case SCREENSHOT:
                     return "Screenshot";
                 // case SWAYNC:
-                //     return "Sway Notification Center";
+                // return "Sway Notification Center";
                 case BLUETOOTH:
                     return "Bluetooth";
                 case SOUND:
@@ -51,7 +51,7 @@ namespace SwaySettings {
             return null;
         }
 
-        public string ? get_internal_name () {
+        public string ?get_internal_name () {
             switch (this) {
                 case USERS:
                     return "users";
@@ -70,7 +70,7 @@ namespace SwaySettings {
                 case SCREENSHOT:
                     return "screenshot";
                 // case SWAYNC:
-                //     return "swaync";
+                // return "swaync";
                 case BLUETOOTH:
                     return "bluetooth";
                 case SOUND:
@@ -155,7 +155,9 @@ namespace SwaySettings {
             sidebar_listbox.set_activate_on_single_click (true);
             sidebar_listbox.set_selection_mode (Gtk.SelectionMode.SINGLE);
             sidebar_listbox.row_activated.connect ((row) => {
-                if (row == null) return;
+                if (row == null) {
+                    return;
+                }
                 SettingsItem settings_item =
                     ((ISidebarListItem) row).settings_item;
                 if (current_page_name == settings_item.internal_name) {
@@ -177,7 +179,9 @@ namespace SwaySettings {
             });
             // Add separators
             sidebar_listbox.set_header_func ((row, before) => {
-                if (before == null) return;
+                if (before == null) {
+                    return;
+                }
                 SettingsItem row_item = ((ISidebarListItem) row).settings_item;
                 SettingsItem before_item =
                     ((ISidebarListItem) before).settings_item;
@@ -208,10 +212,14 @@ namespace SwaySettings {
         }
 
         public void navigato_to_page (string page) {
-            if (current_page_name != null && current_page_name == page) return;
+            if (current_page_name != null && current_page_name == page) {
+                return;
+            }
 
             foreach (var item in sidebar_items) {
-                if (item == null) continue;
+                if (item == null) {
+                    continue;
+                }
                 if (item.settings_item.internal_name == page) {
                     if (item is Gtk.ListBoxRow) {
                         ((Gtk.ListBoxRow) item).activate ();
@@ -227,9 +235,13 @@ namespace SwaySettings {
             foreach (SettingsCategory category in items) {
                 foreach (unowned SettingsItem settings_item in category.items) {
                     settings_item.group = category;
-                    if (settings_item.hidden) continue;
+                    if (settings_item.hidden) {
+                        continue;
+                    }
                     string ?name = settings_item.page_type.get_internal_name ();
-                    if (name == null) continue;
+                    if (name == null) {
+                        continue;
+                    }
                     if (settings_item.page_type == PageType.USERS) {
                         var item = new UserListItem (settings_item);
                         this.sidebar_items += item;
@@ -247,7 +259,7 @@ namespace SwaySettings {
             }
         }
 
-        public Page ? get_page (SettingsItem item) {
+        public Page ?get_page (SettingsItem item) {
             Page ?page = null;
             switch (item.page_type) {
                 case ABOUT_PC:
@@ -272,8 +284,8 @@ namespace SwaySettings {
                     page = new ScreenshotPage (item, content_page);
                     break;
                 // case SWAYNC:
-                //     page = new Swaync (item, deck, ipc);
-                //     break;
+                // page = new Swaync (item, deck, ipc);
+                // break;
                 case BLUETOOTH:
                     page = new BluetoothPage (item, content_page);
                     break;

@@ -1,5 +1,5 @@
-using PulseAudio;
 using Gee;
+using PulseAudio;
 
 namespace SwaySettings {
     /**
@@ -16,8 +16,8 @@ namespace SwaySettings {
         private string default_sink_name { get; private set; }
         private string default_source_name { get; private set; }
 
-        private PulseDevice ? default_sink = null;
-        private PulseDevice ? default_source = null;
+        private PulseDevice ?default_sink = null;
+        private PulseDevice ?default_source = null;
 
         public HashMap<string, PulseDevice> sinks { get; private set; }
         public HashMap<string, PulseDevice> sources { get; private set; }
@@ -118,7 +118,9 @@ namespace SwaySettings {
                             var iter = active_sinks.map_iterator ();
                             while (iter.next ()) {
                                 var sink_input = iter.get_value ();
-                                if (sink_input.index != index) continue;
+                                if (sink_input.index != index) {
+                                    continue;
+                                }
                                 this.remove_active_sink (sink_input);
                                 iter.unset ();
                                 break;
@@ -135,7 +137,9 @@ namespace SwaySettings {
                             break;
                         case Context.SubscriptionEventType.REMOVE:
                             foreach (var sink in sinks.values) {
-                                if (sink.device_index != index) continue;
+                                if (sink.device_index != index) {
+                                    continue;
+                                }
                                 sink.removed = true;
                                 sink.is_default = false;
                                 this.remove_device (sink);
@@ -154,7 +158,9 @@ namespace SwaySettings {
                             break;
                         case Context.SubscriptionEventType.REMOVE:
                             foreach (var source in sources.values) {
-                                if (source.device_index != index) continue;
+                                if (source.device_index != index) {
+                                    continue;
+                                }
                                 source.removed = true;
                                 source.is_default = false;
                                 this.remove_device (source);
@@ -179,7 +185,9 @@ namespace SwaySettings {
                                 var iter = list.map_iterator ();
                                 while (iter.next ()) {
                                     var device = iter.get_value ();
-                                    if (device.card_index != index) continue;
+                                    if (device.card_index != index) {
+                                        continue;
+                                    }
                                     device.removed = true;
                                     device.is_default = false;
                                     iter.unset ();
@@ -205,7 +213,7 @@ namespace SwaySettings {
          * Gets called when any server value changes like default devices
          * Calls `get_card_info_list`, `get_sink_info_list` and `get_source_info_list`
          */
-        private void get_server_info (Context ctx, ServerInfo ? info) {
+        private void get_server_info (Context ctx, ServerInfo ?info) {
             if (this.default_sink_name == null) {
                 this.default_sink_name = info.default_sink_name;
             }
@@ -227,8 +235,10 @@ namespace SwaySettings {
             ctx.get_sink_input_info_list (this.get_sink_input_info);
         }
 
-        private void get_sink_input_info (Context ctx, SinkInputInfo ? info, int eol) {
-            if (info == null || eol != 0) return;
+        private void get_sink_input_info (Context ctx, SinkInputInfo ?info, int eol) {
+            if (info == null || eol != 0) {
+                return;
+            }
 
             uint32 id = PulseSinkInput.get_hash_map_key (info.index);
             PulseSinkInput sink_input = null;
@@ -245,9 +255,9 @@ namespace SwaySettings {
 
             sink_input.name = info.proplist.gets ("application.name");
             sink_input.application_binary = info.proplist
-                                             .gets ("application.process.binary");
+                 .gets ("application.process.binary");
             sink_input.application_icon_name = info.proplist
-                                                .gets ("application.icon_name");
+                 .gets ("application.icon_name");
             sink_input.media_name = info.proplist.gets ("media.name");
 
             sink_input.is_muted = info.mute == 1;
@@ -255,7 +265,7 @@ namespace SwaySettings {
             sink_input.cvolume = info.volume;
             sink_input.channel_map = info.channel_map;
             sink_input.balance = sink_input.cvolume
-                                  .get_balance (sink_input.channel_map);
+                 .get_balance (sink_input.channel_map);
             sink_input.volume_operations.foreach ((op) => {
                 if (op.get_state () != Operation.State.RUNNING) {
                     sink_input.volume_operations.remove (op);
@@ -275,17 +285,21 @@ namespace SwaySettings {
             }
         }
 
-        private void get_card_info (Context ctx, CardInfo ? info, int eol) {
-            if (info == null || eol != 0) return;
+        private void get_card_info (Context ctx, CardInfo ?info, int eol) {
+            if (info == null || eol != 0) {
+                return;
+            }
 
-            unowned string ? description = info.proplist
-                                            .gets ("device.description");
-            unowned string ? props_icon = info.proplist
-                                           .gets ("device.icon_name");
+            unowned string ?description = info.proplist
+                 .gets ("device.description");
+            unowned string ?props_icon = info.proplist
+                 .gets ("device.icon_name");
 
             PulseDevice[] ports = {};
             foreach (var port in info.ports) {
-                if (port->available == PortAvailable.NO) continue;
+                if (port->available == PortAvailable.NO) {
+                    continue;
+                }
 
                 bool is_input = port->direction == Direction.INPUT;
                 HashMap<string, PulseDevice> devices =
@@ -315,10 +329,12 @@ namespace SwaySettings {
                 // Get port profiles2 (profiles is "Superseded by profiles2")
                 // and sort largest priority first
                 var profiles = new ArrayList<unowned CardProfileInfo2 *>
-                                .wrap (port->profiles2);
+                     .wrap (port->profiles2);
 
                 profiles.sort ((a, b) => {
-                    if (a->priority == b->priority) return 0;
+                    if (a->priority == b->priority) {
+                        return 0;
+                    }
                     return a.priority > b.priority ? -1 : 1;
                 });
                 string[] new_profiles = {};
@@ -336,7 +352,7 @@ namespace SwaySettings {
                 device.profiles = pulse_profiles;
 
                 device.icon_name = port->proplist.gets ("device.icon_name")
-                                   ?? props_icon;
+                    ?? props_icon;
                 if (device.icon_name == null) {
                     device.icon_name = is_input
                         ? "microphone-sensitivity-high"
@@ -357,7 +373,9 @@ namespace SwaySettings {
                 var iter = list.map_iterator ();
                 while (iter.next ()) {
                     var device = iter.get_value ();
-                    if (device.card_index != info.index) continue;
+                    if (device.card_index != info.index) {
+                        continue;
+                    }
                     bool found = false;
                     foreach (var p in ports) {
                         if (device.get_current_hash_key ()
@@ -375,8 +393,10 @@ namespace SwaySettings {
             }
         }
 
-        private void get_sink_info (Context ctx, SinkInfo ? info, int eol) {
-            if (info == null || eol != 0) return;
+        private void get_sink_info (Context ctx, SinkInfo ?info, int eol) {
+            if (info == null || eol != 0) {
+                return;
+            }
 
             bool found = false;
             foreach (PulseDevice device in sinks.values) {
@@ -403,7 +423,7 @@ namespace SwaySettings {
                         device.cvolume = info.volume;
                         device.channel_map = info.channel_map;
                         device.balance = device.cvolume
-                                          .get_balance (device.channel_map);
+                             .get_balance (device.channel_map);
                         device.volume_operations.foreach ((op) => {
                             if (op.get_state () != Operation.State.RUNNING) {
                                 device.volume_operations.remove (op);
@@ -424,7 +444,9 @@ namespace SwaySettings {
                 }
             }
             // If not found, it's a cardless device
-            if (found) return;
+            if (found) {
+                return;
+            }
 
             HashMap<string, PulseDevice> devices = this.sinks;
             string id = PulseDevice.get_hash_map_key (
@@ -455,7 +477,7 @@ namespace SwaySettings {
             device.cvolume = info.volume;
             device.channel_map = info.channel_map;
             device.balance = device.cvolume
-                              .get_balance (device.channel_map);
+                 .get_balance (device.channel_map);
             device.volume_operations.foreach ((op) => {
                 if (op.get_state () != Operation.State.RUNNING) {
                     device.volume_operations.remove (op);
@@ -479,11 +501,15 @@ namespace SwaySettings {
             this.change_device (device);
         }
 
-        private void get_source_info (Context ctx, SourceInfo ? info, int eol) {
-            if (info == null || eol != 0) return;
+        private void get_source_info (Context ctx, SourceInfo ?info, int eol) {
+            if (info == null || eol != 0) {
+                return;
+            }
 
             // To ignore source monitors (mirroring the sink)
-            if (info.monitor_of_sink != PulseAudio.INVALID_INDEX) return;
+            if (info.monitor_of_sink != PulseAudio.INVALID_INDEX) {
+                return;
+            }
 
             bool found = false;
             foreach (PulseDevice device in sources.values) {
@@ -510,7 +536,7 @@ namespace SwaySettings {
                         device.cvolume = info.volume;
                         device.channel_map = info.channel_map;
                         device.balance = device.cvolume
-                                          .get_balance (device.channel_map);
+                             .get_balance (device.channel_map);
                         device.volume_operations.foreach ((op) => {
                             if (op.get_state () != Operation.State.RUNNING) {
                                 device.volume_operations.remove (op);
@@ -531,7 +557,9 @@ namespace SwaySettings {
                 }
             }
             // If not found, it's a cardless device
-            if (found) return;
+            if (found) {
+                return;
+            }
 
             HashMap<string, PulseDevice> devices = this.sources;
             string id = PulseDevice.get_hash_map_key (
@@ -562,7 +590,7 @@ namespace SwaySettings {
             device.cvolume = info.volume;
             device.channel_map = info.channel_map;
             device.balance = device.cvolume
-                              .get_balance (device.channel_map);
+                 .get_balance (device.channel_map);
             device.volume_operations.foreach ((op) => {
                 if (op.get_state () != Operation.State.RUNNING) {
                     device.volume_operations.remove (op);
@@ -601,7 +629,7 @@ namespace SwaySettings {
 
             var cvol = sink_input.cvolume;
             cvol.scale (double_to_volume (volume));
-            Operation ? operation = null;
+            Operation ?operation = null;
             operation = context.set_sink_input_volume (
                 sink_input.index, cvol);
             if (operation != null) {
@@ -621,7 +649,7 @@ namespace SwaySettings {
 
             var cvol = device.cvolume;
             cvol.scale (double_to_volume (volume));
-            Operation ? operation = null;
+            Operation ?operation = null;
             if (device.direction == Direction.INPUT) {
                 operation = context.set_source_volume_by_name (
                     device.device_name, cvol);
@@ -636,7 +664,9 @@ namespace SwaySettings {
         }
 
         public async void set_default_device (PulseDevice device) {
-            if (device == null) return;
+            if (device == null) {
+                return;
+            }
             bool is_input = device.direction == Direction.INPUT;
 
             // Only set port and card profile if the device is attached to a card
@@ -788,7 +818,9 @@ namespace SwaySettings {
         }
 
         public void set_device_mute (bool state, PulseDevice device) {
-            if (device.is_muted == state) return;
+            if (device.is_muted == state) {
+                return;
+            }
             switch (device.direction) {
                 case Direction.INPUT:
                     context.set_source_mute_by_index (
@@ -802,7 +834,9 @@ namespace SwaySettings {
         }
 
         public void set_sink_input_mute (bool state, PulseSinkInput sink_input) {
-            if (sink_input.is_muted == state) return;
+            if (sink_input.is_muted == state) {
+                return;
+            }
             context.set_sink_input_mute (sink_input.index, state);
         }
 

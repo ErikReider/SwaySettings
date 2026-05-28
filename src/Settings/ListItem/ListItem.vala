@@ -1,6 +1,5 @@
 namespace SwaySettings {
     public class ListItem : Adw.ActionRow {
-
         public ListItem (string title,
                          Gtk.Widget widget) {
             add_prefix (new Gtk.Label (title));
@@ -68,7 +67,6 @@ namespace SwaySettings {
     }
 
     public class ListComboEnum : Adw.ComboRow {
-
         public delegate void selected_index (uint index);
 
         public ListComboEnum (string title,
@@ -76,7 +74,7 @@ namespace SwaySettings {
                               GLib.Type enum_type,
                               selected_index callback) {
             var enumc = (EnumClass) enum_type.class_ref ();
-            ListStore liststore = new ListStore (typeof(Gtk.StringObject));
+            ListStore liststore = new ListStore (typeof (Gtk.StringObject));
 
             this.set_title (title);
             this.selectable = false;
@@ -102,7 +100,9 @@ namespace SwaySettings {
         public void set_selected_from_enum (int val) {
             int selected_index = 0;
             for (int i = 0; i < this.get_model ().get_n_items (); i++) {
-                if (val == i) selected_index = i;
+                if (val == i) {
+                    selected_index = i;
+                }
             }
             this.set_selected (selected_index);
         }

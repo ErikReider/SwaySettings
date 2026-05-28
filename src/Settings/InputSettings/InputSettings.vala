@@ -44,7 +44,7 @@ namespace SwaySettings {
         public bool is_valid () {
             bool n_valid = name != null && name.length > 0;
             bool sd_valid = short_description != null &&
-                            short_description.length > 0;
+                short_description.length > 0;
             bool d_valid = description != null && description.length > 0;
             return n_valid && sd_valid && d_valid;
         }
@@ -472,19 +472,19 @@ namespace SwaySettings {
                     }
                     break;
                 case "gint64":
-                    int64 ?casted = (int64 ? ) value.get_int64 ();
+                    int64 ?casted = (int64 ?) value.get_int64 ();
                     if (casted != null) {
                         node.set_int (casted);
                     }
                     break;
                 case "gfloat":
-                    float ?casted = (float ? ) value.get_float ();
+                    float ?casted = (float ?) value.get_float ();
                     if (casted != null) {
                         node.set_double (casted);
                     }
                     break;
                 case "gdouble":
-                    double ?casted = (double ? ) value.get_double ();
+                    double ?casted = (double ?) value.get_double ();
                     if (casted != null) {
                         node.set_double (casted);
                     }

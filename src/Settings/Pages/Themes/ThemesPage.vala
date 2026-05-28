@@ -8,8 +8,8 @@ namespace SwaySettings {
         Adw.Bin preferences_box;
 
         private static Settings settings = new Settings ("org.gnome.desktop.interface");
-        private static Settings ? dock_settings = null;
-        private static SettingsSchema ? dock_settings_schema = null;
+        private static Settings ?dock_settings = null;
+        private static SettingsSchema ?dock_settings_schema = null;
 
         private const string DEFAULT_THEME = "Adwaita";
 
@@ -69,7 +69,7 @@ namespace SwaySettings {
             // Waydock
             if (dock_settings == null) {
                 dock_settings_schema = SettingsSchemaSource.get_default ()
-                    .lookup ("org.erikreider.waydock", true);
+                     .lookup ("org.erikreider.waydock", true);
                 if (dock_settings_schema != null) {
                     dock_settings = new Settings.full (dock_settings_schema, null, null);
                 }
@@ -129,16 +129,18 @@ namespace SwaySettings {
         }
 
         private void sync_gtk_theme () {
-            string ? theme = get_theme_for_style ();
+            string ?theme = get_theme_for_style ();
             // TODO: Move into function
-            string ? applied_theme = GSchema.get_gsetting (
+            string ?applied_theme = GSchema.get_gsetting (
                 settings,
                 "gtk-theme",
                 VariantType.STRING)?.get_string ();
             if (theme == null || theme.length == 0) {
                 theme = DEFAULT_THEME;
                 set_self_theme (theme);
-            } else if (theme == applied_theme) return;
+            } else if (theme == applied_theme) {
+                return;
+            }
 
             set_gtk_value ("gtk-theme", theme);
         }
@@ -150,12 +152,12 @@ namespace SwaySettings {
             GSchema.set_gsetting (self_settings, name, theme);
         }
 
-        private string ? get_theme_for_style () {
+        private string ?get_theme_for_style () {
             ThemeStyle style = get_color_scheme ();
             string name = style == ThemeStyle.DARK
                 ? Constants.SETTINGS_THEME_DARK : Constants.SETTINGS_THEME_LIGHT;
             Variant value = GSchema.get_gsetting (self_settings, name, VariantType.STRING);
-            return value != null ? value.dup_string () : null;
+            return value != null ?value.dup_string () : null;
         }
 
         private void settings_changed (Settings settings, string str) {
@@ -195,7 +197,9 @@ namespace SwaySettings {
         }
 
         private void style_toggled (Gtk.ToggleButton b) {
-            if (!b.active) return;
+            if (!b.active) {
+                return;
+            }
             ThemePreviewItem button = (ThemePreviewItem) b;
             ThemeStyle style = button.theme_style;
             set_gtk_value ("color-scheme", style.get_gsettings_name (), false);
@@ -235,8 +239,9 @@ namespace SwaySettings {
 
             // Add the buttons
             Adw.AccentColor accent_color = Widgets.get_adw_accent_color (settings);
-            unowned Gtk.ToggleButton ? prev_button = null;
-            foreach (EnumValue value in ((EnumClass) typeof (Adw.AccentColor).class_ref()).values) {
+            unowned Gtk.ToggleButton ?prev_button = null;
+            foreach (EnumValue value in ((EnumClass) typeof (Adw.AccentColor).class_ref ()).values)
+            {
                 Gtk.ToggleButton button = new Gtk.ToggleButton ();
                 button.add_css_class ("accent-button");
                 button.add_css_class (value.value_nick);
@@ -295,9 +300,9 @@ namespace SwaySettings {
             position_row.set_model (list_store);
             // Populate the list
             SettingsSchemaKey key = dock_settings_schema.get_key (schema_key);
-            Variant ?range = key.get_range();
+            Variant ?range = key.get_range ();
             return_val_if_fail (range != null, null);
-            if (range.get_type_string() != "(sv)"
+            if (range.get_type_string () != "(sv)"
                 || range.get_child_value (0).get_string () != "enum") {
                 critical ("Waydock Schema error: %s\n", range.print (false));
                 return null;
@@ -317,7 +322,7 @@ namespace SwaySettings {
             return_val_if_fail (list_store.n_items > 0, null);
 
             position_row.notify["selected-item"].connect (() => {
-                Object ? item = list_store.get_item (position_row.selected);
+                Object ?item = list_store.get_item (position_row.selected);
                 if (item is Gtk.StringObject) {
                     string value = ((Gtk.StringObject) item).string;
                     dock_settings.set_string (schema_key, value);
@@ -371,8 +376,8 @@ namespace SwaySettings {
             var combo_row = new Adw.ComboRow ();
             combo_row.set_title (title);
 
-            ListStore liststore = new ListStore (typeof(Gtk.StringObject));
-            string ? current_theme = get_current_gtk_theme (setting_name);
+            ListStore liststore = new ListStore (typeof (Gtk.StringObject));
+            string ?current_theme = get_current_gtk_theme (setting_name);
             ArrayList<string> themes = get_gtk_themes (setting_name,
                                                        folder_name);
             if (current_theme == null
@@ -385,16 +390,19 @@ namespace SwaySettings {
             for (int i = 0; i < themes.size; i++) {
                 var theme_name = themes[i];
                 liststore.append (new Gtk.StringObject (theme_name));
-                if (current_theme == theme_name) selected_index = i;
+                if (current_theme == theme_name) {
+                    selected_index = i;
+                }
             }
 
             combo_row.set_model (liststore);
-            Gtk.PropertyExpression expression = new Gtk.PropertyExpression (typeof(Gtk.StringObject), null, "string");
+            Gtk.PropertyExpression expression =
+                new Gtk.PropertyExpression (typeof (Gtk.StringObject), null, "string");
             combo_row.set_expression (expression);
             combo_row.set_selected (selected_index);
             combo_row.notify["selected-item"].connect (
                 (sender, property) => {
-                string theme = themes.get ((int)((Adw.ComboRow) sender).get_selected ());
+                string theme = themes.get ((int) ((Adw.ComboRow) sender).get_selected ());
                 set_self_theme (theme);
                 set_gtk_value (setting_name, theme);
             });
@@ -402,10 +410,12 @@ namespace SwaySettings {
         }
 
         void set_gtk_value (string type, Variant val, bool write_file = true) {
-            string ? theme_value = GSchema.set_gsetting (settings, type, val);
-            if (theme_value == null || !write_file) return;
+            string ?theme_value = GSchema.set_gsetting (settings, type, val);
+            if (theme_value == null || !write_file) {
+                return;
+            }
 
-            string ? looking_for = null;
+            string ?looking_for = null;
             // Can be found through the `gtk-query-settings` command
             switch (type) {
                 case "gtk-theme":
@@ -445,7 +455,9 @@ namespace SwaySettings {
         private void write_data (string settings_path, string looking_for, string theme_value) {
             File file = File.new_for_path (settings_path);
             // TODO: Implement alt action instead of skipping
-            if (!file.query_exists ()) return;
+            if (!file.query_exists ()) {
+                return;
+            }
 
             try {
                 string theme_data = "";
@@ -481,7 +493,7 @@ namespace SwaySettings {
             }
         }
 
-        string ? get_current_gtk_theme (string type) {
+        string ?get_current_gtk_theme (string type) {
             if (settings.settings_schema.has_key (type)) {
                 return settings.get_string (type);
             }
@@ -503,16 +515,20 @@ namespace SwaySettings {
                 paths[i] = Path.build_path ("/", paths[i], folder_name);
             }
             paths += Path.build_path (Path.DIR_SEPARATOR_S,
-                Environment.get_home_dir (), ".%s".printf (folder_name));
+                                      Environment.get_home_dir (), ".%s".printf (folder_name));
 
             var themes = new ArrayList<string> ();
 
             var min_ver = Gtk.get_minor_version ();
-            if (min_ver % 2 != 0) min_ver++;
+            if (min_ver % 2 != 0) {
+                min_ver++;
+            }
 
             foreach (string path in paths) {
                 Fs.extract_symlink (ref path);
-                if (!FileUtils.test (path, FileTest.IS_DIR)) continue;
+                if (!FileUtils.test (path, FileTest.IS_DIR)) {
+                    continue;
+                }
 
                 try {
                     var directory = File.new_for_path (path);
@@ -563,7 +579,9 @@ namespace SwaySettings {
                 }
             }
             themes.sort ((a, b) => {
-                if (a == b) return 0;
+                if (a == b) {
+                    return 0;
+                }
                 return a > b ? 1 : -1;
             });
             return themes;
@@ -574,15 +592,17 @@ namespace SwaySettings {
                 case "cursor-theme":
                     File cursors_file = File.new_for_path (
                         Path.build_path (Path.DIR_SEPARATOR_S,
-                            folder_path, "cursors"));
+                                         folder_path, "cursors"));
                     FileType file_type = cursors_file.query_file_type (
                         FileQueryInfoFlags.NOFOLLOW_SYMLINKS);
-                    if (file_type == FileType.DIRECTORY) return true;
+                    if (file_type == FileType.DIRECTORY) {
+                        return true;
+                    }
                     break;
                 case "icon-theme":
                     File theme_file = File.new_for_path (
-                            Path.build_path (Path.DIR_SEPARATOR_S,
-                                folder_path, "index.theme"));
+                        Path.build_path (Path.DIR_SEPARATOR_S,
+                                         folder_path, "index.theme"));
                     var file_type = theme_file.query_file_type (0);
                     if (FileType.REGULAR == file_type) {
                         var dir = File.new_for_path (folder_path);

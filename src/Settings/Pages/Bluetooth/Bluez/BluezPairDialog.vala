@@ -117,10 +117,10 @@ namespace Bluez {
             }
 
             // Logic
-            Device1 ? device;
+            Device1 ?device;
             string device_name = "Unknown Bluetooth Device";
             try {
-                device = Bus.get_proxy_sync<Device1 ? > (
+                device = Bus.get_proxy_sync<Device1 ?> (
                     BusType.SYSTEM,
                     "org.bluez",
                     object_path,
@@ -157,7 +157,7 @@ namespace Bluez {
                     break;
                 case AuthType.REQUEST_AUTHORIZATION:
                     message_label.label = "“%s” would like to pair with this device."
-                                           .printf (device_name);
+                         .printf (device_name);
 
                     var confirm = add_button ("Pair", Gtk.ResponseType.ACCEPT);
                     confirm.add_css_class ("suggested-action");

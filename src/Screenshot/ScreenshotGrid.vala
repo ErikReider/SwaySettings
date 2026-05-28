@@ -51,7 +51,7 @@ public class ScreenshotGrid : Adw.Bin {
         queue_draw_all ();
     }
 
-    protected override void snapshot(Gtk.Snapshot snapshot) {
+    protected override void snapshot (Gtk.Snapshot snapshot) {
         Graphene.Rect drag_rect = Graphene.Rect ().init (
             start_x - window.monitor.geometry.x,
             start_y - window.monitor.geometry.y,

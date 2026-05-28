@@ -6,7 +6,9 @@ private enum DecorationLayout {
 
 public delegate Graphene.Size AnimationCallback (ScreenshotPreview widget,
                                                  double value);
+
 public delegate void AnimationDoneCallback (ScreenshotPreview widget);
+
 public delegate void ClickCallback (ScreenshotPreview widget);
 
 [GtkTemplate (ui = "/org/erikreider/swaysettings/ui/ScreenshotPreview.ui")]
@@ -37,7 +39,7 @@ public class ScreenshotPreview : Adw.Bin {
 
     public ScreenshotPreview.list (ScreenshotWindow window,
                                    ClickCallback close_click_cb) {
-        this(window);
+        this (window);
         this.close_click_cb = close_click_cb;
 
         this.opacity = 0.0;
@@ -94,7 +96,7 @@ public class ScreenshotPreview : Adw.Bin {
     }
 
     public ScreenshotPreview.fixed (ScreenshotWindow window) {
-        this(window);
+        this (window);
 
         set_can_target (false);
     }
@@ -125,7 +127,7 @@ public class ScreenshotPreview : Adw.Bin {
     private DecorationLayout get_decoration_layout () {
         DecorationLayout layout = DecorationLayout.RIGTH;
 
-        unowned Gtk.Settings?g_settings = Gtk.Settings.get_default ();
+        unowned Gtk.Settings ?g_settings = Gtk.Settings.get_default ();
         if (g_settings == null) {
             return layout;
         }
@@ -178,7 +180,7 @@ public class ScreenshotPreview : Adw.Bin {
 
         return Graphene.Rect ().init (
             window.monitor.geometry.width - (float) dst_width,
-            window.monitor.geometry.height - (float)  dst_height,
+            window.monitor.geometry.height - (float) dst_height,
             (float) dst_width,
             (float) dst_height);
     }
@@ -188,27 +190,27 @@ public class ScreenshotPreview : Adw.Bin {
         return "Screenshot from %s.png".printf (time.format ("%Y-%m-%d %H-%M-%S"));
     }
 
-    private File ? get_initial_folder () {
-        Variant ? variant = GSchema.get_gsetting (
+    private File ?get_initial_folder () {
+        Variant ?variant = GSchema.get_gsetting (
             self_settings,
             Constants.SETTINGS_SCREENSHOT_SAVE_DEST,
             VariantType.STRING);
         if (variant == null) {
             critical ("Setting: \"%s\" could not be found!",
-                Constants.SETTINGS_SCREENSHOT_SAVE_DEST);
+                      Constants.SETTINGS_SCREENSHOT_SAVE_DEST);
             return null;
         }
 
         string paths[2] = {
             variant.dup_string (),
             Path.build_path (
-                    Path.DIR_SEPARATOR_S,
-                    Environment.get_home_dir (),
-                    variant.dup_string ()),
+                Path.DIR_SEPARATOR_S,
+                Environment.get_home_dir (),
+                variant.dup_string ()),
         };
         foreach (string path in paths) {
             if (path[:2] == "~/") {
-                path = Environment.get_home_dir () + path[1:];
+                path = Environment.get_home_dir () + path[1 :];
             }
             File initial_file = File.new_for_path (path);
             if (initial_file.query_exists ()) {
@@ -219,8 +221,8 @@ public class ScreenshotPreview : Adw.Bin {
         return null;
     }
 
-    private unowned Gdk.Texture ? get_texture () {
-        unowned Gdk.Paintable ? paintable = picture.get_paintable ();
+    private unowned Gdk.Texture ?get_texture () {
+        unowned Gdk.Paintable ?paintable = picture.get_paintable ();
         if (paintable == null) {
             critical ("Paintable is null");
             return null;
@@ -240,7 +242,7 @@ public class ScreenshotPreview : Adw.Bin {
             VariantType.STRING);
         if (variant == null) {
             critical ("Setting: \"%s\" could not be found!",
-                Constants.SETTINGS_SCREENSHOT_EDIT_CMD);
+                      Constants.SETTINGS_SCREENSHOT_EDIT_CMD);
             return;
         }
         string cmd_str = variant.dup_string ();
@@ -248,13 +250,13 @@ public class ScreenshotPreview : Adw.Bin {
             cmd_str = Environment.get_home_dir () + cmd_str[1:];
         }
 
-        unowned Gdk.Texture ? texture = get_texture ();
+        unowned Gdk.Texture ?texture = get_texture ();
         if (texture == null) {
             critical ("Texture is null");
             return;
         }
 
-        Bytes ? bytes = texture.save_to_png_bytes ();
+        Bytes ?bytes = texture.save_to_png_bytes ();
         if (bytes == null) {
             critical ("Could not download PNG to bytes");
             return;
@@ -269,9 +271,9 @@ public class ScreenshotPreview : Adw.Bin {
                 cmd, SubprocessFlags.STDIN_PIPE);
 
             // Get the STDIN stream
-            unowned OutputStream ? stdin_stream = subprocess.get_stdin_pipe ();
+            unowned OutputStream ?stdin_stream = subprocess.get_stdin_pipe ();
             if (stdin_stream == null) {
-                stderr.printf("Failed to get stdin pipe for subprocess.\n");
+                stderr.printf ("Failed to get stdin pipe for subprocess.\n");
                 return;
             }
 
@@ -284,7 +286,7 @@ public class ScreenshotPreview : Adw.Bin {
     }
 
     private async void save_as_button_click_cb () {
-        unowned Gdk.Texture ? texture = get_texture ();
+        unowned Gdk.Texture ?texture = get_texture ();
         if (texture == null) {
             critical ("Texture is null");
             return;
@@ -296,9 +298,10 @@ public class ScreenshotPreview : Adw.Bin {
         dialog.set_initial_folder (get_initial_folder ());
         dialog.set_initial_name (get_file_name ());
 
-        File ? file = null;
+        File ?file = null;
         try {
             file = yield dialog.save (null, null);
+
             if (file == null) {
                 return;
             }
@@ -309,15 +312,15 @@ public class ScreenshotPreview : Adw.Bin {
 
         if (!texture.save_to_png (file.get_path ())) {
             critical ("Could not save screenshot %p in \"%s\"",
-                texture, file.get_path ());
+                      texture, file.get_path ());
         }
 
         // Exit on save
-        Variant ? variant = GSchema.get_gsetting (
+        Variant ?variant = GSchema.get_gsetting (
             self_settings, Constants.SETTINGS_SCREENSHOT_EXIT_ON_SAVE, VariantType.BOOLEAN);
         if (variant == null) {
             critical ("Setting: \"%s\" could not be found!",
-                Constants.SETTINGS_SCREENSHOT_EXIT_ON_SAVE);
+                      Constants.SETTINGS_SCREENSHOT_EXIT_ON_SAVE);
             return;
         }
         if (variant.get_boolean ()) {
@@ -326,31 +329,32 @@ public class ScreenshotPreview : Adw.Bin {
     }
 
     private async void save_button_click_cb () {
-        unowned Gdk.Texture ? texture = get_texture ();
+        unowned Gdk.Texture ?texture = get_texture ();
         if (texture == null) {
             critical ("Texture is null");
             return;
         }
 
-        File ? initial_folder = get_initial_folder ();
+        File ?initial_folder = get_initial_folder ();
         string file_name = get_file_name ();
         if (initial_folder == null) {
             // Fallback
             yield save_as_button_click_cb ();
+
             return;
         }
 
         string path = Path.build_path (Path.DIR_SEPARATOR_S,
-            initial_folder.get_path (), file_name);
+                                       initial_folder.get_path (), file_name);
 
         texture.save_to_png (path);
 
         // Exit on save
-        Variant ? variant = GSchema.get_gsetting (
+        Variant ?variant = GSchema.get_gsetting (
             self_settings, Constants.SETTINGS_SCREENSHOT_EXIT_ON_SAVE, VariantType.BOOLEAN);
         if (variant == null) {
             critical ("Setting: \"%s\" could not be found!",
-                Constants.SETTINGS_SCREENSHOT_EXIT_ON_SAVE);
+                      Constants.SETTINGS_SCREENSHOT_EXIT_ON_SAVE);
             return;
         }
         if (variant.get_boolean ()) {
@@ -359,7 +363,7 @@ public class ScreenshotPreview : Adw.Bin {
     }
 
     private void copy_button_click_cb () {
-        unowned Gdk.Texture ? texture = get_texture ();
+        unowned Gdk.Texture ?texture = get_texture ();
         if (texture == null) {
             critical ("Texture is null");
             return;

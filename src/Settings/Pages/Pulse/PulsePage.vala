@@ -88,8 +88,8 @@ namespace SwaySettings {
         [GtkChild]
         public unowned Adw.PreferencesGroup sink_inputs_group;
 
-        private PulseDevice ? default_sink = null;
-        private PulseDevice ? default_source = null;
+        private PulseDevice ?default_sink = null;
+        private PulseDevice ?default_source = null;
 
         private PulseDaemon client = new PulseDaemon ();
 
@@ -108,8 +108,12 @@ namespace SwaySettings {
                                        BindingFlags.SYNC_CREATE,
                                        (bind, from_value, ref to_value) => {
                 to_value = error_page;
-                if (!from_value.holds (Type.BOOLEAN)) return false;
-                if (!from_value.get_boolean ()) return true;
+                if (!from_value.holds (Type.BOOLEAN)) {
+                    return false;
+                }
+                if (!from_value.get_boolean ()) {
+                    return true;
+                }
                 to_value = pulse_page;
                 return true;
             });
@@ -138,13 +142,13 @@ namespace SwaySettings {
             input_combo_box.changed.connect (combo_box_changed);
 
             output_slider.value_changed.connect (() => {
-                output_value.label = "%.0lf".printf(Math.round (output_slider.get_value ()));
+                output_value.label = "%.0lf".printf (Math.round (output_slider.get_value ()));
                 this.client.set_device_volume (
                     default_sink,
                     (float) output_slider.get_value ());
             });
             input_slider.value_changed.connect (() => {
-                input_value.label = "%.0lf".printf(Math.round (input_slider.get_value ()));
+                input_value.label = "%.0lf".printf (Math.round (input_slider.get_value ()));
                 this.client.set_device_volume (
                     default_source,
                     (float) input_slider.get_value ());
@@ -261,13 +265,17 @@ namespace SwaySettings {
 
         private async void combo_box_changed (Gtk.ComboBox combo) {
             Gtk.ListStore list_store = (Gtk.ListStore) combo.get_model ();
-            PulseDevice ? device = get_selected_device (combo, list_store);
-            if (device == null) return;
-            PulseDevice ? cmp_device = device.direction == PulseAudio.Direction.INPUT ?
-                                       default_source : default_sink;
+            PulseDevice ?device = get_selected_device (combo, list_store);
+            if (device == null) {
+                return;
+            }
+            PulseDevice ?cmp_device = device.direction == PulseAudio.Direction.INPUT ?
+                default_source : default_sink;
 
             // Check if setting the same device
-            if (cmp_device != null && device.cmp (cmp_device)) return;
+            if (cmp_device != null && device.cmp (cmp_device)) {
+                return;
+            }
 
             combo.changed.disconnect (combo_box_changed);
             yield this.client.set_default_device (device);
@@ -279,15 +287,19 @@ namespace SwaySettings {
 
         private async void profile_combo_box_changed (Gtk.ComboBox combo) {
             Gtk.ListStore list_store = (Gtk.ListStore) combo.get_model ();
-            PulseCardProfile ? profile = get_selected_device_profile (combo, list_store);
-            if (profile == null) return;
-            PulseDevice ? device = get_selected_device (output_combo_box,
-                                                        sink_list_store);
+            PulseCardProfile ?profile = get_selected_device_profile (combo, list_store);
+            if (profile == null) {
+                return;
+            }
+            PulseDevice ?device = get_selected_device (output_combo_box,
+                                                       sink_list_store);
 
             // Check if setting the same device
             if (device != null &&
                 device.active_profile != null &&
-                profile.cmp (device.active_profile)) return;
+                profile.cmp (device.active_profile)) {
+                return;
+            }
 
             combo.changed.disconnect (profile_combo_box_changed);
             yield this.client.set_bluetooth_card_profile (profile, device);
@@ -299,23 +311,29 @@ namespace SwaySettings {
          * Getters
          */
 
-        private PulseDevice ? get_selected_device (Gtk.ComboBox combo_box,
-                                                   Gtk.ListStore list_store) {
+        private PulseDevice ?get_selected_device (Gtk.ComboBox combo_box,
+                                                  Gtk.ListStore list_store) {
             Gtk.TreeIter iter;
             combo_box.get_active_iter (out iter);
-            if (!list_store.iter_is_valid (iter)) return null;
+            if (!list_store.iter_is_valid (iter)) {
+                return null;
+            }
             Value val;
             list_store.get_value (iter, DeviceColumns.COLUMN_DEVICE, out val);
 
-            if (!val.holds (Type.OBJECT)) return null;
+            if (!val.holds (Type.OBJECT)) {
+                return null;
+            }
             unowned Object obj = val.get_object ();
-            if (!(obj is PulseDevice)) return null;
+            if (!(obj is PulseDevice)) {
+                return null;
+            }
             return (PulseDevice) obj;
         }
 
-        private Gtk.TreeIter ? find_device_iter (Gtk.ListStore list_store,
-                                                 PulseDevice device) {
-            Gtk.TreeIter ? iter = null;
+        private Gtk.TreeIter ?find_device_iter (Gtk.ListStore list_store,
+                                                PulseDevice device) {
+            Gtk.TreeIter ?iter = null;
             list_store.foreach ((model, path, it) => {
                 Value value;
                 model.get_value (it, DeviceColumns.COLUMN_DEVICE, out value);
@@ -329,24 +347,30 @@ namespace SwaySettings {
             return iter;
         }
 
-        private PulseCardProfile ? get_selected_device_profile (Gtk.ComboBox combo_box,
-                                                                Gtk.ListStore list_store) {
+        private PulseCardProfile ?get_selected_device_profile (Gtk.ComboBox combo_box,
+                                                               Gtk.ListStore list_store) {
             Gtk.TreeIter iter;
             combo_box.get_active_iter (out iter);
-            if (!list_store.iter_is_valid (iter)) return null;
+            if (!list_store.iter_is_valid (iter)) {
+                return null;
+            }
             Value val;
             list_store.get_value (iter, ProfileColumns.COLUMN_PROFILE, out val);
 
-            if (!val.holds (Type.OBJECT)) return null;
+            if (!val.holds (Type.OBJECT)) {
+                return null;
+            }
             unowned Object obj = val.get_object ();
-            if (!(obj is PulseCardProfile)) return null;
+            if (!(obj is PulseCardProfile)) {
+                return null;
+            }
             return (PulseCardProfile) obj;
         }
 
         private void set_device_profiles (PulseDevice device) {
             profile_combo_box.changed.disconnect (profile_combo_box_changed);
 
-            Gtk.TreeIter ? default_profile = null;
+            Gtk.TreeIter ?default_profile = null;
             profile_list_store.clear ();
             foreach (var profile in device.profiles.data) {
                 Gtk.TreeIter iter;
@@ -379,8 +403,10 @@ namespace SwaySettings {
             Gtk.ListStore list_store =
                 is_input ? source_list_store : sink_list_store;
 
-            Gtk.TreeIter ? iter = find_device_iter (list_store, device);
-            if (iter == null) return;
+            Gtk.TreeIter ?iter = find_device_iter (list_store, device);
+            if (iter == null) {
+                return;
+            }
             list_store.set (iter,
                             DeviceColumns.COLUMN_KEY, device.get_current_hash_key (),
                             DeviceColumns.COLUMN_DEVICE, device,
@@ -389,9 +415,11 @@ namespace SwaySettings {
                             -1);
 
             // Change UI if device is default device
-            unowned PulseDevice ? default_device = is_input
+            unowned PulseDevice ?default_device = is_input
                 ? this.default_source : this.default_sink;
-            if (default_device == null || !device.cmp (default_device)) return;
+            if (default_device == null || !device.cmp (default_device)) {
+                return;
+            }
 
             Gtk.ComboBox combo_box;
             Gtk.ToggleButton toggle;
@@ -450,8 +478,10 @@ namespace SwaySettings {
             Gtk.ListStore list_store =
                 is_input ? source_list_store : sink_list_store;
 
-            Gtk.TreeIter ? iter = find_device_iter (list_store, device);
-            if (iter == null) return;
+            Gtk.TreeIter ?iter = find_device_iter (list_store, device);
+            if (iter == null) {
+                return;
+            }
             list_store.remove (ref iter);
             if (list_store.iter_n_children (null) == 0) {
                 (is_input ? input_group : output_group).set_sensitive (false);
@@ -463,7 +493,9 @@ namespace SwaySettings {
          */
 
         private void default_device_changed (PulseDevice device) {
-            if (device == null) return;
+            if (device == null) {
+                return;
+            }
             switch (device.direction) {
                 case Direction.INPUT:
                     this.default_source = device;
@@ -482,14 +514,18 @@ namespace SwaySettings {
         private int active_sinks_list_store_sort (Gtk.ListBoxRow a, Gtk.ListBoxRow b) {
             uint32 a_id = ((SinkInputRow) a).sink_input.index;
             uint32 b_id = ((SinkInputRow) b).sink_input.index;
-            if (a_id == b_id) return 0;
+            if (a_id == b_id) {
+                return 0;
+            }
             return a_id < b_id ? -1 : 1;
         }
 
         /** Updates the correct `SinkInputRow` with new information */
         private void active_sink_change (PulseSinkInput sink) {
             Widgets.iter_listbox_children<Gtk.Widget> (levels_listbox, (row) => {
-                if (row == null || !(row is SinkInputRow)) return false;
+                if (row == null || !(row is SinkInputRow)) {
+                    return false;
+                }
                 var s = (SinkInputRow) row;
                 if (s.sink_input.cmp (sink)) {
                     s.update (sink);
@@ -509,7 +545,9 @@ namespace SwaySettings {
         private void active_sink_removed (PulseSinkInput sink) {
             int count = 0;
             Widgets.iter_listbox_children<Gtk.Widget> (levels_listbox, (row) => {
-                if (row == null || !(row is SinkInputRow)) return false;
+                if (row == null || !(row is SinkInputRow)) {
+                    return false;
+                }
                 var s = (SinkInputRow) row;
                 count++;
                 if (s.sink_input.cmp (sink)) {

@@ -2,7 +2,6 @@ using Utils;
 
 namespace SwaySettings {
     public class BluetoothPage : Page {
-
         private const string NEARBY_EMPTY_TEXT = "No devices found";
         private const string PAIRED_EMPTY_TEXT = "No devices paired";
 
@@ -140,9 +139,13 @@ namespace SwaySettings {
                                        BindingFlags.SYNC_CREATE,
                                        (bind, from_value, ref to_value) => {
                 to_value = "";
-                if (!from_value.holds (Type.BOOLEAN)) return false;
-                string ? name = this.daemon.get_alias ();
-                if (!from_value.get_boolean () || name == null) return true;
+                if (!from_value.holds (Type.BOOLEAN)) {
+                    return false;
+                }
+                string ?name = this.daemon.get_alias ();
+                if (!from_value.get_boolean () || name == null) {
+                    return true;
+                }
                 to_value = "Discoverable as \"%s\"".printf (name);
                 return true;
             });
@@ -221,8 +224,12 @@ namespace SwaySettings {
                 return a_name.collate (b_name);
             }
             // Rows with RSSI values of 0 should be on the bottom
-            if (a_range == 0) return 1;
-            if (b_range == 0) return -1;
+            if (a_range == 0) {
+                return 1;
+            }
+            if (b_range == 0) {
+                return -1;
+            }
             // Shortest range on top
             return a_range < b_range ? 1 : -1;
         }
@@ -305,8 +312,8 @@ namespace SwaySettings {
             // Move the Row to the correct LisBox
             // Moving the Row causes a few GTK critical warnings, so
             // creating a new row is the only option...
-            unowned Gtk.ListBox ? remove_list_box = null;
-            unowned Gtk.ListBox ? add_list_box = null;
+            unowned Gtk.ListBox ?remove_list_box = null;
+            unowned Gtk.ListBox ?add_list_box = null;
             if (paired && parent != paired_list_box) {
                 add_list_box = paired_list_box;
                 remove_list_box = nearby_list_box;
@@ -368,11 +375,15 @@ namespace SwaySettings {
             this.status_switch.state_set.disconnect (this.status_switch_cb);
             if (!blocking && powered) {
                 stack.set_visible_child (scrolled_window);
-                if (!pending_status_switch) status_switch.set_active (true);
+                if (!pending_status_switch) {
+                    status_switch.set_active (true);
+                }
             } else {
                 error_text = "Bluetooth is disabled";
                 stack.set_visible_child (error_box);
-                if (!pending_status_switch) status_switch.set_active (false);
+                if (!pending_status_switch) {
+                    status_switch.set_active (false);
+                }
             }
             this.status_switch.state_set.connect (this.status_switch_cb);
         }

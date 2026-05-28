@@ -2,7 +2,6 @@ using Gee;
 
 namespace SwaySettings {
     public class MousePage : InputPage {
-
         public MousePage (SettingsItem item,
                           Adw.NavigationPage page,
                           IPC ipc) {

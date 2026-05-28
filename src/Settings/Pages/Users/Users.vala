@@ -11,7 +11,6 @@ namespace SwaySettings {
     private errordomain PathError { INVALID_PATH }
 
     public class Users : PageScroll {
-
         private UsersContent content;
 
         public Users (SettingsItem item, Adw.NavigationPage page) {
@@ -110,7 +109,7 @@ namespace SwaySettings {
 
             // Subtitle2
             string user_type = userMgr.current_user.system_account ?
-                               "Root User" : "Regular User";
+                "Root User" : "Regular User";
             content.subtitle2.set_text (user_type);
 
             fill_popover ();
@@ -145,11 +144,11 @@ namespace SwaySettings {
                     Gtk.FileDialog dialog = (Gtk.FileDialog) obj;
                     try {
                         File file = dialog.open.end (result);
-                        string ? path = file.get_path ();
+                        string ?path = file.get_path ();
                         if (path != null) {
                             Image img = Image ();
                             int w, h;
-                            Gdk.PixbufFormat ? format = Gdk.Pixbuf.get_file_info (
+                            Gdk.PixbufFormat ?format = Gdk.Pixbuf.get_file_info (
                                 path, out w, out h);
                             if (format != null) {
                                 img.path = path;

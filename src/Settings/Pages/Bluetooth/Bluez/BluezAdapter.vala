@@ -3,12 +3,17 @@ namespace Bluez {
     public interface Adapter1 : Object {
         [DBus (name = "StartDiscovery")]
         public abstract async void start_discovery () throws DBusError, IOError;
+
         [DBus (name = "SetDiscoveryFilter")]
-        public abstract void set_discovery_filter (HashTable<string, Variant> properties) throws DBusError, IOError;
+        public abstract void set_discovery_filter (HashTable<string, Variant> properties)
+        throws DBusError, IOError;
+
         [DBus (name = "StopDiscovery")]
         public abstract async void stop_discovery () throws DBusError, IOError;
+
         [DBus (name = "RemoveDevice")]
         public abstract void remove_device (ObjectPath device) throws DBusError, IOError;
+
         [DBus (name = "GetDiscoveryFilters")]
         public abstract string[] get_discovery_filters () throws DBusError, IOError;
 

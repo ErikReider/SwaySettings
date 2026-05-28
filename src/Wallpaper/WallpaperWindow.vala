@@ -24,7 +24,8 @@ namespace SwaySettingsWallpaper {
                 return (1 - animation_progress);
             }
         }
-        private Adw.TimedAnimation ?animation;
+        private Adw.PropertyAnimationTarget animation_target;
+        private Adw.TimedAnimation animation;
 
         private Queue<unowned Cancellable> cancellables = new Queue<unowned Cancellable> ();
         private BackgroundInfo ?background_info = null;
@@ -38,9 +39,9 @@ namespace SwaySettingsWallpaper {
 
             monitor.notify["geometry"].connect (geometry_changed_cb);
 
-            Adw.PropertyAnimationTarget target = new Adw.PropertyAnimationTarget (this,
-                                                                                  "animation-progress");
-            animation = new Adw.TimedAnimation (this, 1.0, 0.0, TRANSITION_DURATION, target);
+            animation_target = new Adw.PropertyAnimationTarget (this, "animation-progress");
+            animation = new Adw.TimedAnimation (this, 1.0, 0.0, TRANSITION_DURATION,
+                                                animation_target);
 
             if (!debug_no_layer_shell) {
                 GtkLayerShell.init_for_window (this);

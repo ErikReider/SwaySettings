@@ -2,7 +2,6 @@ using Gee;
 using Utils;
 
 namespace SwaySettings {
-
     enum PositionX {
         RIGHT, LEFT;
 
@@ -25,7 +24,8 @@ namespace SwaySettings {
         public PositionX positionX { get; set; } // vala-lint=naming-convention
         public PositionY positionY { get; set; } // vala-lint=naming-convention
 
-        public Json.Node serialize_property (string property_name, GLib.Value value, GLib.ParamSpec pspec) {
+        public Json.Node serialize_property (string property_name, GLib.Value value,
+                                             GLib.ParamSpec pspec) {
             var node = new Json.Node (Json.NodeType.VALUE);
             switch (property_name) {
                 case "positionX":
@@ -53,7 +53,6 @@ namespace SwaySettings {
      * Writes the config content to the users .config/swaync/config.json
      */
     public class Swaync : PageScroll {
-
         ConfigModel settings;
 
         public Swaync (SettingsItem item, Adw.NavigationPage page) {
@@ -66,17 +65,17 @@ namespace SwaySettings {
             write_file ();
 
             var combo_x = new ListComboEnum ("Horizontal Position",
-                                              settings.positionX,
-                                              typeof (PositionX),
-                                              (index) => {
+                                             settings.positionX,
+                                             typeof (PositionX),
+                                             (index) => {
                 var profile = (PositionX) index;
                 settings.positionX = profile;
                 write_file ();
             });
             var combo_y = new ListComboEnum ("Vertical Position",
-                                              settings.positionY,
-                                              typeof (PositionY),
-                                              (index) => {
+                                             settings.positionY,
+                                             typeof (PositionY),
+                                             (index) => {
                 var profile = (PositionY) index;
                 settings.positionY = profile;
                 write_file ();
@@ -92,12 +91,17 @@ namespace SwaySettings {
 
         private ConfigModel read_file (string path) {
             try {
-                if (path.length == 0) return new ConfigModel ();
+                if (path.length == 0) {
+                    return new ConfigModel ();
+                }
                 Json.Parser parser = new Json.Parser ();
                 parser.load_from_file (path);
                 var node = parser.get_root ();
-                ConfigModel model = Json.gobject_deserialize (typeof (ConfigModel), node) as ConfigModel;
-                if (model == null) throw new Json.ParserError.UNKNOWN ("Json model is null!");
+                ConfigModel model = Json.gobject_deserialize (typeof (ConfigModel),
+                                                              node) as ConfigModel;
+                if (model == null) {
+                    throw new Json.ParserError.UNKNOWN ("Json model is null!");
+                }
                 return model;
             } catch (Error e) {
                 stderr.printf (e.message + "\n");

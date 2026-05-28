@@ -27,8 +27,8 @@ namespace SwaySettings {
         private static Wallpaper.ScaleModes scaling_mode =
             Wallpaper.get_scale_mode_setting (self_settings);
 
-        private Gtk.FlowBox ? user_flow_box;
-        private Gtk.FlowBox ? sys_flow_box;
+        private Gtk.FlowBox ?user_flow_box;
+        private Gtk.FlowBox ?sys_flow_box;
 
         public override int clamp_max {
             get {
@@ -48,17 +48,17 @@ namespace SwaySettings {
 
         construct {
             self_settings.changed[Constants.SETTINGS_USER_WALLPAPERS]
-                .connect (on_user_wallpapers_change);
+             .connect (on_user_wallpapers_change);
             self_settings.changed[Constants.SETTINGS_WALLPAPER_SCALING_MODE]
-                .connect (on_user_wallpapers_change);
+             .connect (on_user_wallpapers_change);
             connect_wallpaper_listener ();
         }
 
         ~BackgroundPage () {
             self_settings.changed[Constants.SETTINGS_USER_WALLPAPERS]
-                .disconnect (on_user_wallpapers_change);
+             .disconnect (on_user_wallpapers_change);
             self_settings.changed[Constants.SETTINGS_WALLPAPER_SCALING_MODE]
-                .disconnect (on_user_wallpapers_change);
+             .disconnect (on_user_wallpapers_change);
             disconnect_wallpaper_listener ();
         }
 
@@ -118,9 +118,11 @@ namespace SwaySettings {
             // Change the selected row
             Gtk.FlowBox[] boxes = { user_flow_box, sys_flow_box };
             foreach (Gtk.FlowBox flow_box in boxes) {
-                if (flow_box == null) continue;
+                if (flow_box == null) {
+                    continue;
+                }
                 flow_box.unselect_all ();
-                unowned Gtk.Widget ? widget = flow_box.get_first_child ();
+                unowned Gtk.Widget ?widget = flow_box.get_first_child ();
                 if (widget == null) {
                     continue;
                 }
@@ -142,7 +144,7 @@ namespace SwaySettings {
             var image_chooser = new Gtk.FileDialog ();
             image_chooser.set_title ("Select Image");
             image_chooser.accept_label = "_Open";
-            // // Only show images
+            // Only show images
             var filter = new Gtk.FileFilter ();
             filter.add_mime_type ("image/*");
             filter.add_pixbuf_formats ();
@@ -155,17 +157,17 @@ namespace SwaySettings {
                 Gtk.FileDialog dialog = (Gtk.FileDialog) obj;
                 try {
                     File file = dialog.open.end (result);
-                    string ? path = file.get_path ();
+                    string ?path = file.get_path ();
                     if (path != null) {
                         int w, h;
-                        Gdk.PixbufFormat ? format = Gdk.Pixbuf.get_file_info (
+                        Gdk.PixbufFormat ?format = Gdk.Pixbuf.get_file_info (
                             path, out w, out h);
                         string[] paths = get_user_wallpaper_paths ();
                         if (format != null && !(path in paths)) {
                             paths += path;
                             GSchema.set_gsetting (self_settings,
-                                                    Constants.SETTINGS_USER_WALLPAPERS,
-                                                    new Variant.strv (paths));
+                                                  Constants.SETTINGS_USER_WALLPAPERS,
+                                                  new Variant.strv (paths));
                         }
                     }
                 } catch (Error e) {
@@ -184,8 +186,8 @@ namespace SwaySettings {
                     }
                 }
                 GSchema.set_gsetting (self_settings,
-                                        Constants.SETTINGS_USER_WALLPAPERS,
-                                        new Variant.strv (wallpapers));
+                                      Constants.SETTINGS_USER_WALLPAPERS,
+                                      new Variant.strv (wallpapers));
             }
         }
 
@@ -199,7 +201,7 @@ namespace SwaySettings {
 
             Adw.PreferencesGroup pref_group = new Adw.PreferencesGroup ();
 
-            ListStore liststore = new ListStore (typeof(Gtk.StringObject));
+            ListStore liststore = new ListStore (typeof (Gtk.StringObject));
 
             Adw.ComboRow combo_row = new Adw.ComboRow ();
             pref_group.add (combo_row);
@@ -207,7 +209,7 @@ namespace SwaySettings {
             combo_row.set_title ("Scaling Mode");
 
             Gtk.PropertyExpression expression = new Gtk.PropertyExpression (
-                typeof(Gtk.StringObject), null, "string");
+                typeof (Gtk.StringObject), null, "string");
             combo_row.set_expression (expression);
 
             for (int i = 0; i < modes.length; i++) {
@@ -220,7 +222,7 @@ namespace SwaySettings {
 
             combo_row.notify["selected-item"].connect (
                 (sender, property) => {
-                Wallpaper.ScaleModes mode = modes[((int)((Adw.ComboRow) sender).get_selected ())];
+                Wallpaper.ScaleModes mode = modes[((int) ((Adw.ComboRow) sender).get_selected ())];
                 set_scale_mode (mode);
             });
 
@@ -229,7 +231,7 @@ namespace SwaySettings {
 
         Adw.PreferencesGroup get_wallpaper_container (string title,
                                                       WallpaperInfo[] wallpapers,
-                                                      out Gtk.FlowBox ? flow_box,
+                                                      out Gtk.FlowBox ?flow_box,
                                                       bool add_button = false) {
             var group = new Adw.PreferencesGroup ();
             group.title = title;
@@ -295,8 +297,10 @@ namespace SwaySettings {
                 column_spacing = SPACING,
             };
             flow_box.child_activated.connect ((widget) => {
-                unowned Gtk.Widget? child = widget.get_child ();
-                if (!(child is ThumbnailImage)) return;
+                unowned Gtk.Widget ?child = widget.get_child ();
+                if (!(child is ThumbnailImage)) {
+                    return;
+                }
                 ThumbnailImage img = (ThumbnailImage) child;
                 if (img.image_path != null) {
                     disconnect_wallpaper_listener ();
@@ -312,7 +316,7 @@ namespace SwaySettings {
         }
 
         void add_images (owned WallpaperInfo[] paths, Gtk.FlowBox flow_box, bool remove_button) {
-            string ? path = Wallpaper.get_path_setting (self_settings);
+            string ?path = Wallpaper.get_path_setting (self_settings);
 
             bool checked_folder_exists = false;
             foreach (var wp in paths) {
@@ -334,7 +338,9 @@ namespace SwaySettings {
                 f_child.add_css_class ("background-flowbox-child");
 
                 flow_box.append (f_child);
-                if (wp.path == path) flow_box.select_child (f_child);
+                if (wp.path == path) {
+                    flow_box.select_child (f_child);
+                }
 
                 item.on_set_image.connect ((visible) => {
                     // Hide if unable to set image
@@ -404,11 +410,11 @@ namespace SwaySettings {
             // TODO: Move into function
             // TODO: Even needed?
             GSchema.set_gsetting (self_settings,
-                Constants.SETTINGS_WALLPAPER_SCALING_MODE,
-                mode);
+                                  Constants.SETTINGS_WALLPAPER_SCALING_MODE,
+                                  mode);
 
             try {
-                Wallpaper.Config config = Wallpaper.Config() {
+                Wallpaper.Config config = Wallpaper.Config () {
                     path = current_wallpaper.path,
                     scale_mode = scaling_mode,
                 };
@@ -421,7 +427,7 @@ namespace SwaySettings {
         }
 
         private string[] get_user_wallpaper_paths () {
-            Variant ? variant = GSchema.get_gsetting (
+            Variant ?variant = GSchema.get_gsetting (
                 self_settings,
                 Constants.SETTINGS_USER_WALLPAPERS,
                 VariantType.STRING_ARRAY);
@@ -467,7 +473,9 @@ namespace SwaySettings {
                             string suffix = name.slice (
                                 name.last_index_of_char ('.') + 1,
                                 name.length);
-                            if (!(suffix in formats)) return;
+                            if (!(suffix in formats)) {
+                                return;
+                            }
 
                             string wp_path = Path.build_path (
                                 Path.DIR_SEPARATOR_S,

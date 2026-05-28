@@ -1,5 +1,5 @@
-using PulseAudio;
 using Gee;
+using PulseAudio;
 
 namespace SwaySettings {
     public class PulseCardProfile : Object {
@@ -10,7 +10,7 @@ namespace SwaySettings {
         public uint32 priority;
         int available;
 
-        public PulseCardProfile (CardProfileInfo2 * profile) {
+        public PulseCardProfile (CardProfileInfo2 *profile) {
             this.name = profile->name;
             this.description = profile->description;
             this.n_sinks = profile->n_sinks;
@@ -30,7 +30,6 @@ namespace SwaySettings {
     }
 
     public class PulseDevice : Object {
-
         public bool removed { get; set; default = false; }
 
         public bool has_card { get; set; default = true; }
@@ -65,7 +64,7 @@ namespace SwaySettings {
         public string card_source_port_name { get; set; }
 
         /** The Sink/Source name: `Name` */
-        public string ? device_name { get; set; }
+        public string ?device_name { get; set; }
         /** The Sink/Source description: `Description` */
         public string device_description { get; set; }
         /** If the Sink/Source is muted: `Mute` */
@@ -80,7 +79,7 @@ namespace SwaySettings {
         /** Gets the name to be shown to the user:
          * "port_description - card_description"
          */
-        public string ? get_display_name () {
+        public string ?get_display_name () {
             if (card_name == null) {
                 return device_description;
             }
@@ -130,7 +129,7 @@ namespace SwaySettings {
         /** All port profiles */
         public string[] port_profiles { get; set; }
         public Array<PulseCardProfile> profiles { get; set; }
-        public PulseCardProfile? active_profile { get; set; }
+        public PulseCardProfile ?active_profile { get; set; }
 
         construct {
             volume_operations = new LinkedList<Operation> ();

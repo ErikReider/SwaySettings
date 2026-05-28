@@ -37,7 +37,7 @@ namespace SwaySettings {
 
         private void set_ui () {
             icon.set_from_icon_name (UPower.UPowerBatteryState.get_device_icon_name (device.kind,
-                                                                                   false));
+                                                                                     false));
             device_name.set_text (device.model);
 
             string ?state = UPower.UPowerBatteryState.get_battery_status (device);

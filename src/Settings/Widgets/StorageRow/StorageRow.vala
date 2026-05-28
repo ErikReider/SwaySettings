@@ -43,8 +43,8 @@ namespace SwaySettings {
         public bool removable { get; private set; default = false; }
         public string drive_name { get; private set; default = ""; }
 
-        public StorageRow(UDisks.Client client,
-                          UDisks.Object object) {
+        public StorageRow (UDisks.Client client,
+                           UDisks.Object object) {
             this.client = client;
 
             this.block = object.block;
@@ -123,12 +123,12 @@ namespace SwaySettings {
             set_priority ();
         }
 
-        private string ? get_drive_icon_from_media_hint (UDisks.Drive drive) {
+        private string ?get_drive_icon_from_media_hint (UDisks.Drive drive) {
             const ReplaceStrings STRINGS[] = {
-                { "^thumb.*", DEVICE_ICON_REMOVABLE_DRIVE},
-                { "^flash.*", DEVICE_ICON_REMOVABLE_FLASH},
-                { "^floppy.*", DEVICE_ICON_REMOVABLE_FLOPPY},
-                { "^optical.*", DEVICE_ICON_OPTICAL},
+                { "^thumb.*", DEVICE_ICON_REMOVABLE_DRIVE },
+                { "^flash.*", DEVICE_ICON_REMOVABLE_FLASH },
+                { "^floppy.*", DEVICE_ICON_REMOVABLE_FLOPPY },
+                { "^optical.*", DEVICE_ICON_OPTICAL },
             };
 
             string pretty = Markup.escape_text (drive.media).strip ();
@@ -181,9 +181,9 @@ namespace SwaySettings {
             }
 
             const RegexPathPriority PRIORITIES[] = {
-                { "^/(usr|data|var).*", 2},
-                { "^/mnt/.*", 3},
-                { "^/run/.*", 4},
+                { "^/(usr|data|var).*", 2 },
+                { "^/mnt/.*", 3 },
+                { "^/run/.*", 4 },
             };
 
             string pretty = Markup.escape_text (mount_point).strip ();
@@ -206,17 +206,3 @@ namespace SwaySettings {
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

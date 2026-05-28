@@ -79,7 +79,9 @@ namespace SwaySettings {
                 var pref_group = new Adw.PreferencesGroup ();
                 pref_group.set_title (options.title ?? "");
                 foreach (var option in options.widgets) {
-                    if (option != null) pref_group.add (option);
+                    if (option != null) {
+                        pref_group.add (option);
+                    }
                 }
                 box.append (pref_group);
             }
@@ -126,7 +128,9 @@ namespace SwaySettings {
                             break;
                     }
                 }
-                if (lang.is_valid ()) languages[lang.description] = lang;
+                if (lang.is_valid ()) {
+                    languages[lang.description] = lang;
+                }
             }
             return languages;
         }
@@ -135,9 +139,13 @@ namespace SwaySettings {
             Json.Node ipc_output = ipc.get_reply (SwayCommands.GET_INPUTS);
             if (ipc_output.get_node_type () == Json.NodeType.ARRAY) {
                 foreach (var node in ipc_output.get_array ().get_elements ()) {
-                    if (node.get_node_type () != Json.NodeType.OBJECT) continue;
+                    if (node.get_node_type () != Json.NodeType.OBJECT) {
+                        continue;
+                    }
                     unowned Json.Object ?obj = node.get_object ();
-                    if (obj == null) continue;
+                    if (obj == null) {
+                        continue;
+                    }
 
                     InputTypes type = InputTypes.parse_string (
                         obj.get_string_member ("type") ?? "");
@@ -179,7 +187,9 @@ namespace SwaySettings {
                                 string lang = layouts.get_string_element (i);
                                 if (languages.has_key (lang)) {
                                     Language language = languages.get (lang);
-                                    if (language == null) continue;
+                                    if (language == null) {
+                                        continue;
+                                    }
                                     device.data.xkb_layout_names.add (language);
                                 }
                             }
@@ -281,7 +291,9 @@ namespace SwaySettings {
                 string[] array = {};
                 foreach (var item in list) {
                     Language lang = (Language) item;
-                    if (lang != null) array += lang.name;
+                    if (lang != null) {
+                        array += lang.name;
+                    }
                 }
 
                 string type = device.input_type.parse ();

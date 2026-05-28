@@ -7,7 +7,7 @@ public class ScreenshotWindow : Gtk.ApplicationWindow {
     ScreenshotGrid grid;
     public ScreenshotList list;
 
-    public Gdk.Texture ? screenshot = null;
+    public Gdk.Texture ?screenshot = null;
 
     public ScreenshotWindow (Gtk.Application app,
                              Gdk.Monitor monitor) {

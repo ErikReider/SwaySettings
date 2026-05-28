@@ -14,13 +14,11 @@ namespace SwaySettings {
             }
         }
 
-        // public void set_reveal_child (bool value) {
-        //     revealer.set_reveal_child (value);
-        // }
+        public virtual void on_refresh () {
+        }
 
-        public virtual void on_refresh () {}
-
-        public virtual async void on_back (Adw.NavigationPage page) {}
+        public virtual async void on_back (Adw.NavigationPage page) {
+        }
 
         public static Adw.Clamp get_clamped_widget (Gtk.Widget widget,
                                                     bool have_margin = true,
@@ -53,16 +51,15 @@ namespace SwaySettings {
             scrolled_window.set_vexpand (true);
 
             scrolled_window.set_child (get_clamped_widget (widget,
-                                              have_margin,
-                                              clamp_max,
-                                              clamp_tight));
+                                                           have_margin,
+                                                           clamp_max,
+                                                           clamp_tight));
 
             return scrolled_window;
         }
     }
 
     public abstract class PageScroll : Page {
-
         public virtual bool have_margin {
             get {
                 return true;
@@ -90,17 +87,16 @@ namespace SwaySettings {
 
         public override void on_refresh () {
             base.set_child (get_scroll_widget (
-                           set_child (),
-                           have_margin,
-                           clamp_max,
-                           clamp_tight));
+                                set_child (),
+                                have_margin,
+                                clamp_max,
+                                clamp_tight));
         }
 
         public new abstract Gtk.Widget set_child ();
     }
 
     public abstract class PageTabbed : Page {
-
         public Gtk.Stack stack;
 
         protected PageTabbed (SettingsItem item,
@@ -111,21 +107,12 @@ namespace SwaySettings {
             stack = new Gtk.Stack ();
             stack.transition_type = Gtk.StackTransitionType.CROSSFADE;
             var stack_switcher = new Gtk.StackSwitcher ();
-            // stack_switcher.button_release_event.connect ((widget) => {
-            // subtitle.set_text (stack.visible_child_name);
-            // return false;
-            // });
             stack_switcher.stack = stack;
             stack_switcher.set_halign (Gtk.Align.CENTER);
             stack_switcher.set_margin_top (8);
             stack_switcher.set_margin_start (8);
             stack_switcher.set_margin_bottom (8);
             stack_switcher.set_margin_end (8);
-
-            // stack.set_margin_top (margin);
-            // stack.set_margin_start (margin);
-            // stack.set_margin_bottom (margin);
-            // stack.set_margin_end (margin);
 
             Gtk.Box content_box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
             set_child (content_box);

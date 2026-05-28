@@ -2,10 +2,9 @@ using Gee;
 
 namespace SwaySettings {
     public class DefaultApps : PageScroll {
-
         public static DefaultAppData[] mime_types = {
             DefaultAppData ("Web Browser", "x-scheme-handler/http",
-                              { "text/html", "application/xhtml+xml", "x-scheme-handler/https" }),
+                            { "text/html", "application/xhtml+xml", "x-scheme-handler/https" }),
             DefaultAppData ("Mail Client", "x-scheme-handler/mailto"),
             DefaultAppData ("Calendar", "text/calendar"),
             DefaultAppData ("Music", "audio/x-vorbis+ogg", { "audio/*" }),
@@ -43,7 +42,9 @@ namespace SwaySettings {
             chooser.show_default_item = true;
             chooser.changed.connect ((combo_box) => {
                 var selected_app = chooser.get_app_info ();
-                if (selected_app == null) return;
+                if (selected_app == null) {
+                    return;
+                }
                 set_default_app (def_app, selected_app);
             });
             return new ListItem (def_app.category_name, chooser);
@@ -67,7 +68,9 @@ namespace SwaySettings {
                             continue;
                         }
                     }
-                    if (!found_match) continue;
+                    if (!found_match) {
+                        continue;
+                    }
                     set_default_for_mime (mime, selected_app);
                 }
             }
@@ -89,8 +92,8 @@ namespace SwaySettings {
         string[] extra_types;
 
         DefaultAppData (string category_name,
-                          string mime_type,
-                          string[] extra_types = {}) {
+                        string mime_type,
+                        string[] extra_types = {}) {
             this.mime_type = mime_type;
             this.category_name = category_name;
             this.extra_types = extra_types;

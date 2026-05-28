@@ -76,10 +76,10 @@ namespace Bluez {
 
         Gtk.Window main_window;
 
-        private PairDialog ? pair_dialog;
+        private PairDialog ?pair_dialog;
 
         private uint register_id = 0;
-        private DBusConnection ? connection;
+        private DBusConnection ?connection;
 
         [DBus (visible = false)]
         public Agent1 (Gtk.Window main_window) {
@@ -271,7 +271,9 @@ namespace Bluez {
 
             // Authorize if paired. Make device trusted if not already trusted
             if (device.paired) {
-                if (!device.trusted) device.trusted = true;
+                if (!device.trusted) {
+                    device.trusted = true;
+                }
                 return;
             }
 
@@ -296,7 +298,7 @@ namespace Bluez {
         private async void check_pairing_response (PairDialog dialog) throws BluezError {
             debug ("Agent: Check pairing response\n");
             SourceFunc callback = check_pairing_response.callback;
-            BluezError ? error = null;
+            BluezError ?error = null;
 
             dialog.response.connect ((response) => {
                 if (response != Gtk.ResponseType.ACCEPT || dialog.cancelled) {
@@ -316,7 +318,9 @@ namespace Bluez {
             // Wait until the user has accepted or rejected pairing
             yield;
 
-            if (error != null) throw error;
+            if (error != null) {
+                throw error;
+            }
         }
     }
 }

@@ -5,7 +5,7 @@ namespace SwaySettings {
     public class Main {
         private static string page = "";
 
-        private static string ? page_value = null;
+        private static string ?page_value = null;
 
         private static void print_help () {
             string[] msg = {
@@ -15,8 +15,8 @@ namespace SwaySettings {
                 "  -p, --page=[PAGE_NAME]\tNavigate to page",
                 "  -l, --list-pages\t\tList all pages",
             };
-            print("%s\n", string.joinv("\n", msg));
-            Process.exit(0);
+            print ("%s\n", string.joinv ("\n", msg));
+            Process.exit (0);
         }
 
         private static void parse_cmdline (string[] args) {
@@ -28,7 +28,7 @@ namespace SwaySettings {
                 case "--page":
                     if (args.length < 3 || args[2].length == 0) {
                         stderr.printf ("Too few arguments");
-                        Process.exit(1);
+                        Process.exit (1);
                     }
                     page = args[2];
                     break;
@@ -36,20 +36,22 @@ namespace SwaySettings {
                 case "--list-pages":
                     EnumClass enumc = (EnumClass) typeof (PageType).class_ref ();
                     foreach (var enum_value in enumc.values) {
-                        string ? name = ((PageType) enum_value.value)
-                                         .get_internal_name ();
-                        if (name == null) continue;
+                        string ?name = ((PageType) enum_value.value)
+                             .get_internal_name ();
+                        if (name == null) {
+                            continue;
+                        }
                         print ("%s\n", name);
                     }
-                    Process.exit(0);
+                    Process.exit (0);
                 default:
-                    print_help();
+                    print_help ();
                     break;
             }
         }
 
         public static int main (string[] args) {
-            parse_cmdline(args);
+            parse_cmdline (args);
 
             Gtk.init ();
             Adw.init ();
@@ -62,7 +64,7 @@ namespace SwaySettings {
                 var app = new Gtk.Application (AppIds.SETTINGS,
                                                ApplicationFlags.FLAGS_NONE);
                 app.activate.connect (() => {
-                    Window ? win = (Window) app.active_window;
+                    Window ?win = (Window) app.active_window;
                     if (win == null) {
                         win = new SwaySettings.Window (app);
                     }

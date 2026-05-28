@@ -2,7 +2,6 @@ using Gee;
 
 namespace SwaySettings {
     public class TrackpadPage : InputPage {
-
         public TrackpadPage (SettingsItem item,
                              Adw.NavigationPage page,
                              IPC ipc) {

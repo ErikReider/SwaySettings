@@ -18,7 +18,9 @@ namespace SwaySettings {
             switch (this) {
                 default:
                 case DEFAULT:
-                    if (!front) return "dark";
+                    if (!front) {
+                        return "dark";
+                    }
                     return "light";
                 case DARK:
                     return "dark";

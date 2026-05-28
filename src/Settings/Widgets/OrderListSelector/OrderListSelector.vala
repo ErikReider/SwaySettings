@@ -40,7 +40,9 @@ namespace SwaySettings {
 
             // Activates row on keyboard navigation
             list_box.row_selected.connect ((_, r) => {
-                if (r != null && r.get_index () >= 0) r.activate ();
+                if (r != null && r.get_index () >= 0) {
+                    r.activate ();
+                }
             });
 
             list_box.row_activated.connect ((_, row) => {
@@ -56,8 +58,12 @@ namespace SwaySettings {
 
             button_remove.clicked.connect (() => {
                 list.remove_at (selected_index);
-                if (selected_index == list.size) selected_index -= 1;
-                if (selected_index < 0) selected_index = 0;
+                if (selected_index == list.size) {
+                    selected_index -= 1;
+                }
+                if (selected_index < 0) {
+                    selected_index = 0;
+                }
                 update_list ();
                 update_callback (list);
             });
@@ -95,7 +101,9 @@ namespace SwaySettings {
                 var row = new Gtk.ListBoxRow ();
                 row.set_child (new Gtk.Label (item.to_string ()));
                 list_box.append (row);
-                if (selected_index == i) row.activate ();
+                if (selected_index == i) {
+                    row.activate ();
+                }
             }
         }
     }

@@ -5,7 +5,7 @@ namespace SwaySettings {
         public abstract bool has_dual_gpu { owned get; }
 
         [DBus (name = "GPUs")]
-        public abstract HashTable<string,Variant>[] gpus { owned get; }
+        public abstract HashTable<string, Variant>[] gpus { owned get; }
     }
 
     struct ReplaceStrings {
@@ -56,8 +56,8 @@ namespace SwaySettings {
 
         construct {
             storage_list_box.set_sort_func ((r1, r2) => {
-                StorageRow row1 = (StorageRow)r1;
-                StorageRow row2 = (StorageRow)r2;
+                StorageRow row1 = (StorageRow) r1;
+                StorageRow row2 = (StorageRow) r2;
 
                 // Sort by name
                 if (row1.sorting_priority == row2.sorting_priority) {
@@ -68,8 +68,8 @@ namespace SwaySettings {
             });
 
             storage_list_box.set_header_func ((r, before) => {
-                StorageRow row = (StorageRow)r;
-                StorageRow before_row = (StorageRow)before;
+                StorageRow row = (StorageRow) r;
+                StorageRow before_row = (StorageRow) before;
 
                 if (before == null || before_row.removable != row.removable) {
                     Gtk.Label header = new Gtk.Label (row.removable ?
@@ -138,7 +138,7 @@ namespace SwaySettings {
             get_storage_devices.begin ();
         }
 
-        private string ? get_cpu_string () {
+        private string ?get_cpu_string () {
             unowned GLibTop.sysinfo ?info = GLibTop.get_sysinfo ();
             if (info == null) {
                 return null;
@@ -176,10 +176,9 @@ namespace SwaySettings {
         private async void get_gpu_info () {
             if (switcheroo == null) {
                 try {
-                    switcheroo = yield Bus.get_proxy (
-                        BusType.SYSTEM,
-                        "net.hadess.SwitcherooControl",
-                        "/net/hadess/SwitcherooControl");
+                    switcheroo = yield Bus.get_proxy (BusType.SYSTEM,
+                                                      "net.hadess.SwitcherooControl",
+                                                      "/net/hadess/SwitcherooControl");
                 } catch (Error e) {
                     warning (e.message);
                     return;
@@ -187,7 +186,7 @@ namespace SwaySettings {
             }
 
             var gpus = new Gee.HashSet<string>();
-            foreach (unowned HashTable<string,Variant> gpu in switcheroo.gpus) {
+            foreach (unowned HashTable<string, Variant> gpu in switcheroo.gpus) {
                 Variant value;
                 if (gpu.lookup_extended ("Name", null, out value)
                     && value.is_of_type (VariantType.STRING)) {
@@ -211,7 +210,7 @@ namespace SwaySettings {
 
             List<DBusObject> objects = client.object_manager.get_objects ();
             foreach (unowned var obj in objects) {
-                var object = ((UDisks.Object)obj);
+                var object = ((UDisks.Object) obj);
                 UDisks.Block block = object.block;
                 UDisks.Filesystem filesystem = object.filesystem;
 
@@ -260,26 +259,25 @@ namespace SwaySettings {
         // Thanks Elementary OS:
         // https://github.com/elementary/switchboard-plug-about
         private string clean_name (string info) {
-
             string pretty = Markup.escape_text (info).strip ();
 
             const ReplaceStrings REPLACE_STRINGS[] = {
-                { "(\\d+\\.\\d+.\\d.-\\d+).*", "\\1"}, // Linux version
-                { "Mesa DRI ", ""},
-                { "Mesa (.*)", "\\1"},
-                { "[(]R[)]", "®"},
-                { "[(]TM[)]", "™"},
-                { "Gallium .* on (AMD .*)", "\\1"},
-                { "^(AMD .*) [(].*", "\\1"},
-                { "^(AMD Ryzen) (.*)", "\\1 \\2"},
-                { "^(AMD [A-Z])(.*)", "\\1\\L\\2\\E"},
+                { "(\\d+\\.\\d+.\\d.-\\d+).*", "\\1" }, // Linux version
+                { "Mesa DRI ", "" },
+                { "Mesa (.*)", "\\1" },
+                { "[(]R[)]", "®" },
+                { "[(]TM[)]", "™" },
+                { "Gallium .* on (AMD .*)", "\\1" },
+                { "^(AMD .*) [(].*", "\\1" },
+                { "^(AMD Ryzen) (.*)", "\\1 \\2" },
+                { "^(AMD [A-Z])(.*)", "\\1\\L\\2\\E" },
                 { "^Advanced Micro Devices, Inc\\. \\[.*?\\] .*? \\[(.*?)\\] .*",
-                  "AMD \\1"},
-                { "^Advanced Micro Devices, Inc\\. \\[.*?\\] (.*)", "AMD \\1"},
-                { "Graphics Controller", "Graphics"},
-                { "Intel Corporation", "Intel"},
+                  "AMD \\1" },
+                { "^Advanced Micro Devices, Inc\\. \\[.*?\\] (.*)", "AMD \\1" },
+                { "Graphics Controller", "Graphics" },
+                { "Intel Corporation", "Intel" },
                 { "NVIDIA Corporation (.*) \\[(\\S*) (\\S*) (.*)\\]",
-                  "NVIDIA® \\2 \\3 \\4"},
+                  "NVIDIA® \\2 \\3 \\4" },
             };
 
             try {

@@ -1,7 +1,6 @@
 using Linux;
 
 namespace Rfkill {
-
     private class Device {
         public uint32 idx;
         public bool soft;
@@ -31,8 +30,10 @@ namespace Rfkill {
                 file_descriptor = -1;
                 return;
             }
+
             // Fill the devices HashTable
-            while (on_event ());
+            while (on_event ()) {}
+
             // Creates the listener
             IOChannel channel = new IOChannel.unix_new (file_descriptor);
             source = new IOSource (channel, IOCondition.IN);
@@ -54,7 +55,9 @@ namespace Rfkill {
 
         /** Sets the blocking state for the Rfkill type */
         public bool try_set_blocking (bool block) {
-            if (this.file_descriptor < 0 || this.blocked == block) return false;
+            if (this.file_descriptor < 0 || this.blocked == block) {
+                return false;
+            }
 
             // Try to soft-block all the bluetooth devices
             RfKillEvent event = RfKillEvent () {
@@ -78,10 +81,14 @@ namespace Rfkill {
             RfKillEvent event = RfKillEvent ();
             ulong len = sizeof (RfKillEvent);
             ssize_t bytes_read = Posix.read (file_descriptor, &event, len);
-            if (bytes_read != len) return false;
+            if (bytes_read != len) {
+                return false;
+            }
 
             // Only check for provided RfkillType
-            if (event.type != this.rfkill_type) return true;
+            if (event.type != this.rfkill_type) {
+                return true;
+            }
             switch (event.op) {
                 case RfKillOp.ADD:
                 case RfKillOp.CHANGE:

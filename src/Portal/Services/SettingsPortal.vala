@@ -9,7 +9,7 @@ namespace Services {
             default = 2;
         }
 
-        private GLib.Settings ? gnome_settings;
+        private GLib.Settings ?gnome_settings;
         private const string APPEARANCE_NAMESPACE = "org.freedesktop.appearance";
         private const string ACCENT_COLOR = "accent-color";
 
@@ -33,7 +33,7 @@ namespace Services {
         private bool namespaces_match (string ref_namespace, string[] namespaces) {
             // Return true when a namespace is empty or when the list is empty
             int i = 0;
-            for (; i < namespaces.length; i++) {
+            for ( ; i < namespaces.length; i++) {
                 string test = namespaces[i];
                 if (test.length == 0) {
                     return true;
@@ -65,10 +65,10 @@ namespace Services {
             return table;
         }
 
-        public Variant Read (string namespace, string key) throws DBusError, IOError {
-            debug ("Read: %s: %s", namespace, key);
+        public Variant Read (string name_space, string key) throws DBusError, IOError {
+            debug ("Read: %s: %s", name_space, key);
 
-            if (namespace == APPEARANCE_NAMESPACE
+            if (name_space == APPEARANCE_NAMESPACE
                 && key == ACCENT_COLOR) {
                 return get_accent_color ();
             }

@@ -138,9 +138,9 @@ public class ScreenshotList : Adw.Bin {
                                                                      preview_close_cb);
 
         Graphene.Rect init_rect = Graphene.Rect ()
-                                  .init_from_rect (rect)
-                                  .offset (-window.monitor.geometry.x,
-                                           -window.monitor.geometry.y);
+             .init_from_rect (rect)
+             .offset (-window.monitor.geometry.x,
+                      -window.monitor.geometry.y);
         Graphene.Rect dst_rect = ScreenshotPreview.calculate_dst_rect (window,
                                                                        init_rect);
         Gtk.Adjustment scroll_start_value = viewport.vadjustment;
@@ -221,10 +221,10 @@ public class ScreenshotList : Adw.Bin {
         // List Preview expand animation
         //
         double list_width = dst_rect.get_width () + list_margin.left +
-                            list_margin.right;
+            list_margin.right;
         double list_height = Adw.lerp (0, dst_rect.get_height (),
                                        value) + list_margin.top +
-                             list_margin.bottom;
+            list_margin.bottom;
 
         list_preview.set_size_request ((int) list_width,
                                        (int) list_height);

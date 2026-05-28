@@ -1,6 +1,5 @@
 namespace SwaySettings {
     public class ScreenshotPage : PageScroll {
-
         public ScreenshotPage (SettingsItem item, Adw.NavigationPage page) {
             base (item, page);
         }
@@ -52,9 +51,10 @@ namespace SwaySettings {
             var dialog = new Gtk.FileDialog ();
             dialog.set_modal (true);
 
-            File ? file = null;
+            File ?file = null;
             try {
                 file = yield dialog.select_folder ((Gtk.Window) get_root (), null);
+
                 if (file == null) {
                     critical ("Selected file is null");
                     return;
@@ -94,13 +94,13 @@ namespace SwaySettings {
                 button, "visible",
                 SettingsBindFlags.GET,
                 (value, variant, data) => {
-                    string name = (string) data;
-                    value.set_boolean (!self_settings.get_default_value (name).equal (variant));
-                    return true;
-                },
+                string name = (string) data;
+                value.set_boolean (!self_settings.get_default_value (name).equal (variant));
+                return true;
+            },
                 (value, variant) => {
-                    return true;
-                },
+                return true;
+            },
                 property, null);
             return button;
         }

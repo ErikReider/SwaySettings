@@ -64,20 +64,16 @@ namespace SwaySettings.UPower {
                 BusType.SYSTEM,
                 POWER_PROFILES_DAEMON_NAME,
                 BusNameWatcherFlags.NONE,
-                () => {
-                    // Appear
-                    profile_daemon_appear.begin ((obj, res) => {
-                        get_async.callback ();
-                    });
-                },
-                () => {
-                    // Disappear
-                    PowerProfileDaemonHelper.instance = null;
-                    disappear ();
-                });
+                () => profile_daemon_appear.begin ((obj, res) => get_async.callback ()),
+                bus_disappear);
             yield;
 
             return instance;
+        }
+
+        private void bus_disappear () {
+            PowerProfileDaemonHelper.instance = null;
+            disappear ();
         }
 
         private async bool profile_daemon_appear () {

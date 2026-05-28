@@ -4,14 +4,19 @@ namespace Bluez {
     public interface Device1 : Object {
         [DBus (name = "Disconnect")]
         public abstract async void disconnect () throws DBusError, IOError;
+
         [DBus (name = "Connect")]
         public abstract async void connect () throws DBusError, IOError;
+
         [DBus (name = "ConnectProfile")]
         public abstract void connect_profile (string UUID) throws DBusError, IOError;
+
         [DBus (name = "DisconnectProfile")]
         public abstract void disconnect_profile (string UUID) throws DBusError, IOError;
+
         [DBus (name = "Pair")]
         public abstract async void pair () throws DBusError, IOError;
+
         [DBus (name = "CancelPairing")]
         public abstract void cancel_pairing () throws DBusError, IOError;
 

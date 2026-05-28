@@ -56,7 +56,7 @@ public static int main (string[] args) {
 private static void init () {
     windows = new ListStore (typeof (ScreenshotWindow));
 
-    Gdk.Display ? display = Gdk.Display.get_default ();
+    Gdk.Display ?display = Gdk.Display.get_default ();
     assert_nonnull (display);
 
     monitors = display.get_monitors ();

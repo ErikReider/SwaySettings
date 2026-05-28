@@ -4,7 +4,6 @@ namespace SwaySettings {
     [GtkTemplate (ui =
                       "/org/erikreider/swaysettings/ui/KeyboardInputSelector.ui")]
     public class KeyboardInputSelector : Adw.Dialog {
-
         [GtkChild]
         unowned Gtk.ListBox list_box;
 
@@ -22,14 +21,18 @@ namespace SwaySettings {
 
             // Sort by description
             var values = all_languages.values.order_by ((a, b) => {
-                if (a.description == b.description) return 0;
+                if (a.description == b.description) {
+                    return 0;
+                }
                 return a.description > b.description ? 1 : -1;
             });
 
             Language[] langs = {};
             while (values.next ()) {
                 var lang = values.get ();
-                if (used_languages.contains (lang)) continue;
+                if (used_languages.contains (lang)) {
+                    continue;
+                }
                 var label = new Gtk.Label (lang.to_string ());
                 label.set_xalign (0.0f);
                 label.set_yalign (0.5f);
