@@ -215,6 +215,7 @@ namespace SwaySettings {
                 UDisks.Filesystem filesystem = object.filesystem;
 
                 if (block == null || block.hint_ignore
+                    || block.read_only
                     || filesystem == null) {
                     continue;
                 }
