@@ -14,6 +14,11 @@ _sources = {
     'dependencies': [],
     'requires': [],
   },
+  'vala': {
+    'files': files('./vala.vala'),
+    'dependencies': [],
+    'requires': [],
+  },
   'wallpaper': {
     'files': files('./wallpaper.vala'),
     'dependencies': [dep_gtk4, dep_glycin, dep_glycin_gtk4],

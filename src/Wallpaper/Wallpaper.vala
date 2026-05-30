@@ -1,3 +1,4 @@
+using Utils;
 using Utils.Wallpaper;
 
 namespace SwaySettingsWallpaper {
@@ -139,7 +140,7 @@ namespace SwaySettingsWallpaper {
                 if (option_list_modes) {
                     print ("Available scaling modes: \n");
                     string[] modes = {};
-                    EnumClass enumc = (EnumClass) typeof (ScaleModes).class_ref ();
+                    EnumClass enumc = Vala.get_enum_class<ScaleModes> ();
                     foreach (EnumValue enum_value in enumc.values) {
                         modes += enum_value.value_nick;
                     }

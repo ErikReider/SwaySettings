@@ -240,8 +240,8 @@ namespace SwaySettings {
             // Add the buttons
             Adw.AccentColor accent_color = Widgets.get_adw_accent_color (settings);
             unowned Gtk.ToggleButton ?prev_button = null;
-            foreach (EnumValue value in ((EnumClass) typeof (Adw.AccentColor).class_ref ()).values)
-            {
+            EnumClass enum_class = Vala.get_enum_class<Adw.AccentColor> ();
+            foreach (EnumValue value in enum_class.values) {
                 Gtk.ToggleButton button = new Gtk.ToggleButton ();
                 button.add_css_class ("accent-button");
                 button.add_css_class (value.value_nick);

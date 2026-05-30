@@ -201,21 +201,15 @@ public class ScreenshotPreview : Adw.Bin {
             return null;
         }
 
-        string paths[2] = {
-            variant.dup_string (),
-            Path.build_path (
-                Path.DIR_SEPARATOR_S,
-                Environment.get_home_dir (),
-                variant.dup_string ()),
-        };
-        foreach (string path in paths) {
-            if (path[:2] == "~/") {
-                path = Environment.get_home_dir () + path[1 :];
-            }
-            File initial_file = File.new_for_path (path);
-            if (initial_file.query_exists ()) {
-                return initial_file;
-            }
+        string path = variant.dup_string ();
+        if (path.has_prefix ("~/")) {
+            path = Path.build_path (Path.DIR_SEPARATOR_S,
+                                    Environment.get_home_dir (),
+                                    path.substring (1));
+        }
+        File initial_file = File.new_for_path (path);
+        if (initial_file.query_exists ()) {
+            return initial_file;
         }
 
         return null;
@@ -246,8 +240,10 @@ public class ScreenshotPreview : Adw.Bin {
             return;
         }
         string cmd_str = variant.dup_string ();
-        if (cmd_str[:2] == "~/") {
-            cmd_str = Environment.get_home_dir () + cmd_str[1:];
+        if (cmd_str.has_prefix ("~/")) {
+            cmd_str = Path.build_path (Path.DIR_SEPARATOR_S,
+                                       Environment.get_home_dir (),
+                                       cmd_str.substring (1));
         }
 
         unowned Gdk.Texture ?texture = get_texture ();

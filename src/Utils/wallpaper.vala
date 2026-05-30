@@ -131,7 +131,7 @@ namespace Utils.Wallpaper {
                 color = DEFAULT_COLOR;
             }
             // Remove the leading #
-            color = color[1 :];
+            color = color.substring (1);
 
             int hex_value;
             bool result = int.try_parse (color, out hex_value, null, 16);

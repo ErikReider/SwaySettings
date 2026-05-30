@@ -346,10 +346,9 @@ namespace SwaySettings {
 
         // accel_profile
         public Gtk.Widget get_accel_profile () {
-            return new ListComboEnum ("Acceleration Profile",
-                                      device.data.accel_profile,
-                                      typeof (AccelProfiles),
-                                      (index) => {
+            return new ListComboEnum<AccelProfiles> ("Acceleration Profile",
+                                                     device.data.accel_profile,
+                                                     (index) => {
                 var profile = (AccelProfiles) index;
                 device.data.accel_profile = profile;
                 write_new_settings (
@@ -360,12 +359,12 @@ namespace SwaySettings {
 
         // pointer_accel
         public Gtk.Widget get_pointer_accel () {
-            const double min = -1.0;
-            const double max = 1.0;
-            const double step = 0.1;
+            const double MIN = -1.0;
+            const double MAX = 1.0;
+            const double STEP = 0.1;
             var row = new ListSlider ("Pointer Acceleration",
                                       device.data.accel_speed,
-                                      min, max, step,
+                                      MIN, MAX, STEP,
                                       (slider) => {
                 var value = (float) slider.get_value ();
                 device.data.accel_speed = value;
@@ -394,10 +393,9 @@ namespace SwaySettings {
 
         // Disable on external mouse
         public Gtk.Widget get_state_widget () {
-            return new ListComboEnum ("State",
-                                      device.data.send_events,
-                                      typeof (Events),
-                                      (index) => {
+            return new ListComboEnum<Events> ("State",
+                                              device.data.send_events,
+                                              (index) => {
                 var event = (Events) index;
                 device.data.send_events = event;
                 write_new_settings (
@@ -421,10 +419,9 @@ namespace SwaySettings {
 
         // Click method
         public Gtk.Widget get_click_method () {
-            return new ListComboEnum ("Click Method",
-                                      device.data.click_method,
-                                      typeof (ClickMethods),
-                                      (index) => {
+            return new ListComboEnum<ClickMethods> ("Click Method",
+                                                    device.data.click_method,
+                                                    (index) => {
                 var profile = (ClickMethods) index;
                 device.data.click_method = profile;
                 write_new_settings (
@@ -435,10 +432,9 @@ namespace SwaySettings {
 
         // Scroll method
         public Gtk.Widget get_scroll_method () {
-            return new ListComboEnum ("Scroll Method",
-                                      device.data.scroll_method,
-                                      typeof (ScrollMethods),
-                                      (index) => {
+            return new ListComboEnum<ScrollMethods> ("Scroll Method",
+                                                     device.data.scroll_method,
+                                                     (index) => {
                 var profile = (ScrollMethods) index;
                 device.data.scroll_method = profile;
                 write_new_settings (

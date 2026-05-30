@@ -1,3 +1,5 @@
+using Utils;
+
 namespace SwaySettings {
     public class ListItem : Adw.ActionRow {
         public ListItem (string title,
@@ -66,14 +68,12 @@ namespace SwaySettings {
         }
     }
 
-    public class ListComboEnum : Adw.ComboRow {
+    public class ListComboEnum<T>: Adw.ComboRow {
         public delegate void selected_index (uint index);
 
         public ListComboEnum (string title,
                               int index,
-                              GLib.Type enum_type,
                               selected_index callback) {
-            var enumc = (EnumClass) enum_type.class_ref ();
             ListStore liststore = new ListStore (typeof (Gtk.StringObject));
 
             this.set_title (title);
@@ -81,16 +81,15 @@ namespace SwaySettings {
 
             set_model (liststore);
 
-            int i = 0;
-            foreach (var value in enumc.values) {
-                weak string nick = value.value_nick;
+            EnumClass enumc = Vala.get_enum_class<T> ();
+            for (int i = 0; i < enumc.values.length; i++) {
+                weak string nick = enumc.values[i].value_nick;
                 string name = nick.up (1) + nick.slice (1, nick.length);
                 liststore.append (new Gtk.StringObject (name));
 
                 if (i == index) {
                     set_selected (i);
                 }
-                i++;
             }
             this.notify["selected"].connect ((e) => {
                 callback (get_selected ());

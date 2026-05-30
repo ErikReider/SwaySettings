@@ -55,31 +55,31 @@ namespace SwaySettings {
             box.margin_start = MARGIN;
             box.margin_end = MARGIN;
 
-            userMgr.changed.connect (set_user_data);
-            if (userMgr.current_user.is_loaded) {
+            user_manager.changed.connect (set_user_data);
+            if (user_manager.current_user.is_loaded) {
                 set_user_data ();
             }
         }
 
         private void set_user_data () {
             // Avatar
-            avatar.set_text (userMgr.current_user.real_name);
-            if (userMgr.current_user.icon_file != null
-                && userMgr.current_user.icon_file.length > 0) {
+            avatar.set_text (user_manager.current_user.real_name);
+            if (user_manager.current_user.icon_file != null
+                && user_manager.current_user.icon_file.length > 0) {
                 Gtk.IconPaintable paintable = new Gtk.IconPaintable.for_file (
-                    File.new_for_path (userMgr.current_user.icon_file),
+                    File.new_for_path (user_manager.current_user.icon_file),
                     avatar.size,
                     1);
                 avatar.set_custom_image (paintable);
             }
 
             // Title
-            name_label.set_text (userMgr.current_user.real_name);
+            name_label.set_text (user_manager.current_user.real_name);
 
             // Subtitle
-            string sub_string = userMgr.current_user.email;
+            string sub_string = user_manager.current_user.email;
             if (sub_string == null || sub_string.length == 0) {
-                sub_string = userMgr.current_user.user_name;
+                sub_string = user_manager.current_user.user_name;
             }
             username_label.set_text (sub_string);
         }

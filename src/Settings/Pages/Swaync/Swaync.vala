@@ -6,7 +6,7 @@ namespace SwaySettings {
         RIGHT, LEFT;
 
         public string parse () {
-            EnumClass enumc = (EnumClass) typeof (PositionX).class_ref ();
+            EnumClass enumc = Vala.get_enum_class<PositionX> ();
             return enumc.get_value_by_name (this.to_string ()).value_nick;
         }
     }
@@ -15,7 +15,7 @@ namespace SwaySettings {
         TOP, BOTTOM;
 
         public string parse () {
-            EnumClass enumc = (EnumClass) typeof (PositionY).class_ref ();
+            EnumClass enumc = Vala.get_enum_class<PositionY> ();
             return enumc.get_value_by_name (this.to_string ()).value_nick;
         }
     }
@@ -64,18 +64,16 @@ namespace SwaySettings {
             settings = read_file (config_path);
             write_file ();
 
-            var combo_x = new ListComboEnum ("Horizontal Position",
-                                             settings.positionX,
-                                             typeof (PositionX),
-                                             (index) => {
+            var combo_x = new ListComboEnum<PositionX> ("Horizontal Position",
+                                                        settings.positionX,
+                                                        (index) => {
                 var profile = (PositionX) index;
                 settings.positionX = profile;
                 write_file ();
             });
-            var combo_y = new ListComboEnum ("Vertical Position",
-                                             settings.positionY,
-                                             typeof (PositionY),
-                                             (index) => {
+            var combo_y = new ListComboEnum<PositionY> ("Vertical Position",
+                                                        settings.positionY,
+                                                        (index) => {
                 var profile = (PositionY) index;
                 settings.positionY = profile;
                 write_file ();

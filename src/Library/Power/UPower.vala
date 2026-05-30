@@ -5,7 +5,7 @@ namespace SwaySettings.UPower {
     /** https://upower.freedesktop.org/docs/Device.html */
     public interface UPowerDeviceProxy : DBusProxy {
         [DBus (name = "EnableChargeThreshold")]
-        public abstract void enable_charge_threshold (bool chargeThreshold) throws Error;
+        public abstract void enable_charge_threshold (bool charge_threshold) throws Error;
     }
 
     public static UPowerDeviceProxy ?get_device_proxy (Up.Device device) {

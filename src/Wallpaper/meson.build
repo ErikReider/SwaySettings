@@ -8,6 +8,7 @@ executable(
     shared_files,
     utils['wallpaper']['files'],
     utils['widgets']['files'],
+    utils['vala']['files'],
   ],
   dependencies: [
     dep_gtk4,
@@ -20,6 +21,7 @@ executable(
     shared_deps,
     utils['wallpaper']['dependencies'],
     utils['widgets']['dependencies'],
+    utils['vala']['dependencies'],
   ],
   install: true,
 )

@@ -8,11 +8,12 @@ namespace Services {
         }
 
         /// Docs: https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.impl.portal.Wallpaper.html
-        public uint SetWallpaperURI (ObjectPath handle,
-                                     string app_id,
-                                     string parent_window,
-                                     string uri,
-                                     HashTable<string, Variant> options)
+        [DBus (name = "SetWallpaperURI")]
+        public uint set_wallpaper_uri (ObjectPath handle,
+                                       string app_id,
+                                       string parent_window,
+                                       string uri,
+                                       HashTable<string, Variant> options)
         throws GLib.DBusError, GLib.IOError {
             // TODO: Support previews
             bool show_preview = false;

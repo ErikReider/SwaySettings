@@ -232,19 +232,19 @@ public class LockerWindow : Gtk.ApplicationWindow {
         });
     }
 
-    private void password_checked (pam_status status) {
+    private void password_checked (PamStatus status) {
         set_busy (false);
 
         switch (status) {
-            case pam_status.PAM_STATUS_ERROR:
+            case PamStatus.PAM_STATUS_ERROR:
                 // TODO:
                 critical ("PAM failed!");
                 break;
-            case pam_status.PAM_STATUS_AUTH_FAILED:
+            case PamStatus.PAM_STATUS_AUTH_FAILED:
                 critical ("PAM Auth failed:");
                 lock_data.messages.append ("Login Failed");
                 break;
-            case pam_status.PAM_STATUS_AUTH_SUCESS:
+            case PamStatus.PAM_STATUS_AUTH_SUCESS:
                 if (should_lock) {
                     instance.unlock ();
                 } else {

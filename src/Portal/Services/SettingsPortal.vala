@@ -46,26 +46,24 @@ namespace Services {
             return i == 0;
         }
 
-        /* *INDENT-OFF* */
-        public HashTable<string, HashTable<string, Variant>> ReadAll (string[] namespaces)
-        /* *INDENT-ON* */
+        [DBus (name = "ReadAll")]
+        public HashTable<string, VariantDict> read_all (string[] namespaces)
         throws DBusError, IOError {
             debug ("ReadAll: [ %s ]", string.joinv (", ", namespaces));
-            /* *INDENT-OFF* */
-            var table = new HashTable<string, HashTable<string, Variant>> (str_hash, str_equal);
-            /* *INDENT-ON* */
+            var table = new HashTable<string, VariantDict> (str_hash, str_equal);
 
             // TODO: Support globbing
             if (namespaces_match (APPEARANCE_NAMESPACE, namespaces)) {
-                var appearance = new HashTable<string, Variant> (str_hash, str_equal);
-                appearance.set (ACCENT_COLOR, get_accent_color ());
+                var appearance = new VariantDict ();
+                appearance.insert_value (ACCENT_COLOR, get_accent_color ());
                 table.set (APPEARANCE_NAMESPACE, appearance);
             }
 
             return table;
         }
 
-        public Variant Read (string name_space, string key) throws DBusError, IOError {
+        [DBus (name = "Read")]
+        public Variant read (string name_space, string key) throws DBusError, IOError {
             debug ("Read: %s: %s", name_space, key);
 
             if (name_space == APPEARANCE_NAMESPACE

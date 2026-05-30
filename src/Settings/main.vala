@@ -1,6 +1,8 @@
+using Utils;
+
 namespace SwaySettings {
     public static Settings self_settings;
-    public static AccountsService.Manager userMgr;
+    public static AccountsService.Manager user_manager;
 
     public class Main {
         private static string page = "";
@@ -34,7 +36,7 @@ namespace SwaySettings {
                     break;
                 case "-l":
                 case "--list-pages":
-                    EnumClass enumc = (EnumClass) typeof (PageType).class_ref ();
+                    EnumClass enumc = Vala.get_enum_class<PageType> ();
                     foreach (var enum_value in enumc.values) {
                         string ?name = ((PageType) enum_value.value)
                              .get_internal_name ();
@@ -56,7 +58,7 @@ namespace SwaySettings {
             Gtk.init ();
             Adw.init ();
 
-            userMgr = new AccountsService.Manager ();
+            user_manager = new AccountsService.Manager ();
 
             self_settings = new Settings ("org.erikreider.swaysettings");
 

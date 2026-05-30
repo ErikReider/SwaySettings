@@ -21,7 +21,7 @@ namespace SwaySettings {
 
         public override async void on_back (Adw.NavigationPage page) {
             if (changed_id != 0) {
-                userMgr.disconnect (changed_id);
+                user_manager.disconnect (changed_id);
                 changed_id = 0;
             }
         }
@@ -44,7 +44,7 @@ namespace SwaySettings {
                 Gtk.EventControllerKey controller = new Gtk.EventControllerKey ();
                 controller.key_pressed.connect ((keyval, keycode, state) => {
                     if (keyval == Gdk.Key.Escape) {
-                        string text = userMgr.current_user.real_name;
+                        string text = user_manager.current_user.real_name;
                         content.title.set_text (text);
                         content.title_entry.set_text (text);
                         content.title_button.set_active (false);
@@ -59,8 +59,8 @@ namespace SwaySettings {
                 string text = content.title_entry.text;
                 content.title.set_text (text);
                 content.title_entry.set_text (text);
-                if (userMgr.current_user.get_real_name () != text) {
-                    userMgr.current_user.set_real_name (text);
+                if (user_manager.current_user.get_real_name () != text) {
+                    user_manager.current_user.set_real_name (text);
                 }
                 content.title_button.set_active (false);
             });
@@ -70,14 +70,14 @@ namespace SwaySettings {
                 string name = toggle_value ? "entry" : "title";
                 content.title_stack.set_visible_child_name (name);
                 if (toggle_value) {
-                    content.title_entry.set_text (userMgr.current_user.real_name);
+                    content.title_entry.set_text (user_manager.current_user.real_name);
                     content.title_entry.grab_focus_without_selecting ();
                     content.title_entry.set_position (-1);
                 }
             });
 
-            changed_id = userMgr.changed.connect (set_user_data);
-            if (userMgr.current_user.is_loaded) {
+            changed_id = user_manager.changed.connect (set_user_data);
+            if (user_manager.current_user.is_loaded) {
                 set_user_data ();
             }
 
@@ -86,29 +86,29 @@ namespace SwaySettings {
 
         void set_user_data () {
             // Avatar
-            content.avatar.set_text (userMgr.current_user.real_name);
-            if (userMgr.current_user.icon_file != null
-                && userMgr.current_user.icon_file.length > 0) {
+            content.avatar.set_text (user_manager.current_user.real_name);
+            if (user_manager.current_user.icon_file != null
+                && user_manager.current_user.icon_file.length > 0) {
                 Gtk.IconPaintable paintable = new Gtk.IconPaintable.for_file (
-                    File.new_for_path (userMgr.current_user.icon_file),
+                    File.new_for_path (user_manager.current_user.icon_file),
                     content.avatar.size,
                     1);
                 content.avatar.set_custom_image (paintable);
             }
 
             // Title
-            content.title.set_text (userMgr.current_user.real_name);
-            content.title_entry.set_text (userMgr.current_user.real_name);
+            content.title.set_text (user_manager.current_user.real_name);
+            content.title_entry.set_text (user_manager.current_user.real_name);
 
             // Subtitle
-            string sub_string = userMgr.current_user.email;
+            string sub_string = user_manager.current_user.email;
             if (sub_string == null || sub_string.length == 0) {
-                sub_string = userMgr.current_user.user_name;
+                sub_string = user_manager.current_user.user_name;
             }
             content.subtitle.set_text (sub_string);
 
             // Subtitle2
-            string user_type = userMgr.current_user.system_account ?
+            string user_type = user_manager.current_user.system_account ?
                 "Root User" : "Regular User";
             content.subtitle2.set_text (user_type);
 
@@ -221,7 +221,7 @@ namespace SwaySettings {
                 pixbuf.save (new_path, "jpeg");
                 pixbuf.dispose ();
 
-                userMgr.current_user.set_icon_file (new_path);
+                user_manager.current_user.set_icon_file (new_path);
                 content.popover.popdown ();
             } catch (Error e) {
                 stderr.printf (e.message + "\n");

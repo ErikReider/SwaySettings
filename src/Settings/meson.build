@@ -28,6 +28,7 @@ executable(
     utils['gschema']['files'],
     utils['fs']['files'],
     utils['dbus']['files'],
+    utils['vala']['files'],
   ],
   # TODO: --pkg=linux needed??
   vala_args: ['--pkg=linux'],
@@ -40,6 +41,7 @@ executable(
     utils['gschema']['dependencies'],
     utils['fs']['dependencies'],
     utils['dbus']['dependencies'],
+    utils['vala']['dependencies'],
 
     dep_gtk4,
     dep_gdk_pixbuf,

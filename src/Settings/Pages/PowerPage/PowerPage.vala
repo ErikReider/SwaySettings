@@ -432,7 +432,8 @@ namespace SwaySettings {
                 if (profile_daemon.performance_degraded == "lap-detected") {
                     degraded_banner.set_icon ("info-outline-symbolic");
                     degraded_banner.set_text (
-                        "Lap detected: performance mode temporarily unavailable. Move the device to a stable surface to restore.");
+                        "Lap detected: performance mode temporarily unavailable." +
+                        " Move the device to a stable surface to restore.");
                 } else if (profile_daemon.performance_degraded == "high-operating-temperature") {
                     degraded_banner.set_icon ("thermometer-symbolic");
                     degraded_banner.set_text ("Performance mode temporarily disabled.");

@@ -84,7 +84,7 @@ public class ScreenshotGrid : Adw.Bin {
         // Border
         //
 
-        const float border_width = 2;
+        const float BORDER_WIDTH = 2;
         Gdk.RGBA border_color = Gdk.RGBA () {
             red = 1.0f,
             green = 1.0f,
@@ -93,15 +93,15 @@ public class ScreenshotGrid : Adw.Bin {
         };
         Gsk.RoundedRect border_rect = Gsk.RoundedRect () {
             bounds = Graphene.Rect ().init (
-                drag_rect.get_x () - border_width,
-                drag_rect.get_y () - border_width,
-                drag_rect.get_width () + border_width * 2,
-                drag_rect.get_height () + border_width * 2),
+                drag_rect.get_x () - BORDER_WIDTH,
+                drag_rect.get_y () - BORDER_WIDTH,
+                drag_rect.get_width () + BORDER_WIDTH * 2,
+                drag_rect.get_height () + BORDER_WIDTH * 2),
         };
         snapshot.append_border (
             border_rect,
-            new float[4] { border_width, border_width, border_width,
-                           border_width, },
+            new float[4] { BORDER_WIDTH, BORDER_WIDTH, BORDER_WIDTH,
+                           BORDER_WIDTH, },
             new Gdk.RGBA[4] { border_color, border_color, border_color,
                               border_color, });
 

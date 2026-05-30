@@ -146,7 +146,7 @@ namespace SwaySettings {
 
             const string[] MODEL_KEYS = { "model name", "cpu", "Processor" };
 
-            var cpus = new Gee.HashSet<string>();
+            var cpus = new Gee.HashSet<string> ();
             for (int i = 0; i < info.ncpu; i++) {
                 unowned HashTable<string,
                                   string> values = info.cpuinfo[i].values;
@@ -185,7 +185,7 @@ namespace SwaySettings {
                 }
             }
 
-            var gpus = new Gee.HashSet<string>();
+            var gpus = new Gee.HashSet<string> ();
             foreach (unowned HashTable<string, Variant> gpu in switcheroo.gpus) {
                 Variant value;
                 if (gpu.lookup_extended ("Name", null, out value)
