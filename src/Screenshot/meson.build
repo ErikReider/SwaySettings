@@ -12,10 +12,12 @@ executable(
     swaysettings_sources,
     shared_files,
     utils['gschema']['files'],
+    utils['widgets']['files'],
   ],
   dependencies: [
     shared_deps,
     utils['gschema']['dependencies'],
+    utils['widgets']['dependencies'],
 
     dep_gtk4,
     dep_gdk_pixbuf,

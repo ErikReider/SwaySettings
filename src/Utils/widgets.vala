@@ -1,8 +1,13 @@
 using Gee;
 
 namespace Utils.Widgets {
+    public extern void add_style_provider_for_display (Gdk.Display *display,
+                                                       Gtk.StyleProvider *provider,
+                                                       uint priority);
+
     public delegate bool BoolFunc<G> (G data);
 
+    // TODO: Remove, very hacky
     public static void iter_listbox_children<G> (Gtk.ListBox listbox, BoolFunc<G> func) {
         unowned Gtk.Widget ?widget = listbox.get_first_child ();
         if (widget == null) {

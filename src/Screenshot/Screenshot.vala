@@ -1,3 +1,5 @@
+using Utils;
+
 static Settings self_settings;
 static bool activated = false;
 static Gtk.Application app;
@@ -37,8 +39,7 @@ public static int main (string[] args) {
         Gtk.CssProvider css_provider = new Gtk.CssProvider ();
         css_provider.load_from_resource (
             "/org/erikreider/swaysettings/style/screenshot.css");
-        Gtk.StyleContext.add_provider_for_display (
-            Gdk.Display.get_default (),
+        Widgets.add_style_provider_for_display (Gdk.Display.get_default (),
             css_provider,
             Gtk.STYLE_PROVIDER_PRIORITY_USER);
 

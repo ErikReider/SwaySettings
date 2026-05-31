@@ -189,6 +189,7 @@ public class ScreenshotList : Adw.Bin {
                                    Graphene.Rect dst_rect,
                                    Gtk.Adjustment scroll_start_adj,
                                    double value) {
+        // TODO: Fix warnings. Use builtin GTk methods instead of getting the margin
         Gtk.Border fixed_margin =
             fixed_preview.get_style_context ().get_margin ();
         Gtk.Border list_margin =
