@@ -1,4 +1,9 @@
-swaysettings_settings_sources += files([
+page_sources = []
+subdir('Pulse')
+swaysettings_settings_sources += page_sources
+
+# TODO: Move into dirs
+swaysettings_settings_sources += files(
   'About/About.vala',
   'Background/BackgroundPage.vala',
   'Bluetooth/BluetoothPage.vala',
@@ -17,14 +22,10 @@ swaysettings_settings_sources += files([
   'ScreenshotPage/ScreenshotPage.vala',
   'StartupApps/StartupApps.vala',
   'Users/Users.vala',
-  'Pulse/PulsePage.vala',
-  'Pulse/PulseDaemon.vala',
-  'Pulse/PulseDevice.vala',
-  'Pulse/PulseSinkInput.vala',
   'PowerPage/PowerPage.vala',
   'PowerPage/PowerModeRow.vala',
   'PowerPage/PowerInfoBanner.vala',
   'PowerPage/PowerDevice.vala',
   'PowerPage/PowerDeviceList.vala',
   'PowerPage/BatteryGraphWidget.vala',
-])
+)

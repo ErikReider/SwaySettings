@@ -1,0 +1,43 @@
+using Gtk 4.0;
+
+template $SwaySettingsPagesPulseSliderWidget: Gtk.Box {
+  margin-top: 8;
+  margin-bottom: 8;
+  margin-start: 8;
+  margin-end: 8;
+
+  Label value {
+    width-chars: 3;
+    label: bind $format_scale_value(adjustment.value) as <string>;
+  }
+
+  Scale slider {
+    adjustment: Adjustment adjustment {
+      page-increment: 10.0;
+      step-increment: 1.0;
+      value: 0;
+      lower: 0;
+      upper: 100.0;
+    };
+
+    sensitive: bind mute_toggle.active inverted;
+    digits: 0;
+    hexpand: true;
+
+    marks [
+      mark (25, top),
+      mark (50, top),
+      mark (75, top),
+    ]
+
+    styles [
+      "pulse-scale",
+    ]
+  }
+
+  ToggleButton mute_toggle {
+    halign: center;
+    valign: center;
+    icon-name: bind $get_mute_icon_name(mute_toggle.active) as <string>;
+  }
+}

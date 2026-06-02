@@ -17,6 +17,7 @@
       <file preprocess="xml-stripblanks">icons/scalable/actions/warning-outline-symbolic.svg</file>
       <file preprocess="xml-stripblanks">icons/scalable/actions/thermometer-symbolic.svg</file>
 
+      <!-- TODO: Multiple files: https://discourse.gnome.org/t/understanding-multiple-meson-build-and-gresource-xml-files/32728 -->
       <file>ui/OrderListSelector.ui</file>
       <file>ui/KeyboardInputSelector.ui</file>
       <file>ui/AboutPCContent.ui</file>
@@ -24,8 +25,11 @@
       <file>ui/StartupAppsItem.ui</file>
       <file>ui/Users.ui</file>
       <file>ui/UserListItem.ui</file>
-      <file>ui/PulseContent.ui</file>
-      <file>ui/PulseSinkInput.ui</file>
+      <file>ui/PulsePage.ui</file>
+      <file>ui/PulseDeviceComboRow.ui</file>
+      <file>ui/PulseDeviceComboRowItem.ui</file>
+      <file>ui/PulseSinkInputRow.ui</file>
+      <file>ui/PulseSliderWidget.ui</file>
       <file>ui/BluetoothDeviceRow.ui</file>
       <file>ui/ScreenshotList.ui</file>
       <file>ui/ScreenshotPreview.ui</file>

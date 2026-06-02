@@ -1,4 +1,5 @@
 using Gee;
+using SwaySettings.Pages;
 
 namespace SwaySettings {
     public enum PageType {
@@ -281,7 +282,7 @@ namespace SwaySettings {
                     page = new BluetoothPage (item, content_page);
                     break;
                 case SOUND:
-                    page = new PulsePage (item, content_page);
+                    page = new Pulse.PulsePage (item, content_page);
                     break;
                 case KEYBOARD:
                     page = new KeyboardPage (item, content_page, ipc);

@@ -1,8 +1,8 @@
 using Gtk 4.0;
 
-template $SwaySettingsSinkInputRow: ListBoxRow {
-  activatable: true;
-  selectable: true;
+template $SwaySettingsPagesPulseSinkInputRow: ListBoxRow {
+  activatable: false;
+  selectable: false;
 
   Box {
     orientation: vertical;
@@ -51,38 +51,39 @@ template $SwaySettingsSinkInputRow: ListBoxRow {
       }
     }
 
-    Box {
-      margin-bottom: 8;
-      margin-start: 8;
-      margin-end: 8;
-
-      Label output_value {
-        width-chars: 3;
-      }
-
-      Scale scale {
-        orientation: horizontal;
-        hexpand: true;
-        digits: 0;
-
-        styles [
-          "pulse-scale"
-        ]
-
-        adjustment: Adjustment adjustment {
-          page-increment: 10.0;
-          step-increment: 1.0;
-          value: 0;
-          lower: 0;
-          upper: 100.0;
-        };
-      }
-
-      ToggleButton mute_toggle {
-        icon-name: "audio-volume-high-symbolic";
-        halign: center;
-        valign: center;
-      }
-    }
+    $SwaySettingsPagesPulseSliderWidget slider {}
+    // Box {
+    //   margin-bottom: 8;
+    //   margin-start: 8;
+    //   margin-end: 8;
+    //
+    //   Label output_value {
+    //     width-chars: 3;
+    //   }
+    //
+    //   Scale scale {
+    //     orientation: horizontal;
+    //     hexpand: true;
+    //     digits: 0;
+    //
+    //     styles [
+    //       "pulse-scale"
+    //     ]
+    //
+    //     adjustment: Adjustment adjustment {
+    //       page-increment: 10.0;
+    //       step-increment: 1.0;
+    //       value: 0;
+    //       lower: 0;
+    //       upper: 100.0;
+    //     };
+    //   }
+    //
+    //   ToggleButton mute_toggle {
+    //     icon-name: "audio-volume-high-symbolic";
+    //     halign: center;
+    //     valign: center;
+    //   }
+    // }
   }
 }
