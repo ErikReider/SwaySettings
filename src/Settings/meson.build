@@ -6,15 +6,12 @@ swaysettings_settings_sources = files(
   'Page/IpcPage.vala',
   'Page/Page.vala',
   'Rfkill/Rfkill.vala',
-  'Widgets/KeyboardInputSelector/KeyboardInputSelector.vala',
-  'Widgets/OrderListSelector/OrderListSelector.vala',
-  'Widgets/StorageRow/StorageRow.vala',
-  'Widgets/ThumbnailImage/ThumbnailImage.vala',
   'Window/SidebarListItem.vala',
   'Window/Window.vala',
   'main.vala',
 )
 
+subdir('Widgets')
 subdir('Pages')
 
 executable(

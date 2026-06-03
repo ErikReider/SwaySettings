@@ -106,4 +106,13 @@ namespace Utils.Widgets {
         GDesktop.AccentColor color_enum = GSchema.get_accent_color (settings);
         return accent_color_to_adw (color_enum);
     }
+
+    public static inline Gtk.FileFilter get_image_file_filter () {
+        Gtk.FileFilter filter = new Gtk.FileFilter ();
+        filter.add_mime_type ("image/*");
+        foreach (weak string mime_type in Gly.Loader.get_mime_types ()) {
+            filter.add_mime_type (mime_type);
+        }
+        return filter;
+    }
 }
