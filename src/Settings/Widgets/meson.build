@@ -1,6 +1,8 @@
 swaysettings_settings_sources += files(
-  'KeyboardInputSelector/KeyboardInputSelector.vala',
-  'OrderListSelector/OrderListSelector.vala',
-  'StorageRow/StorageRow.vala',
-  'ThumbnailImage/ThumbnailImage.vala',
+  'AppChooserDialog.vala',
+  'AppChooserDropDown.vala',
+  'KeyboardInputSelector.vala',
+  'OrderListSelector.vala',
+  'StorageRow.vala',
+  'ThumbnailImage.vala',
 )

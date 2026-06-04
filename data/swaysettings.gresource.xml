@@ -37,5 +37,8 @@
       <file>ui/LockerWindow.ui</file>
       <file>ui/PowerPageContent.ui</file>
       <file>ui/PowerDevice.ui</file>
+      <file>ui/AppChooserDropDownItem.ui</file>
+      <file>ui/AppChooserDialog.ui</file>
+      <file>ui/AppChooserDialogRow.ui</file>
   </gresource>
 </gresources>
