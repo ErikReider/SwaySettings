@@ -68,9 +68,9 @@ private static void init () {
 
 private static void monitors_changed (uint position, uint removed, uint added) {
     for (uint i = 0; i < removed; i++) {
-        ScreenshotWindow window = (ScreenshotWindow) windows.get_item (position + i);
+        ScreenshotWindow window = (ScreenshotWindow) windows.get_item (position);
         window.close ();
-        windows.remove (position + i);
+        windows.remove (position);
     }
 
     for (uint i = 0; i < added; i++) {
