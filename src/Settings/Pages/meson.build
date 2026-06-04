@@ -21,6 +21,7 @@ swaysettings_settings_sources += files(
   'DefaultApps/DefaultApps.vala',
   'ScreenshotPage/ScreenshotPage.vala',
   'StartupApps/StartupApps.vala',
+  'StartupApps/StartupAppsRow.vala',
   'Users/Users.vala',
   'PowerPage/PowerPage.vala',
   'PowerPage/PowerModeRow.vala',

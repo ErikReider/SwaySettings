@@ -22,7 +22,7 @@
       <file>ui/KeyboardInputSelector.ui</file>
       <file>ui/AboutPCContent.ui</file>
       <file>ui/StorageRow.ui</file>
-      <file>ui/StartupAppsItem.ui</file>
+      <file>ui/StartupAppsRow.ui</file>
       <file>ui/Users.ui</file>
       <file>ui/UserListItem.ui</file>
       <file>ui/PulsePage.ui</file>
