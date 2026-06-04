@@ -1,8 +1,13 @@
 using Gee;
 
 namespace Utils.Widgets {
+    public extern void add_style_provider_for_display (Gdk.Display *display,
+                                                       Gtk.StyleProvider *provider,
+                                                       uint priority);
+
     public delegate bool BoolFunc<G> (G data);
 
+    // TODO: Remove, very hacky
     public static void iter_listbox_children<G> (Gtk.ListBox listbox, BoolFunc<G> func) {
         unowned Gtk.Widget ?widget = listbox.get_first_child ();
         if (widget == null) {
@@ -100,5 +105,14 @@ namespace Utils.Widgets {
     public static inline Adw.AccentColor get_adw_accent_color (Settings ?settings) {
         GDesktop.AccentColor color_enum = GSchema.get_accent_color (settings);
         return accent_color_to_adw (color_enum);
+    }
+
+    public static inline Gtk.FileFilter get_image_file_filter () {
+        Gtk.FileFilter filter = new Gtk.FileFilter ();
+        filter.add_mime_type ("image/*");
+        foreach (weak string mime_type in Gly.Loader.get_mime_types ()) {
+            filter.add_mime_type (mime_type);
+        }
+        return filter;
     }
 }

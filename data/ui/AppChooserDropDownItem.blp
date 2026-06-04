@@ -1,0 +1,21 @@
+using Gtk 4.0;
+
+template Gtk.ListItem {
+  child: Gtk.Box {
+    orientation: horizontal;
+    spacing: 4;
+
+    Image image {
+      use-fallback: true;
+      gicon: bind template.item as <$SwaySettingsDropDownAppInfoItem>.gicon;
+      visible: bind template.item as <$SwaySettingsDropDownAppInfoItem>.is_app;
+    }
+
+    Label label {
+      hexpand: true;
+      halign: start;
+      ellipsize: end;
+      label: bind template.item as <$SwaySettingsDropDownAppInfoItem>.display_name;
+    }
+  };
+}

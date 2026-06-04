@@ -25,7 +25,7 @@ _sources = {
     'requires': ['gschema'],
   },
   'widgets': {
-    'files': files('./widgets.vala'),
+    'files': files('./widgets.c', './widgets.vala'),
     'dependencies': [dep_gtk4, dep_libadwaita],
     'requires': [],
   },

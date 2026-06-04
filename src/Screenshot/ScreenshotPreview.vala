@@ -4,13 +4,6 @@ private enum DecorationLayout {
     LEFT, RIGTH;
 }
 
-public delegate Graphene.Size AnimationCallback (ScreenshotPreview widget,
-                                                 double value);
-
-public delegate void AnimationDoneCallback (ScreenshotPreview widget);
-
-public delegate void ClickCallback (ScreenshotPreview widget);
-
 [GtkTemplate (ui = "/org/erikreider/swaysettings/ui/ScreenshotPreview.ui")]
 public class ScreenshotPreview : Adw.Bin {
     public const uint TIMEOUT_S = 10;
@@ -30,26 +23,17 @@ public class ScreenshotPreview : Adw.Bin {
     unowned Gtk.Picture picture;
 
     private Gtk.GestureClick overlay_click = new Gtk.GestureClick ();
-    private Gtk.EventControllerMotion motion_controller =
-        new Gtk.EventControllerMotion ();
 
-    private uint hide_id = 0;
+    public signal void close_clicked ();
 
-    unowned ClickCallback close_click_cb = null;
-
-    public ScreenshotPreview.list (ScreenshotWindow window,
-                                   ClickCallback close_click_cb) {
+    public ScreenshotPreview.list (ScreenshotWindow window) {
         this (window);
-        this.close_click_cb = close_click_cb;
 
         this.opacity = 0.0;
 
         overlay.set_cursor_from_name ("pointer");
         overlay.add_controller (overlay_click);
         overlay_click.released.connect (picture_button_click_cb);
-        overlay.add_controller (motion_controller);
-        motion_controller.enter.connect (remove_timer);
-        motion_controller.leave.connect (add_timer);
 
         Gtk.Button close_button =
             new Gtk.Button.from_icon_name ("window-close-symbolic");
@@ -107,21 +91,6 @@ public class ScreenshotPreview : Adw.Bin {
         // Fixes the Picture taking up too much space:
         // https://gitlab.gnome.org/GNOME/gtk/-/issues/7092
         picture.set_layout_manager (new Gtk.CenterLayout ());
-    }
-
-    public void add_timer () {
-        remove_timer ();
-        hide_id = Timeout.add_seconds_once (TIMEOUT_S, () => {
-            hide_id = 0;
-            // TODO:Close / save the screenshot after a timeout?
-        });
-    }
-
-    private void remove_timer () {
-        if (hide_id > 0) {
-            Source.remove (hide_id);
-            hide_id = 0;
-        }
     }
 
     private DecorationLayout get_decoration_layout () {
@@ -376,9 +345,7 @@ public class ScreenshotPreview : Adw.Bin {
     }
 
     private void close_button_click_cb () {
-        if (close_click_cb != null) {
-            close_click_cb (this);
-        }
+        close_clicked ();
     }
 
     public void set_texture (Gdk.Texture texture) {

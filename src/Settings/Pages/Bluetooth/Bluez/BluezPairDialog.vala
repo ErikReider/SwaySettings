@@ -1,11 +1,9 @@
 namespace Bluez {
-    public class PairDialog : Gtk.Dialog {
-        Adw.Bin code_widget;
-
-        Gtk.Image image;
-
-        Gtk.Label title_label;
-        Gtk.Label message_label;
+    [GtkTemplate (ui = "/org/erikreider/swaysettings/ui/BluezPairDialog.ui")]
+    public class PairDialog : Adw.AlertDialog {
+        public string icon_name { get; construct; }
+        public string header_text { get; construct; }
+        public string body_text { get; construct; }
 
         public enum AuthType {
             REQUEST_CONFIRMATION,
@@ -16,166 +14,102 @@ namespace Bluez {
 
         public ObjectPath object_path { get; construct; }
         public AuthType auth_type { get; construct; }
-        public string passkey { get; construct; }
+        public string ?passkey { get; construct; }
         public bool cancelled { get; set; }
 
-        private PairDialog () {
-            this.add_button ("Cancel", Gtk.ResponseType.CANCEL);
-        }
+        private PairDialog () {}
 
-        public PairDialog.request_authorization (ObjectPath object_path,
-                                                 Gtk.Window main_window) {
+        public PairDialog.request_authorization (ObjectPath object_path) {
             Object (
                 auth_type: AuthType.REQUEST_AUTHORIZATION,
                 object_path: object_path,
-                transient_for: main_window
+                header_text: "Confirm Bluetooth Pairing"
             );
-            title_label.label = "Confirm Bluetooth Pairing";
-            this.add_button ("Cancel", Gtk.ResponseType.CANCEL);
         }
 
         public PairDialog.display_passkey (ObjectPath object_path,
                                            uint32 passkey,
-                                           uint16 entered,
-                                           Gtk.Window main_window) {
+                                           uint16 entered) {
             Object (
                 auth_type: AuthType.DISPLAY_PASSKEY,
                 object_path: object_path,
                 passkey: "%u".printf (passkey),
-                transient_for: main_window
+                header_text: "Confirm Bluetooth Passkey"
             );
-            title_label.label = "Confirm Bluetooth Passkey";
-            this.add_button ("Cancel", Gtk.ResponseType.CANCEL);
         }
 
-        public PairDialog.request_confirmation (ObjectPath object_path,
-                                                uint32 passkey,
-                                                Gtk.Window main_window) {
+        public PairDialog.request_confirmation (ObjectPath object_path, uint32 passkey) {
             Object (
                 auth_type: AuthType.REQUEST_CONFIRMATION,
                 object_path: object_path,
                 passkey: "%u".printf (passkey),
-                transient_for: main_window
+                header_text: "Confirm Bluetooth Passkey"
             );
-            title_label.label = "Confirm Bluetooth Passkey";
-            this.add_button ("Cancel", Gtk.ResponseType.CANCEL);
         }
 
-        public PairDialog.display_pin_code (ObjectPath object_path,
-                                            string pincode,
-                                            Gtk.Window main_window) {
+        public PairDialog.display_pin_code (ObjectPath object_path, string pincode) {
             Object (
                 auth_type: AuthType.DISPLAY_PIN_CODE,
                 object_path: object_path,
                 passkey: pincode,
-                transient_for: main_window
+                header_text: "Enter Bluetooth PIN"
             );
-            title_label.label = "Enter Bluetooth PIN";
-            this.add_button ("Cancel", Gtk.ResponseType.CANCEL);
         }
 
         construct {
-            // Build dialog
-            {
-                set_resizable (false);
-                default_width = 250;
+            icon_name = "bluetooth";
 
-                unowned Gtk.Box box = get_content_area ();
-                box.margin_top = 8;
-                box.margin_start = 8;
-                box.margin_end = 8;
-                box.set_orientation (Gtk.Orientation.VERTICAL);
-                box.set_spacing (12);
-
-                image = new Gtk.Image.from_icon_name ("video-display") {
-                    pixel_size = 96,
-                    halign = Gtk.Align.CENTER,
-                    margin_top = 8,
-                    margin_bottom = 8,
-                    margin_start = 8,
-                    margin_end = 8,
-                };
-                box.append (image);
-
-                title_label = new Gtk.Label (null) {
-                    wrap = true,
-                    hexpand = true,
-                    justify = Gtk.Justification.CENTER,
-                };
-                title_label.add_css_class ("title-2");
-                box.append (title_label);
-                message_label = new Gtk.Label (null) {
-                    wrap = true,
-                    hexpand = true,
-                    justify = Gtk.Justification.CENTER,
-                };
-                message_label.add_css_class ("body");
-                box.append (message_label);
-
-                code_widget = new Adw.Bin ();
-                box.append (code_widget);
-            }
-
-            // Logic
-            Device1 ?device;
+            // Get device info
             string device_name = "Unknown Bluetooth Device";
             try {
-                device = Bus.get_proxy_sync<Device1 ?> (
+                Device1 ?device = Bus.get_proxy_sync<Device1 ?> (
                     BusType.SYSTEM,
                     "org.bluez",
                     object_path,
                     DBusProxyFlags.GET_INVALIDATED_PROPERTIES);
-                image.set_from_icon_name (device.icon ?? "bluetooth");
+                if (device.icon != null) {
+                    icon_name = device.icon;
+                }
                 device_name = device.name ?? device.address;
             } catch (IOError e) {
-                image.set_from_icon_name ("bluetooth");
-                stderr.printf ("Pair dialog construct: %s\n", e.message);
+                critical ("Bluez pair dialog error: %s\n", e.message);
             }
+
+            add_response ("pair", "Pair");
+            set_response_appearance ("pair", Adw.ResponseAppearance.SUGGESTED);
+            add_response ("cancel", "Cancel");
+            set_default_response ("cancel");
+            set_close_response ("cancel");
 
             switch (auth_type) {
                 case AuthType.REQUEST_CONFIRMATION:
-                    message_label.label =
+                    body_text =
                         "Make sure the code displayed on “%s” matches the one below."
                          .printf (device_name);
-
-                    var confirm = add_button ("Pair", Gtk.ResponseType.ACCEPT);
-                    confirm.add_css_class ("suggested-action");
                     break;
                 case AuthType.DISPLAY_PASSKEY:
-                    message_label.label =
+                    body_text =
                         ("“%s” would like to pair with this device."
                          + " Make sure the code displayed on “%s” matches the one below.")
                          .printf (device_name, device_name);
-
-                    var confirm = add_button ("Pair", Gtk.ResponseType.ACCEPT);
-                    confirm.add_css_class ("suggested-action");
                     break;
                 case AuthType.DISPLAY_PIN_CODE:
-                    message_label.label =
+                    body_text =
                         "Type the code displayed below on “%s”, followed by Enter."
                          .printf (device_name);
+
+                    remove_response ("pair");
                     break;
                 case AuthType.REQUEST_AUTHORIZATION:
-                    message_label.label = "“%s” would like to pair with this device."
+                    body_text = "“%s” would like to pair with this device."
                          .printf (device_name);
-
-                    var confirm = add_button ("Pair", Gtk.ResponseType.ACCEPT);
-                    confirm.add_css_class ("suggested-action");
                     break;
             }
+        }
 
-            // Display the passkey
-            if (passkey != null && passkey.length > 0) {
-                var passkey_label = new Gtk.Label (passkey) {
-                    margin_top = 8,
-                    margin_bottom = 8,
-                    margin_start = 8,
-                    margin_end = 8,
-                };
-                passkey_label.add_css_class ("title-1");
-
-                code_widget.set_child (passkey_label);
-            }
+        [GtkCallback]
+        private bool get_has_passkey (string ?passkey) {
+            return passkey != null && passkey.length > 0;
         }
     }
 }

@@ -1,0 +1,43 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $SwaySettingsAppChooserDialog: Adw.Dialog {
+  child: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      show-back-button: false;
+      show-end-title-buttons: false;
+      show-start-title-buttons: false;
+
+      [start]
+      Gtk.Button {
+        label: "Cancel";
+        clicked => $cancel_button_clicked_cb();
+      }
+
+      title-widget: Adw.WindowTitle {
+        title: bind template.title;
+        subtitle: bind template.subtitle;
+      };
+
+      [end]
+      Gtk.Button select_button {
+        label: "Select";
+        sensitive: false;
+        clicked => $select_button_clicked_cb();
+
+        styles [
+          "suggested-action",
+        ]
+      }
+    }
+
+    content: Gtk.ScrolledWindow {
+      hscrollbar-policy: never;
+      propagate-natural-height: true;
+      min-content-height: 300;
+
+      child: Gtk.ListView list_view {};
+    };
+  };
+}

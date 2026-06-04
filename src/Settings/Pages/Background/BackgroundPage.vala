@@ -145,9 +145,7 @@ namespace SwaySettings {
             image_chooser.set_title ("Select Image");
             image_chooser.accept_label = "_Open";
             // Only show images
-            var filter = new Gtk.FileFilter ();
-            filter.add_mime_type ("image/*");
-            filter.add_pixbuf_formats ();
+            Gtk.FileFilter filter = Widgets.get_image_file_filter ();
             image_chooser.set_default_filter (filter);
 
             image_chooser.open.begin ((Gtk.Window) get_root (), null, (obj, result) => {

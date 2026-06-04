@@ -1,0 +1,58 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $BluezPairDialog: Adw.AlertDialog {
+  extra-child: Gtk.Box {
+    orientation: vertical;
+    spacing: 12;
+    margin-top: 8;
+    margin-start: 8;
+    margin-end: 8;
+
+    Image image {
+      halign: center;
+      margin-top: 8;
+      margin-bottom: 8;
+      margin-start: 8;
+      margin-end: 8;
+      icon-name: bind template.icon_name as <string>;
+      use-fallback: true;
+      pixel-size: 96;
+    }
+
+    Gtk.Label title_label {
+      label: bind template.header_text as <string>;
+      wrap: true;
+      hexpand: true;
+      justify: center;
+
+      styles [
+        "title-2",
+      ]
+    }
+
+    Gtk.Label message_label {
+      label: bind template.body_text as <string>;
+      wrap: true;
+      hexpand: true;
+      justify: center;
+
+      styles [
+        "body",
+      ]
+    }
+
+    Gtk.Label passkey_label {
+      margin-top: 8;
+      margin-bottom: 8;
+      margin-start: 8;
+      margin-end: 8;
+      visible: bind $get_has_passkey(template.passkey) as <bool>;
+      label: bind template.passkey;
+
+      styles [
+        "title-1",
+      ]
+    }
+  };
+}

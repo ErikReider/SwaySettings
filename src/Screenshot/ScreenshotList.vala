@@ -134,15 +134,14 @@ public class ScreenshotList : Adw.Bin {
         }
 
         ScreenshotPreview fixed_preview = new ScreenshotPreview.fixed (window);
-        ScreenshotPreview list_preview = new ScreenshotPreview.list (window,
-                                                                     preview_close_cb);
+        ScreenshotPreview list_preview = new ScreenshotPreview.list (window);
+        list_preview.close_clicked.connect (preview_close_cb);
 
         Graphene.Rect init_rect = Graphene.Rect ()
              .init_from_rect (rect)
              .offset (-window.monitor.geometry.x,
                       -window.monitor.geometry.y);
-        Graphene.Rect dst_rect = ScreenshotPreview.calculate_dst_rect (window,
-                                                                       init_rect);
+        Graphene.Rect dst_rect = ScreenshotPreview.calculate_dst_rect (window, init_rect);
         Gtk.Adjustment scroll_start_value = viewport.vadjustment;
 
         Adw.CallbackAnimationTarget target = new Adw.CallbackAnimationTarget (
@@ -164,8 +163,6 @@ public class ScreenshotList : Adw.Bin {
             input_region_dirty = true;
 
             fixed.remove (fixed_preview);
-
-            list_preview.add_timer ();
         });
 
         fixed_preview.set_texture (texture);
@@ -178,9 +175,7 @@ public class ScreenshotList : Adw.Bin {
 
         // Ensures the animation starts after GTK recalculates the layout and
         // both widgets are mapped
-        Idle.add_once (() => {
-            animation.play ();
-        });
+        Idle.add_once (animation.play);
     }
 
     private void animate_value_cb (ScreenshotPreview fixed_preview,
@@ -189,45 +184,29 @@ public class ScreenshotList : Adw.Bin {
                                    Graphene.Rect dst_rect,
                                    Gtk.Adjustment scroll_start_adj,
                                    double value) {
-        Gtk.Border fixed_margin =
-            fixed_preview.get_style_context ().get_margin ();
-        Gtk.Border list_margin =
-            list_preview.get_style_context ().get_margin ();
-
         //
         // Fixed Preview Hero animation
         //
-        double fixed_width = Adw.lerp (init_rect.get_width (),
-                                       dst_rect.get_width (), value);
-        double fixed_height = Adw.lerp (init_rect.get_height (),
-                                        dst_rect.get_height (), value);
-        double fixed_x = Adw.lerp (init_rect.get_x (),
-                                   dst_rect.get_x () - fixed_margin.right -
-                                   list_margin.right, value);
-        double fixed_y = Adw.lerp (init_rect.get_y (),
-                                   dst_rect.get_y () - fixed_margin.bottom -
-                                   list_margin.bottom, value);
+        Graphene.Point dst_coords;
+        list_preview.compute_point (this, Graphene.Point.zero (), out dst_coords);
 
-        fixed.move (fixed_preview, fixed_x - fixed_margin.left,
-                    fixed_y - fixed_margin.top);
+        double fixed_width = Adw.lerp (init_rect.get_width (), dst_rect.get_width (), value);
+        double fixed_height = Adw.lerp (init_rect.get_height (), dst_rect.get_height (), value);
+        double fixed_x = Adw.lerp (init_rect.get_x (), dst_coords.x, value);
+        double fixed_y = Adw.lerp (init_rect.get_y (), dst_coords.y, value);
 
-        fixed_preview.set_size_request ((int) fixed_width + fixed_margin.left +
-                                        fixed_margin.right,
-                                        (int) fixed_height + fixed_margin.top +
-                                        fixed_margin.bottom);
+        fixed.move (fixed_preview, fixed_x, fixed_y);
+
+        fixed_preview.set_size_request ((int) fixed_width, (int) fixed_height);
         fixed_preview.header_bar.set_opacity (value);
 
         //
         // List Preview expand animation
         //
-        double list_width = dst_rect.get_width () + list_margin.left +
-            list_margin.right;
-        double list_height = Adw.lerp (0, dst_rect.get_height (),
-                                       value) + list_margin.top +
-            list_margin.bottom;
+        double list_width = dst_rect.get_width ();
+        double list_height = Adw.lerp (0, dst_rect.get_height (), value);
 
-        list_preview.set_size_request ((int) list_width,
-                                       (int) list_height);
+        list_preview.set_size_request ((int) list_width, (int) list_height);
 
         // Scroll to the bottom preview
         double scroll_value = Adw.lerp (scroll_start_adj.value,
@@ -260,7 +239,6 @@ public class ScreenshotList : Adw.Bin {
         // saved or copied the screenshot?
         box.remove (preview);
         preview_widgets.remove (preview);
-        preview.destroy ();
 
         // Setting the input region here will cause the region to be
         // outdated due to the new positions not being set yet.

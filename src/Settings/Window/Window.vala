@@ -1,4 +1,5 @@
 using Gee;
+using SwaySettings.Pages;
 
 namespace SwaySettings {
     public enum PageType {
@@ -10,7 +11,6 @@ namespace SwaySettings {
         STARTUP_APPS,
         DEFAULT_APPS,
         SCREENSHOT,
-        // SWAYNC,
         SOUND,
         BLUETOOTH,
         KEYBOARD,
@@ -35,8 +35,6 @@ namespace SwaySettings {
                     return "Default Apps";
                 case SCREENSHOT:
                     return "Screenshot";
-                // case SWAYNC:
-                // return "Sway Notification Center";
                 case BLUETOOTH:
                     return "Bluetooth";
                 case SOUND:
@@ -69,8 +67,6 @@ namespace SwaySettings {
                     return "default-apps";
                 case SCREENSHOT:
                     return "screenshot";
-                // case SWAYNC:
-                // return "swaync";
                 case BLUETOOTH:
                     return "bluetooth";
                 case SOUND:
@@ -121,7 +117,6 @@ namespace SwaySettings {
                               PageType.STARTUP_APPS),
                 SettingsItem ("preferences-other", PageType.DEFAULT_APPS),
                 SettingsItem ("screenshooter-symbolic", PageType.SCREENSHOT),
-                // SettingsItem ("mail-unread", PageType.SWAYNC, "swaync", !Functions.is_swaync_installed ()),
             }),
             SettingsCategory ("Input", {
                 SettingsItem ("preferences-desktop-keyboard-symbolic",
@@ -283,14 +278,11 @@ namespace SwaySettings {
                 case SCREENSHOT:
                     page = new ScreenshotPage (item, content_page);
                     break;
-                // case SWAYNC:
-                // page = new Swaync (item, deck, ipc);
-                // break;
                 case BLUETOOTH:
                     page = new BluetoothPage (item, content_page);
                     break;
                 case SOUND:
-                    page = new PulsePage (item, content_page);
+                    page = new Pulse.PulsePage (item, content_page);
                     break;
                 case KEYBOARD:
                     page = new KeyboardPage (item, content_page, ipc);

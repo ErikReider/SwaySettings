@@ -1,0 +1,21 @@
+using Gtk 4.0;
+
+template Gtk.ListItem {
+  child: Gtk.Box {
+    orientation: horizontal;
+    spacing: 8;
+
+    Image image {
+      use-fallback: true;
+      gicon: bind template.item as <$SwaySettingsDialogAppInfoItem>.gicon;
+      icon-size: large;
+    }
+
+    Label label {
+      hexpand: true;
+      halign: start;
+      ellipsize: end;
+      label: bind template.item as <$SwaySettingsDialogAppInfoItem>.display_name;
+    }
+  };
+}

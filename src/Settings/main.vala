@@ -90,10 +90,9 @@ namespace SwaySettings {
                 Gtk.CssProvider css_provider = new Gtk.CssProvider ();
                 css_provider.load_from_resource (
                     "/org/erikreider/swaysettings/style/settings-window.css");
-                Gtk.StyleContext.add_provider_for_display (
-                    Gdk.Display.get_default (),
-                    css_provider,
-                    Gtk.STYLE_PROVIDER_PRIORITY_SETTINGS);
+                Widgets.add_style_provider_for_display (Gdk.Display.get_default (),
+                                                        css_provider,
+                                                        Gtk.STYLE_PROVIDER_PRIORITY_SETTINGS);
 
                 // Init resources
                 var theme = Gtk.IconTheme.get_for_display (Gdk.Display.get_default ());

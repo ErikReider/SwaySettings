@@ -59,6 +59,7 @@ namespace SwaySettings {
         }
     }
 
+    // TODO: Make more blueprint compatible
     public abstract class PageScroll : Page {
         public virtual bool have_margin {
             get {

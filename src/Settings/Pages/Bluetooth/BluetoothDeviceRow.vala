@@ -146,32 +146,29 @@ namespace SwaySettings {
             }
         }
 
-        private void remove_button_clicked_cb () {
+        private async void remove_button_clicked_cb () {
             if (!device.paired) {
                 return;
             }
 
-            string title = "Remove \"%s\"?".printf (device.alias);
-            const string BODY =
-                "If you remove the device, you will have to repair the device to use it.";
-            var window = (Adw.ApplicationWindow) this.get_root ();
-
-            var dialog = new Adw.MessageDialog (window, title, BODY);
+            var dialog = new Adw.AlertDialog (
+                "Remove \"%s\"?".printf (device.alias),
+                "If you remove the device, you will have to repair the device to use it.");
             dialog.add_responses ("cancel", "Cancel", "remove", "Remove", null);
             dialog.set_response_appearance ("remove", Adw.ResponseAppearance.DESTRUCTIVE);
             dialog.set_default_response ("cancel");
             dialog.set_close_response ("cancel");
-            dialog.response.connect ((dialog, response) => {
-                if (response == "remove") {
-                    try {
-                        adapter.remove_device (new ObjectPath (((DBusProxy) device).g_object_path));
-                        device.trusted = false;
-                    } catch (Error e) {
-                        stderr.printf ("Remove device Error: %s\n", e.message);
-                    }
+
+            string response = yield dialog.choose (get_root (), null);
+
+            if (response == "remove") {
+                try {
+                    adapter.remove_device (new ObjectPath (((DBusProxy) device).g_object_path));
+                    device.trusted = false;
+                } catch (Error e) {
+                    stderr.printf ("Remove device Error: %s\n", e.message);
                 }
-            });
-            dialog.present ();
+            }
         }
 
         /**

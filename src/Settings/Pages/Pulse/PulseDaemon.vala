@@ -1,7 +1,7 @@
 using Gee;
 using PulseAudio;
 
-namespace SwaySettings {
+namespace SwaySettings.Pages.Pulse {
     /**
      * Loosely based off of Elementary OS switchboard-plug-sound
      * https://github.com/elementary/switchboard-plug-sound
@@ -16,8 +16,8 @@ namespace SwaySettings {
         private string default_sink_name { get; private set; }
         private string default_source_name { get; private set; }
 
-        private PulseDevice ?default_sink = null;
-        private PulseDevice ?default_source = null;
+        public PulseDevice ?default_sink { get; private set; default = null; }
+        public PulseDevice ?default_source { get; private set; default = null; }
 
         public HashMap<string, PulseDevice> sinks { get; private set; }
         public HashMap<string, PulseDevice> sources { get; private set; }
@@ -43,7 +43,7 @@ namespace SwaySettings {
             context = null;
         }
 
-        public signal void change_default_device (PulseDevice device);
+        public signal void default_device_changed (PulseDevice device);
 
         public signal void new_active_sink (PulseSinkInput device);
         public signal void change_active_sink (PulseSinkInput device);
@@ -282,6 +282,7 @@ namespace SwaySettings {
                 this.new_active_sink (sink_input);
             } else {
                 this.change_active_sink (sink_input);
+                sink_input.changed ();
             }
         }
 
@@ -437,10 +438,11 @@ namespace SwaySettings {
 
                         if (is_default) {
                             this.default_sink = device;
-                            this.change_default_device (device);
+                            this.default_device_changed (device);
                         }
                     }
                     this.change_device (device);
+                    device.changed ();
                 }
             }
             // If not found, it's a cardless device
@@ -493,12 +495,13 @@ namespace SwaySettings {
 
             if (is_default) {
                 this.default_sink = device;
-                this.change_default_device (device);
+                this.default_device_changed (device);
             }
             if (!has_device || device_is_removed) {
                 this.new_device (device);
             }
             this.change_device (device);
+            device.changed ();
         }
 
         private void get_source_info (Context ctx, SourceInfo ?info, int eol) {
@@ -550,10 +553,11 @@ namespace SwaySettings {
 
                         if (is_default) {
                             this.default_source = device;
-                            this.change_default_device (device);
+                            this.default_device_changed (device);
                         }
                     }
                     this.change_device (device);
+                    device.changed ();
                 }
             }
             // If not found, it's a cardless device
@@ -606,12 +610,13 @@ namespace SwaySettings {
 
             if (is_default) {
                 this.default_source = device;
-                this.change_default_device (device);
+                this.default_device_changed (device);
             }
             if (!has_device || device_is_removed) {
                 this.new_device (device);
             }
             this.change_device (device);
+            device.changed ();
         }
 
         /*
@@ -708,12 +713,12 @@ namespace SwaySettings {
             if (is_input) {
                 if (device.device_name != default_sink_name) {
                     debug ("Setting default source to: %s", device.device_name);
-                    yield set_default_source (device);
+                    yield set_default_source_internal (device);
                 }
             } else {
                 if (device.device_name != default_sink_name) {
                     debug ("Setting default sink to: %s", device.device_name);
-                    yield set_default_sink (device);
+                    yield set_default_sink_internal (device);
                 }
             }
         }
@@ -793,10 +798,10 @@ namespace SwaySettings {
             yield;
         }
 
-        private async void set_default_source (PulseDevice device) {
+        private async void set_default_source_internal (PulseDevice device) {
             context.set_default_source (device.device_name, (c, success) => {
                 if (success == 1) {
-                    set_default_source.callback ();
+                    set_default_source_internal.callback ();
                 } else {
                     stderr.printf ("setting default source to %s failed\n",
                                    device.device_name);
@@ -805,10 +810,10 @@ namespace SwaySettings {
             yield;
         }
 
-        private async void set_default_sink (PulseDevice device) {
+        private async void set_default_sink_internal (PulseDevice device) {
             context.set_default_sink (device.device_name, (c, success) => {
                 if (success == 1) {
-                    set_default_sink.callback ();
+                    set_default_sink_internal.callback ();
                 } else {
                     stderr.printf ("setting default sink to %s failed\n",
                                    device.device_name);
@@ -852,6 +857,17 @@ namespace SwaySettings {
         private static PulseAudio.Volume double_to_volume (double vol) {
             double tmp = (double) (PulseAudio.Volume.NORM - PulseAudio.Volume.MUTED) * vol / 100;
             return (PulseAudio.Volume) tmp + PulseAudio.Volume.MUTED;
+        }
+    }
+
+    public interface IPulseModuleType<T> : Object {
+        /** Compares the IPulseModuleTypes. Returns true if they're the same */
+        public abstract bool cmp (T type);
+
+        public static bool equals (Object _a, Object _b) {
+            IPulseModuleType<T> a = (IPulseModuleType<T>) _a;
+            IPulseModuleType<T> b = (IPulseModuleType<T>) _b;
+            return a.cmp (b);
         }
     }
 }

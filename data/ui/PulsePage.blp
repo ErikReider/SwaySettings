@@ -1,0 +1,90 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $SwaySettingsPagesPulseContent: Adw.Bin {
+  child: Stack stack {
+    transition-type: crossfade;
+
+    StackPage {
+      name: "pulse-page";
+
+      child: Box {
+        spacing: 12;
+        orientation: vertical;
+
+        Adw.PreferencesGroup output_group {
+          title: 'Output Device';
+          sensitive: bind output_combo_row.is_empty inverted;
+
+          $SwaySettingsPagesPulseDeviceComboRow output_combo_row {
+            title: 'Device';
+            valign: center;
+            hexpand: true;
+          }
+
+          Adw.ComboRow profile_combo_row {
+            title: 'Configuration';
+            valign: center;
+            hexpand: true;
+          }
+
+          Adw.PreferencesRow {
+            selectable: false;
+            activatable: false;
+
+            child: $SwaySettingsPagesPulseSliderWidget output_slider {};
+          }
+        }
+
+        Adw.PreferencesGroup input_group {
+          title: 'Input Device';
+          sensitive: bind input_combo_row.is_empty inverted;
+
+          $SwaySettingsPagesPulseDeviceComboRow input_combo_row {
+            title: 'Device';
+            valign: center;
+            hexpand: true;
+          }
+
+          Adw.PreferencesRow {
+            selectable: false;
+            activatable: false;
+
+            child: $SwaySettingsPagesPulseSliderWidget input_slider {};
+          }
+        }
+
+        Adw.PreferencesGroup {
+          title: 'Volume Levels';
+
+          ListBox levels_listbox {
+            styles [
+              "content",
+            ]
+
+            [placeholder]
+            Adw.StatusPage {
+              sensitive: false;
+              icon-name: "application-x-executable-symbolic";
+              title: "Nothing playing";
+
+              styles [
+                "compact",
+              ]
+            }
+          }
+        }
+      };
+    }
+
+    StackPage {
+      name: "error-page";
+
+      child: Adw.StatusPage {
+        sensitive: false;
+        icon-name: "audio-volume-muted";
+        title: "PulseAudio is disabled";
+      };
+    }
+  };
+}

@@ -1,0 +1,10 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $SwaySettingsPagesPulseDeviceComboRow: Adw.ComboRow {
+  factory: SignalListItemFactory {
+    setup => $factory_setup_cb();
+    bind => $factory_bind_cb();
+    unbind => $factory_unbind_cb();
+  };
+}

@@ -1,13 +1,13 @@
 using Gee;
 using PulseAudio;
 
-namespace SwaySettings {
-    public class PulseCardProfile : Object {
-        public string name;
-        public string description;
-        public uint32 n_sinks;
-        public uint32 n_sources;
-        public uint32 priority;
+namespace SwaySettings.Pages.Pulse {
+    public class PulseCardProfile : Object, IPulseModuleType<PulseCardProfile> {
+        public string name { get; set; }
+        public string description { get; set; }
+        public uint32 n_sinks { get; set; }
+        public uint32 n_sources { get; set; }
+        public uint32 priority { get; set; }
         int available;
 
         public PulseCardProfile (CardProfileInfo2 *profile) {
@@ -29,7 +29,7 @@ namespace SwaySettings {
         }
     }
 
-    public class PulseDevice : Object {
+    public class PulseDevice : Object, IPulseModuleType<PulseDevice> {
         public bool removed { get; set; default = false; }
 
         public bool has_card { get; set; default = true; }
@@ -76,6 +76,14 @@ namespace SwaySettings {
         public ChannelMap channel_map;
         public LinkedList<Operation> volume_operations { get; set; }
 
+        public bool is_input {
+            get {
+                return direction == Direction.INPUT;
+            }
+        }
+
+        public signal void changed ();
+
         /** Gets the name to be shown to the user:
          * "port_description - card_description"
          */
@@ -117,7 +125,7 @@ namespace SwaySettings {
          * "card_description:port_name"
          */
         public static string get_hash_map_key (string c_desc, string p_name) {
-            return string.joinv (":", new string[] { c_desc, p_name });
+            return "%s:%s".printf (c_desc, p_name);
         }
 
         /** The port name: `Name` */

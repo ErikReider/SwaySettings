@@ -157,8 +157,8 @@ namespace Bluez {
         public async void display_pin_code (ObjectPath device,
                                             string pincode) throws Error, BluezError {
             debug ("Agent: Display pin code\n");
-            pair_dialog = new PairDialog.display_pin_code (device, pincode, main_window);
-            pair_dialog.present ();
+            pair_dialog = new PairDialog.display_pin_code (device, pincode);
+            pair_dialog.present (main_window);
         }
 
         /**
@@ -201,8 +201,8 @@ namespace Bluez {
                                            uint32 passkey,
                                            uint16 entered) throws Error {
             debug ("Agent: Display passkey\n");
-            pair_dialog = new PairDialog.display_passkey (device, passkey, entered, main_window);
-            pair_dialog.present ();
+            pair_dialog = new PairDialog.display_passkey (device, passkey, entered);
+            pair_dialog.present (main_window);
         }
 
         /**
@@ -224,7 +224,7 @@ namespace Bluez {
         public async void request_confirmation (ObjectPath device,
                                                 uint32 passkey) throws Error, BluezError {
             debug ("Agent: Request confirmation\n");
-            pair_dialog = new PairDialog.request_confirmation (device, passkey, main_window);
+            pair_dialog = new PairDialog.request_confirmation (device, passkey);
             yield check_pairing_response (pair_dialog);
         }
 
@@ -244,7 +244,7 @@ namespace Bluez {
         [DBus (name = "RequestAuthorization")]
         public async void request_authorization (ObjectPath device) throws Error, BluezError {
             debug ("Agent: Request authorization\n");
-            pair_dialog = new PairDialog.request_authorization (device, main_window);
+            pair_dialog = new PairDialog.request_authorization (device);
             yield check_pairing_response (pair_dialog);
         }
 
@@ -297,26 +297,18 @@ namespace Bluez {
 
         private async void check_pairing_response (PairDialog dialog) throws BluezError {
             debug ("Agent: Check pairing response\n");
-            SourceFunc callback = check_pairing_response.callback;
             BluezError ?error = null;
 
-            dialog.response.connect ((response) => {
-                if (response != Gtk.ResponseType.ACCEPT || dialog.cancelled) {
-                    if (dialog.cancelled) {
-                        error = new BluezError.CANCELED ("Pairing cancelled");
-                    } else {
-                        error = new BluezError.REJECTED ("Pairing rejected");
-                    }
-                }
-
-                Idle.add ((owned) callback);
-                dialog.destroy ();
-            });
-
-            dialog.present ();
-
             // Wait until the user has accepted or rejected pairing
-            yield;
+            string response = yield dialog.choose (main_window, null);
+
+            if (response != "pair" || dialog.cancelled) {
+                if (dialog.cancelled) {
+                    error = new BluezError.CANCELED ("Pairing cancelled");
+                } else {
+                    error = new BluezError.REJECTED ("Pairing rejected");
+                }
+            }
 
             if (error != null) {
                 throw error;
