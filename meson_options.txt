@@ -1,1 +1,6 @@
-option('systemduserunitdir', type: 'string', value: '', description: 'Custom directory to install systemd user units.')
+option(
+    'systemduserunitdir',
+    type: 'string',
+    value: '',
+    description: 'Custom directory to install systemd user units.',
+)

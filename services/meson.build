@@ -2,11 +2,11 @@
 if dep_systemd.found()
   systemd_service_install_dir = dep_systemd.get_variable(pkgconfig: 'systemduserunitdir')
 else
-  systemd_service_install_dir = join_paths(get_option('libdir'), 'systemd', 'user')
+  systemd_service_install_dir = get_option('libdir') / 'systemd' / 'user'
 endif
 
 conf_data = configuration_data()
-conf_data.set('bindir', join_paths(get_option('prefix'), get_option('bindir')))
+conf_data.set('bindir', get_option('prefix') / get_option('bindir'))
 configure_file(
   configuration: conf_data,
   input: 'systemd/sway-wallpaper.service.in',

@@ -7,7 +7,7 @@ desktop_file = i18n.merge_file(
   type: 'desktop',
   po_dir: '../po',
   install: true,
-  install_dir: join_paths(datadir, 'applications'),
+  install_dir: datadir / 'applications',
 )
 
 desktop_utils = find_program('desktop-file-validate', required: false)
@@ -20,7 +20,7 @@ appstream_file = i18n.merge_file(
   output: 'org.erikreider.swaysettings.appdata.xml',
   po_dir: '../po',
   install: true,
-  install_dir: join_paths(datadir, 'appdata'),
+  install_dir: datadir / 'appdata',
 )
 
 appstream_util = find_program('appstream-util', required: false)
@@ -39,7 +39,7 @@ subdir('style')
 compile_schemas = find_program('glib-compile-schemas', required: true)
 install_data(
   'org.erikreider.swaysettings.gschema.xml',
-  install_dir: join_paths(datadir, 'glib-2.0/schemas'),
+  install_dir: datadir / 'glib-2.0/schemas',
 )
 
 test(
