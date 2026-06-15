@@ -1,5 +1,4 @@
 datadir = get_option('datadir')
-gnome = import('gnome')
 
 desktop_file = i18n.merge_file(
   input: 'org.erikreider.swaysettings.desktop.in',

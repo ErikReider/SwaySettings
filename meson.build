@@ -9,6 +9,7 @@ project(
 )
 
 fs = import('fs')
+gnome = import('gnome')
 
 dev_env = environment()
 
@@ -42,4 +43,8 @@ install_data(
   install_dir: get_option('sysconfdir') / 'pam.d',
 )
 
-meson.add_install_script('build-aux/meson/postinstall.py')
+gnome.post_install(
+  gtk_update_icon_cache: true,
+  update_desktop_database: true,
+  glib_compile_schemas: true,
+)
