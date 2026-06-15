@@ -5,7 +5,7 @@
 			<default>""</default>
 			<summary>Selected Wallpaper Path</summary>
 			<description>
-				This is the path pointing torwards the selected wallpaper
+				This is the path pointing towards the selected wallpaper
 			</description>
 		</key>
 		<key name="wallpaper-scaling-mode" type="i">

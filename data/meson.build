@@ -35,29 +35,16 @@ style_files = []
 subdir('style')
 
 # GSchema
-compile_schemas = find_program('glib-compile-schemas', required: true)
 install_data(
   'org.erikreider.swaysettings.gschema.xml',
   install_dir: datadir / 'glib-2.0/schemas',
 )
-
 test(
-  'Validate schema file',
-  compile_schemas,
-  args: ['--strict', '--dry-run', meson.current_source_dir()],
+  'Validate and compile local gschema files',
+  gnome.compile_schemas(
+    depend_files: files('org.erikreider.swaysettings.gschema.xml'),
+  ),
 )
-if get_option('buildtype') != 'release'
-  swaysettings_sources += custom_target(
-    'gschemas',
-    input: 'org.erikreider.swaysettings.gschema.xml',
-    output: 'gschemas.compiled',
-    command: [
-      compile_schemas,
-      '--strict', meson.current_source_dir(),
-    ],
-  )
-  dev_env.set('GSETTINGS_SCHEMA_DIR', meson.current_source_dir())
-endif
 
 # Icons
 subdir('icons')

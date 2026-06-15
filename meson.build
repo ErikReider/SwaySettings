@@ -2,7 +2,7 @@ project(
   'SwaySettings',
   ['c', 'vala'],
   version: '0.5.0',
-  meson_version: '>= 0.60.0',
+  meson_version: '>= 1.4',
   default_options: [
     'warning_level=2',
   ],
