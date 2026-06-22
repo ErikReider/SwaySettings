@@ -82,7 +82,6 @@ makepkg -si
 - gtk4-layer-shell
 - libadwaita
 - blueprint-compiler
-- granite7
 - libgtop
 - glib2
 - gobject-introspection

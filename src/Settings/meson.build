@@ -44,7 +44,6 @@ executable(
     dep_gdk_pixbuf,
     dep_libadwaita,
     dep_json_glib,
-    dep_granite7,
     dep_libxml,
     dep_udisks2,
     dep_libgtop,
