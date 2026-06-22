@@ -8,10 +8,11 @@ URL:        https://github.com/ErikReider/SwaySettings
 VCS:        {{{ git_repo_vcs }}}
 Source:     {{{ git_repo_pack }}}
 
-BuildRequires:    meson >= 0.60.0
+BuildRequires:    meson >= 1.4.0
 BuildRequires:    vala
 BuildRequires:    git
 
+BuildRequires: desktop-file-utils
 BuildRequires: gtk4-devel >= 4.16
 BuildRequires: pkgconfig(gtk4-layer-shell-0) >= 1.1.1
 BuildRequires: libadwaita-devel >= 1.6
